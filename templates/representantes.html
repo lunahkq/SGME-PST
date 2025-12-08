@@ -1,0 +1,30 @@
+<!-- templates/representantes.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Representantes</h4>
+    <small class="text-muted">Listado con cantidad de estudiantes asociados</small>
+  </div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Nombre</th><th>Cédula</th><th>Teléfono</th><th>Total Estudiantes</th></tr></thead>
+      <tbody id="repsBody"><tr><td colspan="4" class="text-center text-muted">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+async function loadReps(){
+  const res = await fetch('/api/representantes'); const data = await res.json();
+  const tbody = document.getElementById('repsBody');
+  if(data.length===0){ tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay representantes</td></tr>'; return; }
+  tbody.innerHTML = '';
+  data.forEach(r=>{ tbody.innerHTML += `<tr><td>${r.nombres} ${r.apellidos}</td><td>${r.cedula||''}</td><td>${r.telefono||''}</td><td>${r.total_estudiantes||0}</td></tr>`; });
+}
+document.addEventListener('DOMContentLoaded', loadReps);
+</script>
+{% endblock %}

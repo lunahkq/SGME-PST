@@ -1,0 +1,109 @@
+
+{% extends "base.html" %}
+{% block title %}Inicio - Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="mb-0">Panel de control</h3>
+    <small class="small-muted">Resumen de matrícula y estadísticas</small>
+  </div>
+
+  <!-- CORREGIDO: usar <a> en vez de url_for dentro de botón -->
+  <a href="{{ url_for('estudiantes_page') }}" class="btn btn-action rounded-btn">
+    <i class="bi bi-people me-2"></i>Gestionar Estudiantes
+  </a>
+</div>
+
+<div class="row g-3 mb-3">
+
+  <!-- TARJETA 1 -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="p-3 card-soft">
+      <h6 class="mb-2 text-primary">Total por grado / sección / turno</h6>
+      <div id="matricula-list" class="small-muted">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- TARJETA 2 -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="p-3 card-soft">
+      <h6 class="mb-2 text-primary">Distribución por sexo</h6>
+      <canvas id="sexoChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <!-- TARJETA 3 -->
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="p-3 card-soft">
+      <h6 class="mb-2 text-primary">Por grado</h6>
+      <canvas id="gradoChart" height="120"></canvas>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadCounts() {
+  // ----- PRIMERA API -----
+  const res = await fetch('/api/stats');
+  const data = await res.json();
+
+  // ----- SEGUNDA API -----
+  const resp2 = await fetch('/api/dashboard_counts');
+  const list = await resp2.json();
+  const container = document.getElementById('matricula-list');
+
+  // ---------------------------
+  // LISTA DE MATRÍCULA
+  // ---------------------------
+  if (!list || list.length === 0) {
+    container.innerHTML = '<small class="text-muted">No hay registros aún.</small>';
+  } else {
+    let html = "<ul class='mb-0'>";
+    list.forEach(l => {
+      html += `<li>${l.grado} — Sección ${l.seccion} — ${l.turno}: <strong>${l.total}</strong></li>`;
+    });
+    html += "</ul>";
+    container.innerHTML = html;
+  }
+
+  // ---------------------------
+  // GRÁFICAS (con fallback si vacío)
+  // ---------------------------
+  const sexoLabels = data?.sexo?.map(s => s.sexo || "No definido") || [];
+  const sexoData = data?.sexo?.map(s => s.total) || [];
+
+  const gradoLabels = data?.grado?.map(g => g.grado) || [];
+  const gradoData = data?.grado?.map(g => g.total) || [];
+
+  // SEXO -----------------------
+  new Chart(document.getElementById("sexoChart"), {
+    type: "doughnut",
+    data: {
+      labels: sexoLabels.length ? sexoLabels : ["Sin datos"],
+      datasets: [{
+        data: sexoData.length ? sexoData : [1]
+      }]
+    }
+  });
+
+  // GRADO ----------------------
+  new Chart(document.getElementById("gradoChart"), {
+    type: "bar",
+    data: {
+      labels: gradoLabels.length ? gradoLabels : ["Sin datos"],
+      datasets: [{
+        label: "Alumnos",
+        data: gradoData.length ? gradoData : [0]
+      }]
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", loadCounts);
+</script>
+{% endblock %}

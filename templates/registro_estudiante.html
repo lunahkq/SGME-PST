@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Estudiantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .form-card {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .form-section {
+      margin-bottom: 30px;
+    }
+    .form-section legend {
+      font-size: 1.3rem;
+      color: #0d6efd;
+      border-bottom: 2px solid #dee2e6;
+      margin-bottom: 20px;
+    }
+    .input-group-text {
+      background-color: #e9ecef;
+    }
+    .btn-success {
+      font-size: 1.1rem;
+      padding: 10px 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-card">
+    <h2 class="text-center text-primary mb-4"><i class="bi bi-journal-text me-2"></i>Formulario de Registro Escolar</h2>
+    <form method="POST" action="/registrar">
+
+      <!-- DATOS DEL ESTUDIANTE -->
+      <fieldset class="form-section">
+        <legend><i class="bi bi-person-lines-fill me-1"></i> Datos del Estudiante</legend>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label>Nombres</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" class="form-control" name="nombres_estudiante" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label>Apellidos</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+              <input type="text" class="form-control" name="apellidos_estudiante" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Cédula</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-credit-card-2-back"></i></span>
+              <input type="text" class="form-control" name="cedula_estudiante" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Sexo</label>
+            <select class="form-select" name="sexo" required>
+              <option value="">Seleccione</option>
+              <option>Femenino</option>
+              <option>Masculino</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label>Fecha de Nacimiento</label>
+            <input type="date" class="form-control" name="fecha_nacimiento" required>
+          </div>
+          <div class="col-md-6">
+            <label>Lugar de Nacimiento</label>
+            <input type="text" class="form-control" name="lugar_nacimiento" required>
+          </div>
+          <div class="col-md-6">
+            <label>Dirección</label>
+            <input type="text" class="form-control" name="direccion_estudiante" required>
+          </div>
+          <div class="col-md-6">
+            <label>Teléfono</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+              <input type="text" class="form-control" name="telefono_estudiante">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label>Correo Electrónico</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" name="correo_estudiante">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Talla Camisa</label>
+            <input type="text" class="form-control" name="talla_camisa">
+          </div>
+          <div class="col-md-4">
+            <label>Talla Pantalón</label>
+            <input type="text" class="form-control" name="talla_pantalon">
+          </div>
+          <div class="col-md-4">
+            <label>Talla Zapato</label>
+            <input type="text" class="form-control" name="talla_zapato">
+          </div>
+          <div class="col-12">
+            <label>Observaciones</label>
+            <textarea class="form-control" name="observaciones" rows="2"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- DATOS DEL REPRESENTANTE -->
+      <fieldset class="form-section">
+        <legend><i class="bi bi-person-badge-fill me-1"></i> Datos del Representante</legend>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label>Nombres</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input type="text" class="form-control" name="nombres_representante" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label>Apellidos</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+              <input type="text" class="form-control" name="apellidos_representante" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Cédula</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-credit-card-2-back"></i></span>
+              <input type="text" class="form-control" name="cedula_representante" required>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Teléfono</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+              <input type="text" class="form-control" name="telefono_representante">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label>Correo Electrónico</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" name="correo_representante">
+            </div>
+          </div>
+          <div class="col-12">
+            <label>Dirección</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+              <input type="text" class="form-control" name="direccion_representante" required>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+   <!-- DATOS DE INSCRIPCIÓN -->
+<fieldset class="form-section">
+  <legend><i class="bi bi-journal-check me-1"></i> Datos de Inscripción</legend>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label>Grado</label>
+      <select class="form-select" name="grado" required>
+        <option value="">Seleccione grado</option>
+        <option>1er grado</option>
+        <option>2do grado</option>
+        <option>3er grado</option>
+        <option>4to grado</option>
+        <option>5to grado</option>
+        <option>6to grado</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label>Sección</label>
+      <input type="text" class="form-control" name="seccion" required>
+    </div>
+    <div class="col-md-4">
+      <label>Turno</label>
+      <select class="form-select" name="turno" required>
+        <option value="">Seleccione turno</option>
+        <option>Mañana</option>
+        <option>Tarde</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label>Fecha de Inscripción</label>
+      <input type="date" class="form-control" name="fecha_inscripcion" required>
+    </div>
+    <div class="col-md-6">
+      <label>Tipo de Inscripción</label>
+      <select class="form-select" name="tipo_inscripcion" required>
+        <option value="">Seleccione tipo</option>
+        <option>Nuevo</option>
+        <option>Regular</option>
+        <option>Repetido</option>
+      </select>
+    </div>
+  </div>
+</fieldset>
+
+      <!-- BOTÓN DE REGISTRO -->
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-success">
+          <i class="bi bi-check-circle-fill me-2"></i>Registrar
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</body>
+</html>

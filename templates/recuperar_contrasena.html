@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Contraseña</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: #f0f4f7; /* Fondo similar al login */
+            font-family: Arial, sans-serif;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+        .card { 
+            max-width: 450px; 
+            width: 100%; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            background: #fff;
+        }
+        .text-center a {
+            color: #356ec2; /* Color de enlace primario */
+        }
+    </style>
+</head>
+<body>
+    <div class="card p-4">
+        <h3 class="card-title text-center mb-4">Restablecer Contraseña</h3>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            {% if step == 1 or step is none %}
+                <p class="small text-muted text-center">Introduce tu nombre de usuario para buscar tu pregunta de seguridad.</p>
+                <div class="mb-3">
+                    <label for="usuario" class="form-label">Nombre de Usuario</label>
+                    <input type="text" class="form-control" id="usuario" name="usuario" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Continuar</button>
+            
+            {% elif step == 2 %}
+                <p class="text-danger small">Verificación en curso. Responde la pregunta para cambiar tu clave.</p>
+                
+                <div class="mb-3">
+                    <label class="form-label text-primary">Pregunta de Seguridad:</label>
+                    <p class="form-control-plaintext border p-2 rounded bg-light">
+                        **{{ pregunta }}**
+                    </p>
+                    <input type="hidden" name="usuario" value="{{ session.get('recovery_user') }}">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="respuesta_secreta" class="form-label">Tu Respuesta</label>
+                    <input type="text" class="form-control" id="respuesta_secreta" name="respuesta_secreta" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nueva_contrasena" class="form-label">Nueva Contraseña</label>
+                    <input type="password" class="form-control" id="nueva_contrasena" name="nueva_contrasena" required>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Restablecer Contraseña</button>
+                <a href="{{ url_for('login') }}" class="btn btn-link w-100 mt-2">Cancelar y Volver</a>
+            
+            {% endif %}
+
+        </form>
+
+        {% if step != 2 %}
+            <div class="text-center mt-3"><a href="{{ url_for('login') }}">Volver al Login</a></div>
+        {% endif %}
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

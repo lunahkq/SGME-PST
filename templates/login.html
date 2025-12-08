@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Ingreso UNETI</title>
+    
+    <style>
+        /* Estilos Base: Fondo y Centrado */
+        body {
+            font-family: Arial, sans-serif;
+            background: #F0F4F7; /* Fondo azul claro/grisáceo */
+            margin: 0;
+            padding: 0;
+            /* Centra el formulario vertical y horizontalmente */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Contenedor principal del formulario */
+        .container {
+            width: 400px;
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        /* Estilos del Logo */
+        .logo-container {
+            margin-bottom: 5px;
+            height: 80px; /* Altura fija para el logo */
+        }
+        
+        .logo-container img {
+            max-height: 100%; /* La imagen se ajusta a la altura del contenedor */
+            width: auto;
+            border-radius: 5px;
+        }
+
+        /* Títulos */
+        .titulo-principal {
+            color: #144ab0ff; /* Azul UNETI oscuro */
+            margin-bottom: 5px; 
+            font-size: 30px; 
+            font-weight: bold;
+        }
+
+        .subtitulo {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .sistema-titulo {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-style: italic;
+            font-size: 16px;
+            color: #809AC8; /* Azul más claro para el sistema */
+        }
+        
+        .separator {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+            margin-bottom: 20px;
+        }
+
+        /* Formulario y Campos */
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #DCE4E9;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        /* Botón de Ingreso */
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            background: #6085C0; /* Azul principal del botón */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0c2f71ff; /* Azul más oscuro al pasar el ratón */
+        }
+        
+        /* Enlace de Recuperación */
+        .enlace-recuperacion {
+            text-align: right; 
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .enlace-recuperacion a {
+            color: #6085C0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .enlace-recuperacion a:hover {
+            color: #395A97; 
+            text-decoration: underline;
+        }
+
+        .mensaje {
+            color: #d32f2f; /* Rojo para mensajes de error */
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <!-- Contenedor del Logo: Busca 'logo_unet.png' en la carpeta 'static' -->
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo_uneti.png') }}" alt="Logo UNETI">
+        </div>
+        
+        <!-- Información de la Institución -->
+        <h1 class="titulo-principal">E.B.E POLICARPO FERRERA</h1>
+
+        <h4 class="subtitulo">Escuela Basica</h4>
+        <hr class="separator" />
+        <h3 class="sistema-titulo">Sistema de Ingreso Estudiantil</h3>
+        
+        <!-- Formulario de Login -->
+        <form method="POST">
+            <label for="usuario">Usuario (Cédula)</label>
+            <input type="text" id="usuario" name="usuario" required>
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+            <button type="submit">Ingresar al Campus Virtual</button>
+        </form>
+        
+        <!-- Enlace a la función de recuperación (RUTA: /recuperar_contrasena) -->
+        <div class="enlace-recuperacion">
+            <a href="{{ url_for('recuperar_contrasena') }}">¿Olvidó la Contraseña?</a>
+        </div>
+        
+        <!-- Mensaje de Error (si existe) -->
+        {% if mensaje %}
+            <div class="mensaje">{{ mensaje }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>

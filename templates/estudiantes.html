@@ -1,0 +1,274 @@
+<!-- templates/estudiantes.html -->
+{% extends "base.html" %}
+{% block title %}Estudiantes{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Estudiantes</h4>
+    <small class="text-muted">Filtra, registra, edita y marca como retirado</small>
+  </div>
+  <div>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">Nuevo Estudiante</button>
+  </div>
+</div>
+
+<div class="card-soft p-3 mb-3">
+  <div class="row g-2">
+    <div class="col-sm-2">
+      <select id="filterGrado" class="form-select">
+        <option value="">Todos los grados</option>
+        <option>1er grado</option><option>2do grado</option><option>3er grado</option><option>4to grado</option>
+        <option>5to grado</option><option>6to grado</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <input id="filterSeccion" class="form-control" placeholder="Sección">
+    </div>
+    <div class="col-sm-2">
+      <select id="filterTurno" class="form-select">
+        <option value="">Todos los turnos</option><option>Mañana</option><option>Tarde</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <select id="filterSexo" class="form-select">
+        <option value="">Sexo</option><option>Femenino</option><option>Masculino</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <select id="filterEstado" class="form-select">
+        <option value="Activo">Activos</option><option value="Retirado">Retirados</option><option value="">Todos</option>
+      </select>
+    </div>
+    <div class="col-sm-2 d-flex">
+      <button class="btn btn-outline-primary me-2" onclick="loadStudents()">Aplicar</button>
+      <button class="btn btn-outline-secondary" onclick="resetFilters()">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Nombre</th><th>Grado</th><th>Sección</th><th>Turno</th><th>Sexo</th><th>Representante</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="studentsBody"><tr><td colspan="8" class="text-center text-muted">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal registro/edición -->
+<div class="modal fade" id="modalEst" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content card-soft">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Registrar Estudiante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEst">
+          <input type="hidden" id="estId">
+          <div class="row g-2">
+            <div class="col-md-6"><input class="form-control" id="nombres" placeholder="Nombres" required></div>
+            <div class="col-md-6"><input class="form-control" id="apellidos" placeholder="Apellidos" required></div>
+            <div class="col-md-4"><input class="form-control" id="cedula" placeholder="Cédula"></div>
+            <div class="col-md-4"><select id="sexo" class="form-select"><option>Femenino</option><option>Masculino</option></select></div>
+            <div class="col-md-4"><input type="date" id="fecha_nacimiento" class="form-control"></div>
+            <div class="col-md-6"><input class="form-control" id="lugar_nacimiento" placeholder="Lugar de nacimiento"></div>
+            <div class="col-md-6"><input class="form-control" id="direccion" placeholder="Dirección"></div>
+            <div class="col-md-4"><input class="form-control" id="telefono" placeholder="Teléfono"></div>
+            <div class="col-md-4"><input class="form-control" id="correo" placeholder="Correo"></div>
+            <div class="col-md-4">
+              <select id="grado" class="form-select">
+                <option>1er grado</option><option>2do grado</option><option>3er grado</option><option>4to grado</option><option>5to grado</option><option>6to grado</option>
+              </select>
+            </div>
+            <div class="col-md-4"><input class="form-control" id="seccion" placeholder="Sección"></div>
+            <div class="col-md-4">
+              <select id="turno" class="form-select"><option>Mañana</option><option>Tarde</option></select>
+            </div>
+            <div class="col-md-4"><input class="form-control" id="talla_camisa" placeholder="Talla camisa"></div>
+            <div class="col-md-4"><input class="form-control" id="talla_pantalon" placeholder="Talla pantalón"></div>
+            <div class="col-md-4"><input class="form-control" id="talla_zapato" placeholder="Talla zapato"></div>
+            <div class="col-12"><hr><h6>Representante</h6></div>
+            <div class="col-md-6"><input class="form-control" id="rep_nombres" placeholder="Nombres representante"></div>
+            <div class="col-md-6"><input class="form-control" id="rep_apellidos" placeholder="Apellidos representante"></div>
+            <div class="col-md-4"><input class="form-control" id="rep_cedula" placeholder="Cédula representante (si ya existe ponla aquí)"></div>
+            <div class="col-md-4"><input class="form-control" id="rep_telefono" placeholder="Teléfono representante"></div>
+            <div class="col-md-4"><input class="form-control" id="rep_correo" placeholder="Correo representante"></div>
+            <div class="col-12"><textarea id="observaciones" class="form-control" placeholder="Observaciones" rows="2"></textarea></div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        <button class="btn btn-success" id="saveBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal retirar -->
+<div class="modal fade" id="modalRetirar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content card-soft">
+      <div class="modal-header"><h5 class="modal-title">Confirmar retiro</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <p>Para marcar al estudiante como <strong>Retirado</strong>, introduce tu contraseña de administrador para confirmar.</p>
+        <input type="password" id="confirmAdminPass" class="form-control" placeholder="Contraseña admin">
+        <input type="hidden" id="retirarEstId">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="confirmRetirarBtn">Confirmar Retiro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadStudents(){
+  const grado = document.getElementById('filterGrado').value;
+  const seccion = document.getElementById('filterSeccion').value;
+  const turno = document.getElementById('filterTurno').value;
+  const sexo = document.getElementById('filterSexo').value;
+  const estado = document.getElementById('filterEstado').value;
+  const params = new URLSearchParams({grado, seccion, turno, sexo, estado});
+  const res = await fetch('/api/estudiantes?'+params.toString());
+  const data = await res.json();
+  const tbody = document.getElementById('studentsBody');
+  if(data.length===0){
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No hay estudiantes</td></tr>';
+    return;
+  }
+  tbody.innerHTML = '';
+  data.forEach(s => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${s.nombres} ${s.apellidos}</td>
+        <td>${s.grado||''}</td>
+        <td>${s.seccion||''}</td>
+        <td>${s.turno||''}</td>
+        <td>${s.sexo||''}</td>
+        <td>${s.rep_nombres? s.rep_nombres + ' ' + s.rep_apellidos + ' ('+ (s.rep_cedula||'') +')' : '<small class="text-muted">Sin rep</small>'}</td>
+        <td>${s.estado||'Activo'}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary me-1" onclick="editStudent(${s.id})"><i class="bi bi-pencil"></i></button>
+          ${s.estado !== 'Retirado' ? `<button class="btn btn-sm btn-outline-danger me-1" onclick="openRetirar(${s.id})"><i class="bi bi-person-dash"></i></button>` : ''}
+          <button class="btn btn-sm btn-outline-secondary" onclick="deleteStudent(${s.id})"><i class="bi bi-trash"></i></button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function resetFilters(){
+  document.getElementById('filterGrado').value='';
+  document.getElementById('filterSeccion').value='';
+  document.getElementById('filterTurno').value='';
+  document.getElementById('filterSexo').value='';
+  document.getElementById('filterEstado').value='Activo';
+  loadStudents();
+}
+
+async function deleteStudent(id){
+  if(!confirm('¿Eliminar este estudiante?')) return;
+  const res = await fetch('/api/estudiante/'+id, { method:'DELETE' });
+  if(res.ok) loadStudents();
+  else alert('Error al eliminar');
+}
+
+function openModalClear(){
+  document.getElementById('modalTitle').textContent = 'Registrar Estudiante';
+  document.getElementById('formEst').reset();
+  document.getElementById('estId').value = '';
+}
+document.getElementById('modalEst').addEventListener('show.bs.modal', openModalClear);
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('estId').value;
+  const payload = {
+    nombres: document.getElementById('nombres').value,
+    apellidos: document.getElementById('apellidos').value,
+    cedula: document.getElementById('cedula').value,
+    sexo: document.getElementById('sexo').value,
+    fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+    lugar_nacimiento: document.getElementById('lugar_nacimiento').value,
+    direccion: document.getElementById('direccion').value,
+    telefono: document.getElementById('telefono').value,
+    correo: document.getElementById('correo').value,
+    talla_camisa: document.getElementById('talla_camisa').value,
+    talla_pantalon: document.getElementById('talla_pantalon').value,
+    talla_zapato: document.getElementById('talla_zapato').value,
+    observaciones: document.getElementById('observaciones').value,
+    grado: document.getElementById('grado').value,
+    seccion: document.getElementById('seccion').value,
+    turno: document.getElementById('turno').value,
+    rep_nombres: document.getElementById('rep_nombres').value,
+    rep_apellidos: document.getElementById('rep_apellidos').value,
+    rep_cedula: document.getElementById('rep_cedula').value,
+    rep_telefono: document.getElementById('rep_telefono').value,
+    rep_correo: document.getElementById('rep_correo').value
+  };
+
+  if(id){
+    const res = await fetch('/api/estudiante/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if(res.ok){ const modal = bootstrap.Modal.getInstance(document.getElementById('modalEst')); modal.hide(); loadStudents(); } else alert('Error al editar');
+  } else {
+    const res = await fetch('/api/estudiante', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if(res.ok){ const modal = bootstrap.Modal.getInstance(document.getElementById('modalEst')); modal.hide(); loadStudents(); } else { alert('Error al crear estudiante'); }
+  }
+});
+
+async function editStudent(id){
+  const res = await fetch('/api/estudiantes'); const data = await res.json();
+  const s = data.find(x=>x.id==id) || data[0];
+  if(!s) return alert('No se encontró estudiante');
+  document.getElementById('estId').value = s.id;
+  document.getElementById('nombres').value = s.nombres;
+  document.getElementById('apellidos').value = s.apellidos;
+  document.getElementById('cedula').value = s.cedula;
+  document.getElementById('sexo').value = s.sexo;
+  document.getElementById('fecha_nacimiento').value = s.fecha_nacimiento;
+  document.getElementById('lugar_nacimiento').value = s.lugar_nacimiento;
+  document.getElementById('direccion').value = s.direccion;
+  document.getElementById('telefono').value = s.telefono;
+  document.getElementById('correo').value = s.correo;
+  document.getElementById('talla_camisa').value = s.talla_camisa;
+  document.getElementById('talla_pantalon').value = s.talla_pantalon;
+  document.getElementById('talla_zapato').value = s.talla_zapato;
+  document.getElementById('observaciones').value = s.observaciones;
+  document.getElementById('grado').value = s.grado;
+  document.getElementById('seccion').value = s.seccion;
+  document.getElementById('turno').value = s.turno;
+  document.getElementById('rep_nombres').value = s.rep_nombres || '';
+  document.getElementById('rep_apellidos').value = s.rep_apellidos || '';
+  document.getElementById('rep_cedula').value = s.rep_cedula || '';
+  document.getElementById('modalTitle').textContent = 'Editar Estudiante';
+  const modal = new bootstrap.Modal(document.getElementById('modalEst')); modal.show();
+}
+
+function openRetirar(id){
+  document.getElementById('retirarEstId').value = id;
+  document.getElementById('confirmAdminPass').value = '';
+  const modal = new bootstrap.Modal(document.getElementById('modalRetirar')); modal.show();
+}
+
+document.getElementById('confirmRetirarBtn').addEventListener('click', async ()=>{
+  const id = document.getElementById('retirarEstId').value;
+  const adminPass = document.getElementById('confirmAdminPass').value;
+  if(!adminPass) return alert('Introduce tu contraseña para confirmar');
+  const res = await fetch('/api/retirar_estudiante/'+id, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({admin_password: adminPass}) });
+  if(res.ok){
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalRetirar')); modal.hide();
+    loadStudents();
+  } else {
+    const j = await res.json(); alert(j.error || 'Error al marcar como retirado');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', loadStudents);
+</script>
+{% endblock %}
