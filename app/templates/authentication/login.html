@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio de sesión</title>
+    {% load static %}
+
+    <style>
+        /* Estilos Base: Fondo y Centrado */
+        body {
+            font-family: Arial, sans-serif;
+            background: #F0F4F7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 400px;
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: 5px;
+            height: 80px;
+        }
+        .logo-container img {
+            max-height: 100%;
+            width: auto;
+            border-radius: 5px;
+        }
+
+        .titulo-principal {
+            color: #144ab0ff;
+            margin-bottom: 5px;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .subtitulo {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .sistema-titulo {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-style: italic;
+            font-size: 16px;
+            color: #809AC8;
+        }
+
+        .separator {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #DCE4E9;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            background: #6085C0;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0c2f71ff;
+        }
+
+        .enlace-recuperacion {
+            text-align: right;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .enlace-recuperacion a {
+            color: #6085C0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .enlace-recuperacion a:hover {
+            color: #395A97;
+            text-decoration: underline;
+        }
+
+        /* Mensaje flotante sencillo */
+        .login-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #f8d7da;
+            color: #842029;
+            padding: 10px 16px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-size: 14px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    {% if messages %}
+        <div class="login-message">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container">
+        <!-- Logo (Django static) -->
+        <div class="logo-container">
+            <img src="{% static 'images/logo.png' %}" alt="Logo">
+        </div>
+
+        <h1 class="titulo-principal">E.B.E POLICARPO FERRERA</h1>
+        <h4 class="subtitulo">Escuela Básica</h4>
+        <hr class="separator" />
+        <h3 class="sistema-titulo">Sistema de Ingreso Estudiantil</h3>
+
+        <!-- Formulario de Login usando AuthenticationForm -->
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="{{ form.username.id_for_label }}">Usuario</label>
+            <input
+                type="text"
+                id="{{ form.username.id_for_label }}"
+                name="{{ form.username.html_name }}"
+                value="{{ form.username.value|default:'' }}"
+                required
+            >
+            {{ form.username.errors }}
+
+            <label for="{{ form.password.id_for_label }}">Contraseña</label>
+            <input
+                type="password"
+                id="{{ form.password.id_for_label }}"
+                name="{{ form.password.html_name }}"
+                required
+            >
+            {{ form.password.errors }}
+
+            <button type="submit">Ingresar al Campus Virtual</button>
+        </form>
+
+        <div class="enlace-recuperacion">
+            <a href="{% url 'f_password' %}">¿Olvidó la Contraseña?</a>
+        </div>
+    </div>
+</body>
+</html>

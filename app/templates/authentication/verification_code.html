@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Contraseña</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f0f4f7;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .card {
+            max-width: 450px;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: #fff;
+        }
+        .text-center a {
+            color: #356ec2;
+        }
+        .toast-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <!-- mensajes flotantes arriba a la derecha -->
+    <div class="toast-messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div
+                    class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show mb-2"
+                    role="alert"
+                >
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="card p-4">
+        <h3 class="card-title text-center mb-4">Código de Verificación</h3>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <p class="small text-muted text-center">
+                Hemos enviado un código de verificación a <strong>{{ email }}</strong>.
+                Ingrese el código para continuar con el restablecimiento de tu contraseña.
+            </p>
+
+            <div class="mb-3">
+                <label for="codigo" class="form-label">Código de verificación</label>
+                <input
+                    type="text"
+                    class="form-control"
+                    id="codigo"
+                    name="codigo"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">
+                Verificar código
+            </button>
+
+            <div class="text-center mt-3">
+                <a href="{% url 'f_password' %}">Volver a enviar el código</a>
+            </div>
+        </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
