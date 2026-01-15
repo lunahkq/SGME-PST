@@ -1,11 +1,11 @@
 import random
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import login, logout
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -156,7 +156,7 @@ def reset_password(request):
 
     # Validar la contraseña con los validadores de Django
     try:
-        validate_password(password1)  # usa AUTH_PASSWORD_VALIDATORS de settings.py [web:204]
+        validate_password(password1) 
     except ValidationError as e:
         messages.error(request, " ".join(e.messages))
         return render(request, "authentication/reset_password.html")
@@ -179,3 +179,118 @@ def reset_password(request):
     messages.success(request, "Tu contraseña ha sido restablecida correctamente. Ya puedes iniciar sesión.")
 
     return redirect("login")
+
+def logout_view(request):
+    logout(request)
+    return redirect("login")
+
+def es_admin_o_directivo(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return user.groups.filter(name__in=["Administrador", "Directivo"]).exists()
+
+
+@login_required
+@user_passes_test(es_admin_o_directivo, login_url="home")
+def users_control(request):
+    """
+    Vista de gestión de usuarios:
+    - Lista todos los usuarios.
+    - Permite crear usuarios simples (username + email + contraseña).
+    - Permite eliminar usuarios.
+    - Permite asignar rol (grupo) Administrador, Directivo o Docente.
+    - Directivo NO puede crear/editar/eliminar Administradores.
+    """
+
+    es_super_admin = request.user.is_superuser
+
+    # Crear usuario nuevo
+    if request.method == "POST" and request.POST.get("action") == "create":
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+        role = request.POST.get("role")  # "Administrador", "Directivo" o "Docente"
+
+        # Validaciones básicas
+        if not username or not password1 or not password2 or not email:
+            messages.error(request, "Usuario, correo y ambas contraseñas son obligatorios.")
+        elif password1 != password2:
+            messages.error(request, "Las contraseñas no coinciden.")
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, "Ya existe un usuario con ese nombre de usuario.")
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, "Ya existe un usuario con ese correo.")
+        elif role not in ["Administrador", "Directivo", "Docente"]:
+            messages.error(request, "Debes seleccionar un rol válido.")
+        elif not es_super_admin and role == "Administrador":
+            messages.error(request, "Solo un Administrador puede crear otros Administradores.")
+        else:
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password1,
+                first_name=first_name or "",
+                last_name=last_name or "",
+            )
+            grupo, _ = Group.objects.get_or_create(name=role)
+            user.groups.add(grupo)
+            messages.success(request, f"Usuario '{username}' creado correctamente.")
+        return redirect("users_control")
+
+    # Eliminar usuario
+    if request.method == "POST" and request.POST.get("action") == "delete":
+        user_id = request.POST.get("user_id")
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            messages.error(request, "El usuario no existe.")
+            return redirect("users_control")
+
+        if request.user.id == user.id:
+            messages.error(request, "No puedes eliminar tu propio usuario.")
+        # Un directivo no puede borrar administradores
+        elif not es_super_admin and user.groups.filter(name="Administrador").exists():
+            messages.error(request, "No tienes permiso para eliminar Administradores.")
+        else:
+            user.delete()
+            messages.success(request, "Usuario eliminado correctamente.")
+
+        return redirect("users_control")
+
+    # Asignar rol
+    if request.method == "POST" and request.POST.get("action") == "set_role":
+        user_id = request.POST.get("user_id")
+        role = request.POST.get("role")
+        try:
+            user = User.objects.get(id=user_id)
+
+            if role not in ["Administrador", "Directivo", "Docente"]:
+                messages.error(request, "Rol no válido.")
+            elif not es_super_admin and role == "Administrador":
+                messages.error(request, "Solo un Administrador puede asignar el rol Administrador.")
+            else:
+                # Limpiamos grupos relevantes y añadimos el nuevo
+                for nombre in ["Administrador", "Directivo", "Docente"]:
+                    user.groups.remove(*Group.objects.filter(name=nombre))
+                grupo, _ = Group.objects.get_or_create(name=role)
+                user.groups.add(grupo)
+                messages.success(request, "Rol actualizado.")
+        except User.DoesNotExist:
+            messages.error(request, "El usuario no existe.")
+        return redirect("users_control")
+
+    # GET: listar usuarios
+    usuarios = User.objects.all().order_by("username")
+    grupos = Group.objects.filter(name__in=["Administrador", "Directivo", "Docente"])
+
+    contexto = {
+        "usuarios": usuarios,
+        "grupos": grupos,
+        "es_super_admin": es_super_admin,
+    }
+    return render(request, "authentication/users_control.html", contexto)

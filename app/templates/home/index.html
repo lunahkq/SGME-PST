@@ -1,1 +1,45 @@
-<h1>Home</h1>
+{% extends "layout/navbar.html" %}
+
+{% block title %}Inicio - Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="mb-0">Panel de control</h3>
+    <small class="small-muted">Resumen de matrícula y estadísticas</small>
+  </div>
+
+  <a href="#" class="btn btn-action rounded-btn">
+    <i class="bi bi-people me-2"></i>Gestionar Estudiantes
+  </a>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="p-3 card-soft">
+      <h6 class="mb-2 text-primary">Total por grado / sección / turno</h6>
+      <div id="matricula-list" class="small-muted">
+        Cargando datos de matrícula (modo demo)...
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="p-3 card-soft">
+      <h6 class="mb-2 text-primary">Distribución por sexo</h6>
+      <canvas id="sexoChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6 col-xl-4">
+    <div class="p-3 card-soft">
+      <h6 class="mb-2 text-primary">Por grado</h6>
+      <canvas id="gradoChart" height="120"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}
