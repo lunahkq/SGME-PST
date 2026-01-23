@@ -9,6 +9,10 @@ from django.contrib.auth import login, logout
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.contrib.auth import authenticate
+
+
 
 
 # Importando modelos de la base de datos
@@ -43,7 +47,7 @@ def login_request(request):
 # Login requerido para mostrar el dashboard
 @login_required
 def home_view(request):
-    return render(request, "home/index.html")
+    return render(request, "modules/home.html")
 
 
 def forgot_password(request):
@@ -195,15 +199,6 @@ def es_admin_o_directivo(user):
 @login_required
 @user_passes_test(es_admin_o_directivo, login_url="home")
 def users_control(request):
-    """
-    Vista de gestión de usuarios:
-    - Lista todos los usuarios.
-    - Permite crear usuarios simples (username + email + contraseña).
-    - Permite eliminar usuarios.
-    - Permite asignar rol (grupo) Administrador, Directivo o Docente.
-    - Directivo NO puede crear/editar/eliminar Administradores.
-    """
-
     es_super_admin = request.user.is_superuser
 
     # Crear usuario nuevo
@@ -294,3 +289,73 @@ def users_control(request):
         "es_super_admin": es_super_admin,
     }
     return render(request, "authentication/users_control.html", contexto)
+
+@login_required
+def students_view(request):
+    # Más adelante pasaremos datos contextuales (grados, turnos, etc.)
+    return render(request, "modules/students.html")
+
+@login_required
+def students_view(request):
+    if request.method == "POST":
+        nombres = request.POST.get("nombres")
+        apellidos = request.POST.get("apellidos")
+        cedula = request.POST.get("cedula") or None
+        sexo_in = request.POST.get("sexo")
+        fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
+        lugar_nacimiento = request.POST.get("lugar_nacimiento") or ""
+        talla_camisa = request.POST.get("talla_camisa") or ""
+        talla_pantalon = request.POST.get("talla_pantalon") or ""
+        talla_zapato = request.POST.get("talla_zapato") or ""
+
+        # Convertimos a "F"/"M"
+        sexo = "F" if sexo_in == "Femenino" else "M"
+
+        Estudiante.objects.create(
+            nombres=nombres,
+            apellidos=apellidos,
+            cedula=cedula,
+            sexo=sexo,
+            fecha_nacimiento=fecha_nacimiento,
+            lugar_nacimiento=lugar_nacimiento,
+            talla_camisa=talla_camisa,
+            talla_pantalon=talla_pantalon,
+            talla_zapato=talla_zapato,
+        )
+
+        return redirect("students")
+
+    estudiantes = Estudiante.objects.all().order_by("apellidos", "nombres")
+    return render(request, "modules/students.html", {"estudiantes": estudiantes})
+
+@login_required
+def students_view(request):
+    if request.method == "POST":
+        nombres = request.POST.get("nombres")
+        apellidos = request.POST.get("apellidos")
+        cedula = request.POST.get("cedula") or None
+        sexo_in = request.POST.get("sexo")
+        fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
+        lugar_nacimiento = request.POST.get("lugar_nacimiento") or ""
+        talla_camisa = request.POST.get("talla_camisa") or ""
+        talla_pantalon = request.POST.get("talla_pantalon") or ""
+        talla_zapato = request.POST.get("talla_zapato") or ""
+
+        sexo = "F" if sexo_in == "Femenino" else "M"
+
+        Estudiante.objects.create(
+            nombres=nombres,
+            apellidos=apellidos,
+            cedula=cedula,
+            sexo=sexo,
+            fecha_nacimiento=fecha_nacimiento,
+            lugar_nacimiento=lugar_nacimiento,
+            talla_camisa=talla_camisa,
+            talla_pantalon=talla_pantalon,
+            talla_zapato=talla_zapato,
+        )
+        messages.success(request, "Estudiante registrado correctamente.")
+        return redirect("students")
+
+    estudiantes = Estudiante.objects.all().order_by("apellidos", "nombres")
+    return render(request, "modules/students.html", {"estudiantes": estudiantes})

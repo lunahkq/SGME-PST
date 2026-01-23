@@ -30,7 +30,6 @@ class Estudiante(models.Model):
     fecha_nacimiento = models.DateField()
     sexo = models.CharField(max_length=1)
     lugar_nacimiento = models.CharField(max_length=150, blank=True, null=True)
-    direccion = models.TextField(blank=True, null=True)
     fecha_registro = models.DateTimeField(blank=True, null=True)
     talla_camisa = models.CharField(max_length=10, blank=True, null=True)
     talla_pantalon = models.CharField(max_length=10, blank=True, null=True)

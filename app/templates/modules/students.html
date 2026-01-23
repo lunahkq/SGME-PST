@@ -1,0 +1,220 @@
+{% extends "layout/navbar.html" %}
+{% block title %}Estudiantes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Estudiantes</h4>
+    <small class="text-muted">Filtra, registra, edita y marca como retirado</small>
+  </div>
+  <div>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">
+      Nuevo Estudiante
+    </button>
+  </div>
+</div>
+
+<div class="card-soft p-3 mb-3">
+  <div class="row g-2">
+    <div class="col-sm-2">
+      <select id="filterGrado" class="form-select">
+        <option value="">Todos los grados</option>
+        <option>1er grado</option><option>2do grado</option><option>3er grado</option><option>4to grado</option>
+        <option>5to grado</option><option>6to grado</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <input id="filterSeccion" class="form-control" placeholder="Sección">
+    </div>
+    <div class="col-sm-2">
+      <select id="filterTurno" class="form-select">
+        <option value="">Todos los turnos</option><option>Mañana</option><option>Tarde</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <select id="filterSexo" class="form-select">
+        <option value="">Sexo</option><option>Femenino</option><option>Masculino</option>
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <select id="filterEstado" class="form-select">
+        <option value="Activo">Activos</option><option value="Retirado">Retirados</option><option value="">Todos</option>
+      </select>
+    </div>
+    <div class="col-sm-2 d-flex">
+      <button class="btn btn-outline-primary me-2" type="button">Aplicar</button>
+      <button class="btn btn-outline-secondary" type="button">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="card-soft p-3">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Grado</th><th>Sección</th><th>Turno</th><th>Sexo</th>
+          <th>Representante</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="studentsBody">
+        {% if estudiantes %}
+          {% for s in estudiantes %}
+            <tr>
+              <td>{{ s.nombres }} {{ s.apellidos }}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>
+                {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
+              </td>
+              <td><small class="text-muted">Sin rep</small></td>
+              <td>Activo</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-1" type="button">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger me-1" type="button">
+                  <i class="bi bi-person-dash"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted">
+              No hay estudiantes registrados.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal registro/edición -->
+<div class="modal fade" id="modalEst" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content card-soft">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitle">Registrar Estudiante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEst" method="post" action="{% url 'students' %}">
+          {% csrf_token %}
+          <input type="hidden" id="estId">
+          <div class="row g-2">
+            <div class="col-md-6">
+              <input class="form-control" id="nombres" name="nombres" placeholder="Nombres" required>
+            </div>
+            <div class="col-md-6">
+              <input class="form-control" id="apellidos" name="apellidos" placeholder="Apellidos" required>
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="cedula" name="cedula" placeholder="Cédula">
+            </div>
+            <div class="col-md-4">
+              <select id="sexo" name="sexo" class="form-select">
+                <option>Femenino</option><option>Masculino</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <input class="form-control" id="lugar_nacimiento" name="lugar_nacimiento" placeholder="Lugar de nacimiento">
+            </div>
+            <div class="col-md-6">
+              <input class="form-control" id="direccion" placeholder="Dirección">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="telefono" placeholder="Teléfono">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="correo" placeholder="Correo">
+            </div>
+            <div class="col-md-4">
+              <select id="grado" class="form-select">
+                <option>1er grado</option><option>2do grado</option><option>3er grado</option>
+                <option>4to grado</option><option>5to grado</option><option>6to grado</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="seccion" placeholder="Sección">
+            </div>
+            <div class="col-md-4">
+              <select id="turno" class="form-select">
+                <option>Mañana</option><option>Tarde</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="talla_camisa" name="talla_camisa" placeholder="Talla camisa">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="talla_pantalon" name="talla_pantalon" placeholder="Talla pantalón">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="talla_zapato" name="talla_zapato" placeholder="Talla zapato">
+            </div>
+            <div class="col-12"><hr><h6>Representante</h6></div>
+            <div class="col-md-6">
+              <input class="form-control" id="rep_nombres" placeholder="Nombres representante">
+            </div>
+            <div class="col-md-6">
+              <input class="form-control" id="rep_apellidos" placeholder="Apellidos representante">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="rep_cedula" placeholder="Cédula representante (si ya existe ponla aquí)">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="rep_telefono" placeholder="Teléfono representante">
+            </div>
+            <div class="col-md-4">
+              <input class="form-control" id="rep_correo" placeholder="Correo representante">
+            </div>
+            <div class="col-12">
+              <textarea id="observaciones" class="form-control" placeholder="Observaciones" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer mt-3">
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cerrar</button>
+            <button class="btn btn-success" type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal retirar -->
+<div class="modal fade" id="modalRetirar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content card-soft">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar retiro</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Para marcar al estudiante como <strong>Retirado</strong>, introduce tu contraseña
+          de administrador para confirmar.
+        </p>
+        <input type="password" id="confirmAdminPass" class="form-control" placeholder="Contraseña admin">
+        <input type="hidden" id="retirarEstId">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" type="button">Confirmar Retiro</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- JS pendiente para filtros/AJAX -->
+{% endblock %}
