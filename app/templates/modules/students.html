@@ -9,81 +9,86 @@
   </div>
   <div>
     {% if hay_anio_activo %}
-      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">
-        <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
-      </button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">
+      <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
+    </button>
     {% else %}
-      <button class="btn btn-secondary" disabled title="No hay año escolar activo">
-        <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
-      </button>
+    <button class="btn btn-secondary" disabled title="No hay año escolar activo">
+      <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
+    </button>
     {% endif %}
   </div>
 </div>
 
 <!-- Mensajes de feedback -->
 {% if messages %}
-  {% for message in messages %}
-    <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  {% endfor %}
+{% for message in messages %}
+<div
+  class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
+  role="alert">
+  {{ message }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
 {% endif %}
 
 <!-- Alerta si no hay año escolar activo -->
 {% if not hay_anio_activo %}
-  <div class="alert alert-warning" role="alert">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-    <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active uno.
-  </div>
+<div class="alert alert-warning" role="alert">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+  <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active
+  uno.
+</div>
 {% endif %}
 
 <!-- Filtros -->
 <div class="card-soft p-3 mb-3">
-  <div class="row g-2">
-    <div class="col-sm-2">
-      <select id="filterGrado" class="form-select">
-        <option value="">Todos los grados</option>
-        {% for grado in grados %}
-          <option>{{ grado.nombre }}</option>
-        {% endfor %}
-      </select>
+  <form method="GET" action="{% url 'students' %}">
+    <div class="row g-2">
+      <div class="col-sm-2">
+        <select name="grado" id="filterGrado" class="form-select">
+          <option value="">Todos los grados</option>
+          {% for grado in grados %}
+          <option value="{{ grado.nombre }}" {% if grado.selected %}selected{% endif %}>{{ grado.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <select name="seccion" id="filterSeccion" class="form-select">
+          <option value="">Todas las secciones</option>
+          {% for seccion in secciones %}
+          <option value="{{ seccion.letra }}" {% if seccion.selected %}selected{% endif %}>{{ seccion.letra }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <select name="turno" id="filterTurno" class="form-select">
+          <option value="">Todos los turnos</option>
+          {% for turno in turnos %}
+          <option value="{{ turno.nombre }}" {% if turno.selected %}selected{% endif %}>{{ turno.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <select name="sexo" id="filterSexo" class="form-select">
+          <option value="">Ambos sexos</option>
+          <option value="F" {% if selected_sexo.F %}selected{% endif %}>Femenino</option>
+          <option value="M" {% if selected_sexo.M %}selected{% endif %}>Masculino</option>
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <select name="estado" id="filterEstado" class="form-select">
+          <option value="Activo" {% if selected_estado.Activo %}selected{% endif %}>Activos</option>
+          <option value="Retirado" {% if selected_estado.Retirado %}selected{% endif %}>Retirados</option>
+          <option value="" {% if selected_estado.Todos %}selected{% endif %}>Todos</option>
+        </select>
+      </div>
+      <div class="col-sm-2 d-flex">
+        <button class="btn btn-outline-primary me-2" type="submit">Aplicar</button>
+        <a href="{% url 'students' %}" class="btn btn-outline-secondary">Reset</a>
+      </div>
     </div>
-    <div class="col-sm-2">
-      <select id="filterSeccion" class="form-select">
-        <option value="">Todas las secciones</option>
-        {% for seccion in secciones %}
-          <option>{{ seccion.letra }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-sm-2">
-      <select id="filterTurno" class="form-select">
-        <option value="">Todos los turnos</option>
-        {% for turno in turnos %}
-          <option>{{ turno.nombre }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-sm-2">
-      <select id="filterSexo" class="form-select">
-        <option value="">Ambos sexos</option>
-        <option value="F">Femenino</option>
-        <option value="M">Masculino</option>
-      </select>
-    </div>
-    <div class="col-sm-2">
-      <select id="filterEstado" class="form-select">
-        <option value="Activo">Activos</option>
-        <option value="Retirado">Retirados</option>
-        <option value="">Todos</option>
-      </select>
-    </div>
-    <div class="col-sm-2 d-flex">
-      <button class="btn btn-outline-primary me-2" type="button">Aplicar</button>
-      <button class="btn btn-outline-secondary" type="button">Reset</button>
-    </div>
-  </div>
+  </form>
 </div>
 
 <!-- Tabla de estudiantes -->
@@ -105,44 +110,50 @@
       </thead>
       <tbody id="studentsBody">
         {% if estudiantes %}
-          {% for s in estudiantes %}
-            <tr>
-              <td><strong>{{ s.nombres }} {{ s.apellidos }}</strong></td>
-              <td>{{ s.cedula|default:"Sin cédula" }}</td>
-              <td>-</td>
-              <td>-</td>
-              <td>-</td>
-              <td>
-                {% if s.sexo == "F" %}
-                  <span class="badge bg-info">Femenino</span>
-                {% elif s.sexo == "M" %}
-                  <span class="badge bg-primary">Masculino</span>
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td><small class="text-muted">Sin cargar</small></td>
-              <td><span class="badge bg-success">Activo</span></td>
-              <td class="text-center">
-                <button class="btn btn-sm btn-outline-primary me-1" type="button" title="Editar">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado">
-                  <i class="bi bi-person-dash"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </td>
-            </tr>
-          {% endfor %}
+        {% for s in estudiantes %}
+        <tr>
+          <td><strong>{{ s.nombres }} {{ s.apellidos }}</strong></td>
+          <td>{{ s.cedula|default:"Sin cédula" }}</td>
+          <td>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</td>
+          <td>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</td>
+          <td>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</td>
+          <td>
+            {% if s.sexo == "F" %}
+            <span class="badge bg-info">Femenino</span>
+            {% elif s.sexo == "M" %}
+            <span class="badge bg-primary">Masculino</span>
+            {% else %}
+            -
+            {% endif %}
+          </td>
+          <td>
+            {% if s.matricula_activa %}
+            {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
+            {% else %}
+            <small class="text-muted">Sin cargar</small>
+            {% endif %}
+          </td>
+          <td><span class="badge bg-success">Activo</span></td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-primary me-1" type="button" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado">
+              <i class="bi bi-person-dash"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
         {% else %}
-          <tr>
-            <td colspan="9" class="text-center text-muted py-4">
-              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-              No hay estudiantes registrados.
-            </td>
-          </tr>
+        <tr>
+          <td colspan="9" class="text-center text-muted py-4">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            No hay estudiantes registrados.
+          </td>
+        </tr>
         {% endif %}
       </tbody>
     </table>
@@ -190,12 +201,14 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento <span
+                    class="text-danger">*</span></label>
                 <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
               </div>
               <div class="col-md-12">
                 <label for="lugar_nacimiento" class="form-label">Lugar de Nacimiento</label>
-                <input type="text" class="form-control" id="lugar_nacimiento" name="lugar_nacimiento" placeholder="Ciudad, Estado">
+                <input type="text" class="form-control" id="lugar_nacimiento" name="lugar_nacimiento"
+                  placeholder="Ciudad, Estado">
               </div>
             </div>
           </div>
@@ -211,7 +224,7 @@
                 <select id="grado" name="grado" class="form-select" required>
                   <option value="">Seleccione grado</option>
                   {% for grado in grados %}
-                    <option value="{{ grado.nombre }}">{{ grado.nombre }}</option>
+                  <option value="{{ grado.nombre }}">{{ grado.nombre }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -220,7 +233,7 @@
                 <select id="seccion" name="seccion" class="form-select" required>
                   <option value="">Seleccione sección</option>
                   {% for seccion in secciones %}
-                    <option value="{{ seccion.letra }}">{{ seccion.letra }}</option>
+                  <option value="{{ seccion.letra }}">{{ seccion.letra }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -229,7 +242,7 @@
                 <select id="turno" name="turno" class="form-select" required>
                   <option value="">Seleccione turno</option>
                   {% for turno in turnos %}
-                    <option value="{{ turno.nombre }}">{{ turno.nombre }}</option>
+                  <option value="{{ turno.nombre }}">{{ turno.nombre }}</option>
                   {% endfor %}
                 </select>
               </div>
@@ -248,7 +261,8 @@
               </div>
               <div class="col-md-4">
                 <label for="talla_pantalon" class="form-label">Talla Pantalón</label>
-                <input type="text" class="form-control" id="talla_pantalon" name="talla_pantalon" placeholder="28, 30, 32">
+                <input type="text" class="form-control" id="talla_pantalon" name="talla_pantalon"
+                  placeholder="28, 30, 32">
               </div>
               <div class="col-md-4">
                 <label for="talla_zapato" class="form-label">Talla Zapato</label>
@@ -279,19 +293,23 @@
               </div>
               <div class="col-md-4">
                 <label for="rep_cedula" class="form-label">Cédula <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="rep_cedula" name="rep_cedula" placeholder="V-12345678" required>
+                <input type="text" class="form-control" id="rep_cedula" name="rep_cedula" placeholder="V-12345678"
+                  required>
               </div>
               <div class="col-md-4">
                 <label for="rep_telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="rep_telefono" name="rep_telefono" placeholder="0412-1234567" required>
+                <input type="text" class="form-control" id="rep_telefono" name="rep_telefono" placeholder="0412-1234567"
+                  required>
               </div>
               <div class="col-md-4">
                 <label for="rep_correo" class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" id="rep_correo" name="rep_correo" placeholder="correo@ejemplo.com">
+                <input type="email" class="form-control" id="rep_correo" name="rep_correo"
+                  placeholder="correo@ejemplo.com">
               </div>
               <div class="col-md-12">
                 <label for="rep_direccion" class="form-label">Dirección</label>
-                <textarea class="form-control" id="rep_direccion" name="rep_direccion" rows="2" placeholder="Dirección completa del representante"></textarea>
+                <textarea class="form-control" id="rep_direccion" name="rep_direccion" rows="2"
+                  placeholder="Dirección completa del representante"></textarea>
               </div>
             </div>
           </div>
@@ -301,7 +319,8 @@
             <label for="observaciones" class="form-label">
               <i class="bi bi-chat-left-text me-1"></i>Observaciones
             </label>
-            <textarea id="observaciones" name="observaciones" class="form-control" rows="3" placeholder="Información adicional relevante sobre el estudiante..."></textarea>
+            <textarea id="observaciones" name="observaciones" class="form-control" rows="3"
+              placeholder="Información adicional relevante sobre el estudiante..."></textarea>
           </div>
 
           <div class="modal-footer">

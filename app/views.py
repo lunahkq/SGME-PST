@@ -428,14 +428,109 @@ def students_view(request):
     turnos = Turno.objects.all()
     
     # Verificar si hay año escolar activo
-    hay_anio_activo = AnioEscolar.objects.filter(activo=True).exists()
+    anio_activo = AnioEscolar.objects.filter(activo=True).first()
+    hay_anio_activo = anio_activo is not None
+
+    # Filtros de Estudiante (Sexo)
+    sexo = request.GET.get("sexo")
+    if sexo:
+        estudiantes = estudiantes.filter(sexo=sexo)
+
+    # Adjuntar matrícula activa a cada estudiante y filtrar por matrícula
+    if hay_anio_activo:
+        # Base query: matrículas del año escolar activo
+        matriculas = Matricula.objects.filter(id_anio_escolar=anio_activo)
+
+        # Filtros de Matrícula
+        grado = request.GET.get("grado")
+        if grado:
+             matriculas = matriculas.filter(id_grado__nombre=grado)
+
+        seccion = request.GET.get("seccion")
+        if seccion:
+             matriculas = matriculas.filter(id_seccion__letra=seccion)
+
+        turno = request.GET.get("turno")
+        if turno:
+             matriculas = matriculas.filter(id_turno__nombre=turno)
+        
+        # Filtro de Estado (Default: Activo)
+        estado = request.GET.get("estado")
+        if estado is None:
+            estado = "Activo"
+        
+        if estado: # Si es "" (Todos), no filtramos
+            matriculas = matriculas.filter(estado=estado)
+
+        # Optimización
+        matriculas = matriculas.select_related('id_grado', 'id_seccion', 'id_turno', 'id_representante')
+        
+        # Filtramos la lista de estudiantes para mostrar solo los que quedaron tras los filtros de matrícula
+        # Esto nos asegura que si filtro por "1er Grado", no me salgan estudiantes de otros grados sin matrícula adjunta.
+        student_ids = matriculas.values_list('id_estudiante_id', flat=True)
+        estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
+
+        # Creamos mapa y adjuntamos
+        matricula_map = {m.id_estudiante_id: m for m in matriculas}
+        for est in estudiantes:
+            est.matricula_activa = matricula_map.get(est.id_estudiante)
+            
+    else:
+        # Si no hay año activo, no hay matrículas, pero mostramos los estudiantes (o lista vacía si filtramos por algo que requiere matrícula?)
+        # Si el usuario filtra por grado y no hay año activo, la lista sale vacía.
+        # Pero los filtros de grado/sección dependen de la matrícula, así que técnicamente no deberían devolver nada.
+        # El comportamiento actual es: si no hay año activo, matricula_map no existe, matricula_activa es None.
+        for est in estudiantes:
+            est.matricula_activa = None
+    
+    # Convertimos a listas para poder agregar attributos dinámicos 'selected' sin tocar el modelo
+    grados_list = list(Grado.objects.all().order_by("orden"))
+    secciones_list = list(Seccion.objects.all())
+    turnos_list = list(Turno.objects.all())
+
+    # Funciones auxiliares para marcar selección
+    selected_grado = request.GET.get("grado")
+    for g in grados_list:
+        g.selected = (g.nombre == selected_grado)
+
+    selected_seccion = request.GET.get("seccion")
+    for s in secciones_list:
+        s.selected = (s.letra == selected_seccion)
+
+    selected_turno = request.GET.get("turno")
+    for t in turnos_list:
+        t.selected = (t.nombre == selected_turno)
+
+    # Para sexo y estado, pasamos el valor seleccionado directo al contexto para compararlo fácil o usamos diccionarios
+    # Pero sexo y estado son hardcoded en el template. 
+    # Para simplificar el template y evitar el probelma de espacios, pasamos flags booleanos
+    selected_sexo = request.GET.get("sexo")
+    context_sexo = {
+        "F": selected_sexo == "F",
+        "M": selected_sexo == "M"
+    }
+
+    selected_estado = request.GET.get("estado")
+    # Si es None, es Activo por defecto en la lógica de filtrado, 
+    # pero en el dropdown queremos que marques lo que el usuario envió.
+    # Si el usuario no envió nada, el filtro por defecto es Activo, así que marcamos Activo.
+    if selected_estado is None: 
+        selected_estado = "Activo"
+        
+    context_estado = {
+        "Activo": selected_estado == "Activo",
+        "Retirado": selected_estado == "Retirado",
+        "Todos": selected_estado == ""
+    }
     
     contexto = {
         "estudiantes": estudiantes,
-        "grados": grados,
-        "secciones": secciones,
-        "turnos": turnos,
+        "grados": grados_list,
+        "secciones": secciones_list,
+        "turnos": turnos_list,
         "hay_anio_activo": hay_anio_activo,
+        "selected_sexo": context_sexo,
+        "selected_estado": context_estado,
     }
     
     return render(request, "modules/students.html", contexto)
