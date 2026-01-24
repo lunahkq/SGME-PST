@@ -8,37 +8,75 @@
     <small class="text-muted">Filtra, registra, edita y marca como retirado</small>
   </div>
   <div>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">
-      Nuevo Estudiante
-    </button>
+    {% if hay_anio_activo %}
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">
+        <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
+      </button>
+    {% else %}
+      <button class="btn btn-secondary" disabled title="No hay año escolar activo">
+        <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
+      </button>
+    {% endif %}
   </div>
 </div>
 
+<!-- Mensajes de feedback -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Alerta si no hay año escolar activo -->
+{% if not hay_anio_activo %}
+  <div class="alert alert-warning" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active uno.
+  </div>
+{% endif %}
+
+<!-- Filtros -->
 <div class="card-soft p-3 mb-3">
   <div class="row g-2">
     <div class="col-sm-2">
       <select id="filterGrado" class="form-select">
         <option value="">Todos los grados</option>
-        <option>1er grado</option><option>2do grado</option><option>3er grado</option><option>4to grado</option>
-        <option>5to grado</option><option>6to grado</option>
+        {% for grado in grados %}
+          <option>{{ grado.nombre }}</option>
+        {% endfor %}
       </select>
     </div>
     <div class="col-sm-2">
-      <input id="filterSeccion" class="form-control" placeholder="Sección">
+      <select id="filterSeccion" class="form-select">
+        <option value="">Todas las secciones</option>
+        {% for seccion in secciones %}
+          <option>{{ seccion.letra }}</option>
+        {% endfor %}
+      </select>
     </div>
     <div class="col-sm-2">
       <select id="filterTurno" class="form-select">
-        <option value="">Todos los turnos</option><option>Mañana</option><option>Tarde</option>
+        <option value="">Todos los turnos</option>
+        {% for turno in turnos %}
+          <option>{{ turno.nombre }}</option>
+        {% endfor %}
       </select>
     </div>
     <div class="col-sm-2">
       <select id="filterSexo" class="form-select">
-        <option value="">Sexo</option><option>Femenino</option><option>Masculino</option>
+        <option value="">Ambos sexos</option>
+        <option value="F">Femenino</option>
+        <option value="M">Masculino</option>
       </select>
     </div>
     <div class="col-sm-2">
       <select id="filterEstado" class="form-select">
-        <option value="Activo">Activos</option><option value="Retirado">Retirados</option><option value="">Todos</option>
+        <option value="Activo">Activos</option>
+        <option value="Retirado">Retirados</option>
+        <option value="">Todos</option>
       </select>
     </div>
     <div class="col-sm-2 d-flex">
@@ -48,36 +86,51 @@
   </div>
 </div>
 
+<!-- Tabla de estudiantes -->
 <div class="card-soft p-3">
   <div class="table-responsive">
-    <table class="table align-middle">
-      <thead>
+    <table class="table align-middle table-hover">
+      <thead class="table-light">
         <tr>
-          <th>Nombre</th><th>Grado</th><th>Sección</th><th>Turno</th><th>Sexo</th>
-          <th>Representante</th><th>Estado</th><th>Acciones</th>
+          <th>Nombre Completo</th>
+          <th>Cédula</th>
+          <th>Grado</th>
+          <th>Sección</th>
+          <th>Turno</th>
+          <th>Sexo</th>
+          <th>Representante</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
         </tr>
       </thead>
       <tbody id="studentsBody">
         {% if estudiantes %}
           {% for s in estudiantes %}
             <tr>
-              <td>{{ s.nombres }} {{ s.apellidos }}</td>
+              <td><strong>{{ s.nombres }} {{ s.apellidos }}</strong></td>
+              <td>{{ s.cedula|default:"Sin cédula" }}</td>
               <td>-</td>
               <td>-</td>
               <td>-</td>
               <td>
-                {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
+                {% if s.sexo == "F" %}
+                  <span class="badge bg-info">Femenino</span>
+                {% elif s.sexo == "M" %}
+                  <span class="badge bg-primary">Masculino</span>
+                {% else %}
+                  -
+                {% endif %}
               </td>
-              <td><small class="text-muted">Sin rep</small></td>
-              <td>Activo</td>
-              <td>
-                <button class="btn btn-sm btn-outline-primary me-1" type="button">
+              <td><small class="text-muted">Sin cargar</small></td>
+              <td><span class="badge bg-success">Activo</span></td>
+              <td class="text-center">
+                <button class="btn btn-sm btn-outline-primary me-1" type="button" title="Editar">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger me-1" type="button">
+                <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado">
                   <i class="bi bi-person-dash"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary" type="button">
+                <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -85,7 +138,8 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="8" class="text-center text-muted">
+            <td colspan="9" class="text-center text-muted py-4">
+              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
               No hay estudiantes registrados.
             </td>
           </tr>
@@ -97,92 +151,166 @@
 
 <!-- Modal registro/edición -->
 <div class="modal fade" id="modalEst" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content card-soft">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalTitle">Registrar Estudiante</h5>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="modalTitle">
+          <i class="bi bi-person-plus-fill me-2"></i>Registrar Estudiante
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <form id="formEst" method="post" action="{% url 'students' %}">
           {% csrf_token %}
-          <input type="hidden" id="estId">
-          <div class="row g-2">
-            <div class="col-md-6">
-              <input class="form-control" id="nombres" name="nombres" placeholder="Nombres" required>
-            </div>
-            <div class="col-md-6">
-              <input class="form-control" id="apellidos" name="apellidos" placeholder="Apellidos" required>
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="cedula" name="cedula" placeholder="Cédula">
-            </div>
-            <div class="col-md-4">
-              <select id="sexo" name="sexo" class="form-select">
-                <option>Femenino</option><option>Masculino</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <input class="form-control" id="lugar_nacimiento" name="lugar_nacimiento" placeholder="Lugar de nacimiento">
-            </div>
-            <div class="col-md-6">
-              <input class="form-control" id="direccion" placeholder="Dirección">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="telefono" placeholder="Teléfono">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="correo" placeholder="Correo">
-            </div>
-            <div class="col-md-4">
-              <select id="grado" class="form-select">
-                <option>1er grado</option><option>2do grado</option><option>3er grado</option>
-                <option>4to grado</option><option>5to grado</option><option>6to grado</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="seccion" placeholder="Sección">
-            </div>
-            <div class="col-md-4">
-              <select id="turno" class="form-select">
-                <option>Mañana</option><option>Tarde</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="talla_camisa" name="talla_camisa" placeholder="Talla camisa">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="talla_pantalon" name="talla_pantalon" placeholder="Talla pantalón">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="talla_zapato" name="talla_zapato" placeholder="Talla zapato">
-            </div>
-            <div class="col-12"><hr><h6>Representante</h6></div>
-            <div class="col-md-6">
-              <input class="form-control" id="rep_nombres" placeholder="Nombres representante">
-            </div>
-            <div class="col-md-6">
-              <input class="form-control" id="rep_apellidos" placeholder="Apellidos representante">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="rep_cedula" placeholder="Cédula representante (si ya existe ponla aquí)">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="rep_telefono" placeholder="Teléfono representante">
-            </div>
-            <div class="col-md-4">
-              <input class="form-control" id="rep_correo" placeholder="Correo representante">
-            </div>
-            <div class="col-12">
-              <textarea id="observaciones" class="form-control" placeholder="Observaciones" rows="2"></textarea>
+          <input type="hidden" id="estId" name="est_id">
+
+          <!-- DATOS DEL ESTUDIANTE -->
+          <div class="mb-4">
+            <h6 class="text-primary mb-3">
+              <i class="bi bi-person-fill me-2"></i>Datos del Estudiante
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="nombres" class="form-label">Nombres <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nombres" name="nombres" required>
+              </div>
+              <div class="col-md-6">
+                <label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+              </div>
+              <div class="col-md-4">
+                <label for="cedula" class="form-label">Cédula</label>
+                <input type="text" class="form-control" id="cedula" name="cedula" placeholder="V-12345678">
+              </div>
+              <div class="col-md-4">
+                <label for="sexo" class="form-label">Sexo <span class="text-danger">*</span></label>
+                <select id="sexo" name="sexo" class="form-select" required>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Masculino">Masculino</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
+              </div>
+              <div class="col-md-12">
+                <label for="lugar_nacimiento" class="form-label">Lugar de Nacimiento</label>
+                <input type="text" class="form-control" id="lugar_nacimiento" name="lugar_nacimiento" placeholder="Ciudad, Estado">
+              </div>
             </div>
           </div>
-          <div class="modal-footer mt-3">
-            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cerrar</button>
-            <button class="btn btn-success" type="submit">Guardar</button>
+
+          <!-- DATOS DE MATRÍCULA -->
+          <div class="mb-4">
+            <h6 class="text-primary mb-3">
+              <i class="bi bi-book-fill me-2"></i>Datos de Matrícula
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="grado" class="form-label">Grado <span class="text-danger">*</span></label>
+                <select id="grado" name="grado" class="form-select" required>
+                  <option value="">Seleccione grado</option>
+                  {% for grado in grados %}
+                    <option value="{{ grado.nombre }}">{{ grado.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="seccion" class="form-label">Sección <span class="text-danger">*</span></label>
+                <select id="seccion" name="seccion" class="form-select" required>
+                  <option value="">Seleccione sección</option>
+                  {% for seccion in secciones %}
+                    <option value="{{ seccion.letra }}">{{ seccion.letra }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="turno" class="form-label">Turno <span class="text-danger">*</span></label>
+                <select id="turno" name="turno" class="form-select" required>
+                  <option value="">Seleccione turno</option>
+                  {% for turno in turnos %}
+                    <option value="{{ turno.nombre }}">{{ turno.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- TALLAS -->
+          <div class="mb-4">
+            <h6 class="text-primary mb-3">
+              <i class="bi bi-rulers me-2"></i>Tallas de Uniforme
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label for="talla_camisa" class="form-label">Talla Camisa</label>
+                <input type="text" class="form-control" id="talla_camisa" name="talla_camisa" placeholder="S, M, L, XL">
+              </div>
+              <div class="col-md-4">
+                <label for="talla_pantalon" class="form-label">Talla Pantalón</label>
+                <input type="text" class="form-control" id="talla_pantalon" name="talla_pantalon" placeholder="28, 30, 32">
+              </div>
+              <div class="col-md-4">
+                <label for="talla_zapato" class="form-label">Talla Zapato</label>
+                <input type="text" class="form-control" id="talla_zapato" name="talla_zapato" placeholder="35, 36, 37">
+              </div>
+            </div>
+          </div>
+
+          <!-- DATOS DEL REPRESENTANTE -->
+          <div class="mb-4">
+            <h6 class="text-primary mb-3">
+              <i class="bi bi-person-vcard-fill me-2"></i>Datos del Representante
+            </h6>
+            <div class="alert alert-info">
+              <small>
+                <i class="bi bi-info-circle me-1"></i>
+                Si el representante ya existe en el sistema, solo ingresa su cédula y sus datos se actualizarán.
+              </small>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="rep_nombres" class="form-label">Nombres <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rep_nombres" name="rep_nombres" required>
+              </div>
+              <div class="col-md-6">
+                <label for="rep_apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rep_apellidos" name="rep_apellidos" required>
+              </div>
+              <div class="col-md-4">
+                <label for="rep_cedula" class="form-label">Cédula <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rep_cedula" name="rep_cedula" placeholder="V-12345678" required>
+              </div>
+              <div class="col-md-4">
+                <label for="rep_telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rep_telefono" name="rep_telefono" placeholder="0412-1234567" required>
+              </div>
+              <div class="col-md-4">
+                <label for="rep_correo" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="rep_correo" name="rep_correo" placeholder="correo@ejemplo.com">
+              </div>
+              <div class="col-md-12">
+                <label for="rep_direccion" class="form-label">Dirección</label>
+                <textarea class="form-control" id="rep_direccion" name="rep_direccion" rows="2" placeholder="Dirección completa del representante"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- OBSERVACIONES -->
+          <div class="mb-3">
+            <label for="observaciones" class="form-label">
+              <i class="bi bi-chat-left-text me-1"></i>Observaciones
+            </label>
+            <textarea id="observaciones" name="observaciones" class="form-control" rows="3" placeholder="Información adicional relevante sobre el estudiante..."></textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-1"></i>Cancelar
+            </button>
+            <button class="btn btn-success" type="submit">
+              <i class="bi bi-check-circle me-1"></i>Guardar Estudiante
+            </button>
           </div>
         </form>
       </div>
@@ -193,22 +321,27 @@
 <!-- Modal retirar -->
 <div class="modal fade" id="modalRetirar" tabindex="-1">
   <div class="modal-dialog">
-    <div class="modal-content card-soft">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirmar retiro</h5>
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Retiro
+        </h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p>
           Para marcar al estudiante como <strong>Retirado</strong>, introduce tu contraseña
-          de administrador para confirmar.
+          de administrador para confirmar esta acción.
         </p>
-        <input type="password" id="confirmAdminPass" class="form-control" placeholder="Contraseña admin">
+        <label for="confirmAdminPass" class="form-label">Contraseña de Administrador</label>
+        <input type="password" id="confirmAdminPass" class="form-control" placeholder="Ingresa tu contraseña">
         <input type="hidden" id="retirarEstId">
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-danger" type="button">Confirmar Retiro</button>
+        <button class="btn btn-danger" type="button">
+          <i class="bi bi-person-dash me-1"></i>Confirmar Retiro
+        </button>
       </div>
     </div>
   </div>
@@ -216,5 +349,10 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- JS pendiente para filtros/AJAX -->
+<script>
+  // Script para limpiar el formulario cuando se cierre el modal
+  document.getElementById('modalEst').addEventListener('hidden.bs.modal', function () {
+    document.getElementById('formEst').reset();
+  });
+</script>
 {% endblock %}

@@ -292,70 +292,150 @@ def users_control(request):
 
 @login_required
 def students_view(request):
-    # Más adelante pasaremos datos contextuales (grados, turnos, etc.)
-    return render(request, "modules/students.html")
-
-@login_required
-def students_view(request):
     if request.method == "POST":
-        nombres = request.POST.get("nombres")
-        apellidos = request.POST.get("apellidos")
-        cedula = request.POST.get("cedula") or None
-        sexo_in = request.POST.get("sexo")
-        fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
-        lugar_nacimiento = request.POST.get("lugar_nacimiento") or ""
-        talla_camisa = request.POST.get("talla_camisa") or ""
-        talla_pantalon = request.POST.get("talla_pantalon") or ""
-        talla_zapato = request.POST.get("talla_zapato") or ""
+        try:
+            with transaction.atomic():
+                # 1. Verificar que existe un año escolar activo
+                try:
+                    anio_activo = AnioEscolar.objects.get(activo=True)
+                except AnioEscolar.DoesNotExist:
+                    messages.error(request, "No hay un año escolar activo. Contacta al administrador.")
+                    return redirect("students")
 
-        # Convertimos a "F"/"M"
-        sexo = "F" if sexo_in == "Femenino" else "M"
+                # 2. Capturar datos del estudiante
+                nombres = request.POST.get("nombres")
+                apellidos = request.POST.get("apellidos")
+                cedula = request.POST.get("cedula") or None
+                sexo_in = request.POST.get("sexo")
+                fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
+                lugar_nacimiento = request.POST.get("lugar_nacimiento") or ""
+                talla_camisa = request.POST.get("talla_camisa") or ""
+                talla_pantalon = request.POST.get("talla_pantalon") or ""
+                talla_zapato = request.POST.get("talla_zapato") or ""
 
-        Estudiante.objects.create(
-            nombres=nombres,
-            apellidos=apellidos,
-            cedula=cedula,
-            sexo=sexo,
-            fecha_nacimiento=fecha_nacimiento,
-            lugar_nacimiento=lugar_nacimiento,
-            talla_camisa=talla_camisa,
-            talla_pantalon=talla_pantalon,
-            talla_zapato=talla_zapato,
-        )
+                # Validaciones básicas
+                if not nombres or not apellidos or not fecha_nacimiento:
+                    messages.error(request, "Nombres, apellidos y fecha de nacimiento son obligatorios.")
+                    return redirect("students")
 
-        return redirect("students")
+                # Convertir sexo
+                sexo = "F" if sexo_in == "Femenino" else "M"
 
+                # 3. Capturar datos del representante
+                rep_nombres = request.POST.get("rep_nombres")
+                rep_apellidos = request.POST.get("rep_apellidos")
+                rep_cedula = request.POST.get("rep_cedula")
+                rep_telefono = request.POST.get("rep_telefono")
+                rep_correo = request.POST.get("rep_correo") or ""
+                rep_direccion = request.POST.get("rep_direccion") or ""
+
+                # Validar datos del representante
+                if not rep_nombres or not rep_apellidos or not rep_cedula or not rep_telefono:
+                    messages.error(request, "Los datos del representante son obligatorios (nombres, apellidos, cédula y teléfono).")
+                    return redirect("students")
+
+                # 4. Buscar o crear representante
+                representante, created = Representante.objects.get_or_create(
+                    cedula=rep_cedula,
+                    defaults={
+                        'nombres': rep_nombres,
+                        'apellidos': rep_apellidos,
+                        'telefono': rep_telefono,
+                        'correo': rep_correo,
+                        'direccion': rep_direccion,
+                    }
+                )
+
+                # Si ya existía, actualizar sus datos
+                if not created:
+                    representante.nombres = rep_nombres
+                    representante.apellidos = rep_apellidos
+                    representante.telefono = rep_telefono
+                    representante.correo = rep_correo
+                    representante.direccion = rep_direccion
+                    representante.save()
+
+                # 5. Crear el estudiante
+                estudiante = Estudiante.objects.create(
+                    nombres=nombres,
+                    apellidos=apellidos,
+                    cedula=cedula,
+                    sexo=sexo,
+                    fecha_nacimiento=fecha_nacimiento,
+                    lugar_nacimiento=lugar_nacimiento,
+                    talla_camisa=talla_camisa,
+                    talla_pantalon=talla_pantalon,
+                    talla_zapato=talla_zapato,
+                )
+
+                # 6. Capturar datos de matrícula
+                grado_nombre = request.POST.get("grado")
+                seccion_letra = request.POST.get("seccion")
+                turno_nombre = request.POST.get("turno")
+                observaciones = request.POST.get("observaciones") or ""
+
+                # Validar que se hayan seleccionado grado, sección y turno
+                if not grado_nombre or not seccion_letra or not turno_nombre:
+                    messages.error(request, "Debes seleccionar grado, sección y turno.")
+                    return redirect("students")
+
+                # 7. Buscar grado, sección y turno en la base de datos
+                try:
+                    grado = Grado.objects.get(nombre=grado_nombre)
+                except Grado.DoesNotExist:
+                    messages.error(request, f"El grado '{grado_nombre}' no existe en el sistema.")
+                    return redirect("students")
+
+                try:
+                    seccion = Seccion.objects.get(letra=seccion_letra)
+                except Seccion.DoesNotExist:
+                    messages.error(request, f"La sección '{seccion_letra}' no existe en el sistema.")
+                    return redirect("students")
+
+                try:
+                    turno = Turno.objects.get(nombre=turno_nombre)
+                except Turno.DoesNotExist:
+                    messages.error(request, f"El turno '{turno_nombre}' no existe en el sistema.")
+                    return redirect("students")
+
+                # 8. Crear la matrícula vinculando todo
+                from datetime import date
+                
+                Matricula.objects.create(
+                    id_estudiante=estudiante,
+                    id_representante=representante,
+                    id_grado=grado,
+                    id_seccion=seccion,
+                    id_turno=turno,
+                    id_anio_escolar=anio_activo,
+                    anio_ingreso=anio_activo.fecha_inicio.year,
+                    fecha_matricula=date.today(),
+                    estado="Activo",
+                    observaciones=observaciones
+                )
+
+                messages.success(request, f"Estudiante {nombres} {apellidos} registrado y matriculado correctamente.")
+                return redirect("students")
+
+        except Exception as e:
+            messages.error(request, f"Error al registrar el estudiante: {str(e)}")
+            return redirect("students")
+
+    # GET: Mostrar formulario con datos necesarios
     estudiantes = Estudiante.objects.all().order_by("apellidos", "nombres")
-    return render(request, "modules/students.html", {"estudiantes": estudiantes})
-
-@login_required
-def students_view(request):
-    if request.method == "POST":
-        nombres = request.POST.get("nombres")
-        apellidos = request.POST.get("apellidos")
-        cedula = request.POST.get("cedula") or None
-        sexo_in = request.POST.get("sexo")
-        fecha_nacimiento = request.POST.get("fecha_nacimiento") or None
-        lugar_nacimiento = request.POST.get("lugar_nacimiento") or ""
-        talla_camisa = request.POST.get("talla_camisa") or ""
-        talla_pantalon = request.POST.get("talla_pantalon") or ""
-        talla_zapato = request.POST.get("talla_zapato") or ""
-
-        sexo = "F" if sexo_in == "Femenino" else "M"
-
-        Estudiante.objects.create(
-            nombres=nombres,
-            apellidos=apellidos,
-            cedula=cedula,
-            sexo=sexo,
-            fecha_nacimiento=fecha_nacimiento,
-            lugar_nacimiento=lugar_nacimiento,
-            talla_camisa=talla_camisa,
-            talla_pantalon=talla_pantalon,
-            talla_zapato=talla_zapato,
-        )
-        messages.success(request, "Estudiante registrado correctamente.")
-        return redirect("students")
-
-    estudiantes = Estudiante.objects.all().order_by("apellidos", "nombres")
-    return render(request, "modules/students.html", {"estudiantes": estudiantes})
+    grados = Grado.objects.all().order_by("orden")
+    secciones = Seccion.objects.all()
+    turnos = Turno.objects.all()
+    
+    # Verificar si hay año escolar activo
+    hay_anio_activo = AnioEscolar.objects.filter(activo=True).exists()
+    
+    contexto = {
+        "estudiantes": estudiantes,
+        "grados": grados,
+        "secciones": secciones,
+        "turnos": turnos,
+        "hay_anio_activo": hay_anio_activo,
+    }
+    
+    return render(request, "modules/students.html", contexto)
