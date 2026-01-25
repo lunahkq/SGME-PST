@@ -564,16 +564,27 @@ def parents_list(request):
             Q(cedula__icontains=q)
         )
 
-    # Si todavía no quieres que filtren por grado/sección/estado, 
-    # puedes comentar esto para simplificar:
-    # if grado:
-    #     parents = parents.filter(matricula__id_grado__id_grado=grado).distinct()
-    # if seccion:
-    #     parents = parents.filter(matricula__id_seccion__letra=seccion).distinct()
-    # if estado == 'activo':
-    #     parents = parents.filter(matricula__estado='Activo').distinct()
-    # elif estado == 'inactivo':
-    #     parents = parents.filter(matricula__estado='Inactivo').distinct()
+    # Filtro por grado (id_grado numérico que viene del select)
+    if grado:
+        parents = parents.filter(
+            matricula__id_grado__id_grado=grado
+        ).distinct()
+
+    # Filtro por sección (A, B, C)
+    if seccion:
+        parents = parents.filter(
+            matricula__id_seccion__letra=seccion
+        ).distinct()
+
+    # Filtro por estado de la matrícula (si decides usarlo)
+    if estado == 'activo':
+        parents = parents.filter(
+            matricula__estado='Activo'
+        ).distinct()
+    elif estado == 'inactivo':
+        parents = parents.filter(
+            matricula__estado='Inactivo'
+        ).distinct()
 
     context = {
         'parents': parents,
@@ -592,11 +603,11 @@ def parent_edit(request, pk):
     parent.correo = request.POST.get('correo', parent.correo)
     parent.telefono = request.POST.get('telefono', parent.telefono)
     parent.save()
-    return redirect('parents_list')
+    return redirect('parents')
 
 
 @require_POST
 def parent_delete(request, pk):
     parent = get_object_or_404(Representante, id_representante=pk)
     parent.delete()
-    return redirect('parents_list')
+    return redirect('parents')
