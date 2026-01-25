@@ -5,15 +5,14 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 from django.contrib.auth import login, logout
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import Q, Count
 from django.contrib.auth import authenticate
-
-
-
 
 # Importando modelos de la base de datos
 from .models import AnioEscolar
@@ -187,6 +186,14 @@ def reset_password(request):
 @login_required
 def profile_user(request):
     return render(request, "views/profile.html")
+
+@login_required
+def help(request):
+    return render(request, "views/help.html")
+
+@login_required
+def academic_record(request):
+    return render(request, "modules/academic_record.html")
 
 def logout_view(request):
     logout(request)
@@ -538,3 +545,58 @@ def students_view(request):
     }
     
     return render(request, "modules/students.html", contexto)
+
+def parents_list(request):
+    q = request.GET.get('q', '')
+    grado = request.GET.get('grado', '')
+    seccion = request.GET.get('seccion', '')
+    estado = request.GET.get('estado', '')
+
+    parents = (
+        Representante.objects
+        .annotate(num_estudiantes=Count('matricula__id_estudiante', distinct=True))
+    )
+
+    if q:
+        parents = parents.filter(
+            Q(nombres__icontains=q) |
+            Q(apellidos__icontains=q) |
+            Q(cedula__icontains=q)
+        )
+
+    # Si todavía no quieres que filtren por grado/sección/estado, 
+    # puedes comentar esto para simplificar:
+    # if grado:
+    #     parents = parents.filter(matricula__id_grado__id_grado=grado).distinct()
+    # if seccion:
+    #     parents = parents.filter(matricula__id_seccion__letra=seccion).distinct()
+    # if estado == 'activo':
+    #     parents = parents.filter(matricula__estado='Activo').distinct()
+    # elif estado == 'inactivo':
+    #     parents = parents.filter(matricula__estado='Inactivo').distinct()
+
+    context = {
+        'parents': parents,
+        'q': q,
+        'grado': grado,
+        'seccion': seccion,
+        'estado': estado,
+    }
+    return render(request, 'modules/parents.html', context)
+
+@require_POST
+def parent_edit(request, pk):
+    parent = get_object_or_404(Representante, id_representante=pk)
+    parent.nombres = request.POST.get('nombres', parent.nombres)
+    parent.apellidos = request.POST.get('apellidos', parent.apellidos)
+    parent.correo = request.POST.get('correo', parent.correo)
+    parent.telefono = request.POST.get('telefono', parent.telefono)
+    parent.save()
+    return redirect('parents_list')
+
+
+@require_POST
+def parent_delete(request, pk):
+    parent = get_object_or_404(Representante, id_representante=pk)
+    parent.delete()
+    return redirect('parents_list')

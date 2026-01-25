@@ -10,6 +10,11 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('users_control/', views.users_control, name='users_control'),
     path ('students/', views.students_view, name = 'students' ),
+    
+    path('parents/', views.parents_list, name='parents'),
+    path('parents/<int:pk>/editar/', views.parent_edit, name='parent_edit'),
+    path('parents/<int:pk>/eliminar/', views.parent_delete, name='parent_delete'),
+
     path ('academic/', views.academic_record, name = 'academic' ),
     path ('profile/', views.profile_user, name = 'profile_user' ),
     path ('help/', views.help, name = 'help' ),

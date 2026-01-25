@@ -22,13 +22,13 @@
   <div class="col-12 col-md-2">
     <select name="grado" class="form-select">
       <option value="">Todos los grados</option>
-# GRADOS DE 1RO A 6TO 
+      <!-- GRADOS DE 1RO A 6TO -->
       <option value="1" {% if grado == "1" %}selected{% endif %}>1°</option>
       <option value="2" {% if grado == "2" %}selected{% endif %}>2°</option>
       <option value="3" {% if grado == "3" %}selected{% endif %}>3°</option>
-      <option value="4" {% if grado == "4" %}selected{% endif %}>3°</option>
-      <option value="5" {% if grado == "5" %}selected{% endif %}>3°</option>
-      <option value="6" {% if grado == "6" %}selected{% endif %}>3°</option>
+      <option value="4" {% if grado == "4" %}selected{% endif %}>4°</option>
+      <option value="5" {% if grado == "5" %}selected{% endif %}>5°</option>
+      <option value="6" {% if grado == "6" %}selected{% endif %}>6°</option>
     </select>
   </div>
 
@@ -59,48 +59,50 @@
   <table class="table align-middle">
     <thead class="table-light">
       <tr>
-        <th>Cédula</th>
         <th>Nombres</th>
         <th>Apellidos</th>
-        <th>Correo electrónico</th>
+        <th>Cédula</th>
         <th>Teléfono</th>
+        <th>Correo electrónico</th>
+        <th>Estudiantes asociados</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
     {% for p in parents %}
       <tr>
-        <td>{{ p.cedula }}</td>
         <td>{{ p.nombres }}</td>
         <td>{{ p.apellidos }}</td>
-        <td>{{ p.email }}</td>
+        <td>{{ p.cedula }}</td>
         <td>{{ p.telefono }}</td>
+        <td>{{ p.correo }}</td>
+        <td>{{ p.num_estudiantes }}</td>
         <td>
           <!-- Botón ver info completa -->
           <button class="btn btn-sm btn-secondary"
                   data-bs-toggle="modal"
-                  data-bs-target="#infoParentModal{{ p.id }}">
+                  data-bs-target="#infoParentModal{{ p.id_representante }}">
             Ver información completa
           </button>
 
           <!-- Botón editar -->
           <button class="btn btn-sm btn-warning"
                   data-bs-toggle="modal"
-                  data-bs-target="#editParentModal{{ p.id }}">
+                  data-bs-target="#editParentModal{{ p.id_representante }}">
             Editar
           </button>
 
           <!-- Botón eliminar -->
           <button class="btn btn-sm btn-danger"
                   data-bs-toggle="modal"
-                  data-bs-target="#deleteParentModal{{ p.id }}">
+                  data-bs-target="#deleteParentModal{{ p.id_representante }}">
             Eliminar
           </button>
         </td>
       </tr>
 
       <!-- Modal información completa -->
-      <div class="modal fade" id="infoParentModal{{ p.id }}" tabindex="-1">
+      <div class="modal fade" id="infoParentModal{{ p.id_representante }}" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
@@ -112,19 +114,15 @@
               <p><strong>Cédula:</strong> {{ p.cedula }}</p>
               <p><strong>Nombres:</strong> {{ p.nombres }}</p>
               <p><strong>Apellidos:</strong> {{ p.apellidos }}</p>
-              <p><strong>Correo:</strong> {{ p.email }}</p>
+              <p><strong>Correo:</strong> {{ p.correo }}</p>
               <p><strong>Teléfono:</strong> {{ p.telefono }}</p>
               <p><strong>Dirección:</strong> {{ p.direccion }}</p>
-              <p><strong>Estado:</strong> {{ p.estado }}</p>
 
               <hr>
               <h6>Estudiantes asociados</h6>
               <ul class="mb-0">
-                {% for alumno in p.estudiantes.all %}
-                  <li>{{ alumno.nombres }} {{ alumno.apellidos }} – {{ alumno.grado }} {{ alumno.seccion }}</li>
-                {% empty %}
-                  <li>No tiene estudiantes asociados.</li>
-                {% endfor %}
+                <!-- Más adelante podemos rellenar esta parte desde la view -->
+                <li>Funcionalidad de estudiantes asociados en desarrollo.</li>
               </ul>
             </div>
           </div>
@@ -132,10 +130,10 @@
       </div>
 
       <!-- Modal Editar -->
-      <div class="modal fade" id="editParentModal{{ p.id }}" tabindex="-1">
+      <div class="modal fade" id="editParentModal{{ p.id_representante }}" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
-            <form method="post" action="{% url 'parent_edit' p.id %}">
+            <form method="post" action="{% url 'parent_edit' p.id_representante %}">
               {% csrf_token %}
               <div class="modal-header">
                 <h5 class="modal-title">Editar representante</h5>
@@ -152,13 +150,12 @@
                 </div>
                 <div class="mb-2">
                   <label class="form-label">Correo electrónico</label>
-                  <input type="email" name="email" value="{{ p.email }}" class="form-control">
+                  <input type="email" name="correo" value="{{ p.correo }}" class="form-control">
                 </div>
                 <div class="mb-2">
                   <label class="form-label">Teléfono</label>
                   <input type="text" name="telefono" value="{{ p.telefono }}" class="form-control">
                 </div>
-                <!-- agrega aquí otros campos que quieras editar -->
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -170,10 +167,10 @@
       </div>
 
       <!-- Modal Eliminar -->
-      <div class="modal fade" id="deleteParentModal{{ p.id }}" tabindex="-1">
+      <div class="modal fade" id="deleteParentModal{{ p.id_representante }}" tabindex="-1">
         <div class="modal-dialog">
           <div class="modal-content">
-            <form method="post" action="{% url 'parent_delete' p.id %}">
+            <form method="post" action="{% url 'parent_delete' p.id_representante %}">
               {% csrf_token %}
               <div class="modal-header">
                 <h5 class="modal-title">Confirmar eliminación</h5>
