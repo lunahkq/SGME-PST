@@ -91,13 +91,6 @@
                   data-bs-target="#editParentModal{{ p.id_representante }}">
             Editar
           </button>
-
-          <!-- Botón eliminar -->
-          <button class="btn btn-sm btn-danger"
-                  data-bs-toggle="modal"
-                  data-bs-target="#deleteParentModal{{ p.id_representante }}">
-            Eliminar
-          </button>
         </td>
       </tr>
 
@@ -160,28 +153,6 @@
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Guardar cambios</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Eliminar -->
-      <div class="modal fade" id="deleteParentModal{{ p.id_representante }}" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form method="post" action="{% url 'parent_delete' p.id_representante %}">
-              {% csrf_token %}
-              <div class="modal-header">
-                <h5 class="modal-title">Confirmar eliminación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body">
-                ¿Seguro que deseas eliminar al representante {{ p.nombres }} {{ p.apellidos }}?
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-danger">Eliminar</button>
               </div>
             </form>
           </div>
