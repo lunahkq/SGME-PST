@@ -3,41 +3,66 @@
 {% block title %}Inicio - Dashboard{% endblock %}
 
 {% block content %}
+
+<!-- 👋 BIENVENIDA -->
+<div class="mb-4">
+  <h2 class="fw-semibold">
+    Bienvenido/a, {{ request.user.first_name|default:request.user.username }} 👋
+  </h2>
+  <p class="text-muted mb-0">
+    Aquí tienes un resumen general del sistema
+  </p>
+</div>
+
+<!-- 🧭 HEADER DEL DASHBOARD -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <h3 class="mb-0">Panel de control</h3>
-    <small class="small-muted">Resumen de matrícula y estadísticas</small>
+    <h4 class="mb-0">Panel de control</h4>
+    <small class="text-muted">Resumen de matrícula y estadísticas</small>
   </div>
 
-  <a href="#" class="btn btn-action rounded-btn">
-    <i class="bi bi-people me-2"></i>Gestionar Estudiantes
+  <a href="{% url 'students' %}" class="btn btn-action rounded-btn">
+    <i class="bi bi-people me-2"></i> Gestionar Estudiantes
   </a>
 </div>
 
+<!-- 📈 TARJETAS -->
 <div class="row g-3 mb-3">
+
+  <!-- TOTAL MATRÍCULA -->
   <div class="col-12 col-md-6 col-xl-4">
-    <div class="p-3 card-soft">
-      <h6 class="mb-2 text-primary">Total por grado / sección / turno</h6>
-      <div id="matricula-list" class="small-muted">
+    <div class="p-3 card-soft h-100">
+      <h6 class="mb-2 text-primary">
+        Total por grado / sección / turno
+      </h6>
+      <div id="matricula-list" class="text-muted small">
         Cargando datos de matrícula (modo demo)...
       </div>
     </div>
   </div>
 
+  <!-- SEXO -->
   <div class="col-12 col-md-6 col-xl-4">
-    <div class="p-3 card-soft">
-      <h6 class="mb-2 text-primary">Distribución por sexo</h6>
+    <div class="p-3 card-soft h-100">
+      <h6 class="mb-2 text-primary">
+        Distribución por sexo
+      </h6>
       <canvas id="sexoChart" height="120"></canvas>
     </div>
   </div>
 
+  <!-- POR GRADO -->
   <div class="col-12 col-md-6 col-xl-4">
-    <div class="p-3 card-soft">
-      <h6 class="mb-2 text-primary">Por grado</h6>
+    <div class="p-3 card-soft h-100">
+      <h6 class="mb-2 text-primary">
+        Estudiantes por grado
+      </h6>
       <canvas id="gradoChart" height="120"></canvas>
     </div>
   </div>
+
 </div>
+
 {% endblock %}
 
 {% block scripts %}
