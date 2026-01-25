@@ -1,0 +1,205 @@
+<!-- modules/parents.html -->
+{% extends 'layout/navbar.html' %}
+
+{% block title %}Gestión de Representantes{% endblock %}
+
+{% block content %}
+
+<h2 class="fw-semibold mb-3">Gestión de Representantes</h2>
+
+<!-- Filtros y barra de búsqueda -->
+<form method="get" class="row g-2 mb-3">
+
+  <!-- Búsqueda por nombres/apellidos -->
+  <div class="col-12 col-md-4">
+    <input type="text"
+           name="q"
+           value="{{ q|default_if_none:'' }}"
+           class="form-control"
+           placeholder="Buscar por nombres o apellidos">
+  </div>
+
+  <div class="col-12 col-md-2">
+    <select name="grado" class="form-select">
+      <option value="">Todos los grados</option>
+# GRADOS DE 1RO A 6TO 
+      <option value="1" {% if grado == "1" %}selected{% endif %}>1°</option>
+      <option value="2" {% if grado == "2" %}selected{% endif %}>2°</option>
+      <option value="3" {% if grado == "3" %}selected{% endif %}>3°</option>
+      <option value="4" {% if grado == "4" %}selected{% endif %}>3°</option>
+      <option value="5" {% if grado == "5" %}selected{% endif %}>3°</option>
+      <option value="6" {% if grado == "6" %}selected{% endif %}>3°</option>
+    </select>
+  </div>
+
+  <div class="col-12 col-md-2">
+    <select name="seccion" class="form-select">
+      <option value="">Todas las secciones</option>
+      <option value="A" {% if seccion == "A" %}selected{% endif %}>A</option>
+      <option value="B" {% if seccion == "B" %}selected{% endif %}>B</option>
+      <option value="C" {% if seccion == "C" %}selected{% endif %}>C</option>
+    </select>
+  </div>
+
+  <div class="col-12 col-md-2">
+    <select name="estado" class="form-select">
+      <option value="">Todos</option>
+      <option value="activo" {% if estado == "activo" %}selected{% endif %}>Activo</option>
+      <option value="inactivo" {% if estado == "inactivo" %}selected{% endif %}>Inactivo</option>
+    </select>
+  </div>
+
+  <div class="col-12 col-md-2">
+    <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+  </div>
+</form>
+
+<!-- Tabla de representantes -->
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Cédula</th>
+        <th>Nombres</th>
+        <th>Apellidos</th>
+        <th>Correo electrónico</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for p in parents %}
+      <tr>
+        <td>{{ p.cedula }}</td>
+        <td>{{ p.nombres }}</td>
+        <td>{{ p.apellidos }}</td>
+        <td>{{ p.email }}</td>
+        <td>{{ p.telefono }}</td>
+        <td>
+          <!-- Botón ver info completa -->
+          <button class="btn btn-sm btn-secondary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoParentModal{{ p.id }}">
+            Ver información completa
+          </button>
+
+          <!-- Botón editar -->
+          <button class="btn btn-sm btn-warning"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editParentModal{{ p.id }}">
+            Editar
+          </button>
+
+          <!-- Botón eliminar -->
+          <button class="btn btn-sm btn-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#deleteParentModal{{ p.id }}">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+
+      <!-- Modal información completa -->
+      <div class="modal fade" id="infoParentModal{{ p.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Información completa del representante</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <h6>Datos del representante</h6>
+              <p><strong>Cédula:</strong> {{ p.cedula }}</p>
+              <p><strong>Nombres:</strong> {{ p.nombres }}</p>
+              <p><strong>Apellidos:</strong> {{ p.apellidos }}</p>
+              <p><strong>Correo:</strong> {{ p.email }}</p>
+              <p><strong>Teléfono:</strong> {{ p.telefono }}</p>
+              <p><strong>Dirección:</strong> {{ p.direccion }}</p>
+              <p><strong>Estado:</strong> {{ p.estado }}</p>
+
+              <hr>
+              <h6>Estudiantes asociados</h6>
+              <ul class="mb-0">
+                {% for alumno in p.estudiantes.all %}
+                  <li>{{ alumno.nombres }} {{ alumno.apellidos }} – {{ alumno.grado }} {{ alumno.seccion }}</li>
+                {% empty %}
+                  <li>No tiene estudiantes asociados.</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Editar -->
+      <div class="modal fade" id="editParentModal{{ p.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'parent_edit' p.id %}">
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title">Editar representante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-2">
+                  <label class="form-label">Nombres</label>
+                  <input type="text" name="nombres" value="{{ p.nombres }}" class="form-control">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Apellidos</label>
+                  <input type="text" name="apellidos" value="{{ p.apellidos }}" class="form-control">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Correo electrónico</label>
+                  <input type="email" name="email" value="{{ p.email }}" class="form-control">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Teléfono</label>
+                  <input type="text" name="telefono" value="{{ p.telefono }}" class="form-control">
+                </div>
+                <!-- agrega aquí otros campos que quieras editar -->
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Eliminar -->
+      <div class="modal fade" id="deleteParentModal{{ p.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'parent_delete' p.id %}">
+              {% csrf_token %}
+              <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                ¿Seguro que deseas eliminar al representante {{ p.nombres }} {{ p.apellidos }}?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    {% empty %}
+      <tr>
+        <td colspan="6" class="text-center text-muted">
+          No hay representantes registrados.
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
