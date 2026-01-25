@@ -1,0 +1,66 @@
+{% extends "layout/navbar.html" %}
+{% block title %}Perfil del Usuario{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+  <h3 class="fw-bold mb-4">
+    <i class="bi bi-person-circle"></i> Perfil del Usuario
+  </h3>
+
+  <div class="card shadow p-4" style="border-radius:18px;">
+
+    <!-- Avatar -->
+    <div class="text-center mb-3">
+      <i class="bi bi-person-circle" style="font-size:90px; color:#0d6efd;"></i>
+    </div>
+
+    <hr>
+
+    <!-- Datos del usuario -->
+    <h4 class="fw-bold mb-3">
+      <i class="bi bi-person-badge"></i> Datos del Usuario
+    </h4>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <label><strong>Nombre:</strong></label>
+        <div class="p-2 border rounded bg-light">
+          {{ request.user.first_name }}
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label><strong>Apellido:</strong></label>
+        <div class="p-2 border rounded bg-light">
+          {{ request.user.last_name }}
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label><strong>Nombre de usuario:</strong></label>
+        <div class="p-2 border rounded bg-light">
+          {{ request.user.username }}
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label><strong>Correo electrónico:</strong></label>
+        <div class="p-2 border rounded bg-light">
+          {{ request.user.email }}
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Botón para cambiar contraseña usando el mismo flujo de verificación por correo -->
+    <div class="d-flex justify-content-end">
+      <a href="{% url 'f_password' %}" class="btn btn-primary">
+        <i class="bi bi-shield-lock me-2"></i>
+        Cambiar contraseña
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
