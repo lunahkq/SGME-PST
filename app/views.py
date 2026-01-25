@@ -184,6 +184,10 @@ def reset_password(request):
 
     return redirect("login")
 
+@login_required
+def profile_user(request):
+    return render(request, "views/profile.html")
+
 def logout_view(request):
     logout(request)
     return redirect("login")
