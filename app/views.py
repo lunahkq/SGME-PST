@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib.auth import login, logout
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
@@ -13,6 +13,9 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate
+from datetime import date
+
+
 
 # Importando modelos de la base de datos
 from .models import AnioEscolar
@@ -25,7 +28,7 @@ from .models import Turno
 
 # Create your views here.
 
-# Autenticación inicial
+# AUTENTICACIÓN INICIAL
 def login_request(request):
     if request.user.is_authenticated:
         return redirect("home")
@@ -49,6 +52,7 @@ def home_view(request):
     return render(request, "modules/home.html")
 
 
+# RESTABLECIMIENTO DE CONTRASEÑA
 def forgot_password(request):
     # GET: mostrar formulario para escribir el correo
     if request.method == "GET":
@@ -183,29 +187,29 @@ def reset_password(request):
 
     return redirect("login")
 
+# PERFIL
 @login_required
 def profile_user(request):
     return render(request, "views/profile.html")
 
+# AYUDA
 @login_required
 def help(request):
     return render(request, "views/help.html")
 
-@login_required
-def academic_record(request):
-    return render(request, "modules/academic_record.html")
-
+# CERRAR SESIÓN
 def logout_view(request):
     logout(request)
     return redirect("login")
 
+
+# MÓDULO DE GESTIÓN DE USUARIOS
 def es_admin_o_directivo(user):
     if not user.is_authenticated:
         return False
     if user.is_superuser:
         return True
     return user.groups.filter(name__in=["Administrador", "Directivo"]).exists()
-
 
 @login_required
 @user_passes_test(es_admin_o_directivo, login_url="home")
@@ -301,6 +305,8 @@ def users_control(request):
     }
     return render(request, "authentication/users_control.html", contexto)
 
+
+# MÓDULO DE ESTUDIANTES
 @login_required
 def students_view(request):
     if request.method == "POST":
@@ -410,20 +416,18 @@ def students_view(request):
                     return redirect("students")
 
                 # 8. Crear la matrícula vinculando todo
-                from datetime import date
-                
                 Matricula.objects.create(
-                    id_estudiante=estudiante,
-                    id_representante=representante,
-                    id_grado=grado,
-                    id_seccion=seccion,
-                    id_turno=turno,
-                    id_anio_escolar=anio_activo,
-                    anio_ingreso=anio_activo.fecha_inicio.year,
-                    fecha_matricula=date.today(),
-                    estado="Activo",
-                    observaciones=observaciones
-                )
+                id_estudiante=estudiante,
+                id_representante=representante,
+                id_grado=grado,
+                id_seccion=seccion,
+                id_turno=turno,
+                id_anio_escolar=anio_activo,
+                anio_ingreso=anio_activo.fecha_inicio.year,
+                fecha_matricula=date.today(),
+                estado="Nuevo",  # primera inscripción
+                observaciones=observaciones
+                )      
 
                 messages.success(request, f"Estudiante {nombres} {apellidos} registrado y matriculado correctamente.")
                 return redirect("students")
@@ -467,10 +471,10 @@ def students_view(request):
         
         # Filtro de Estado (Default: Activo)
         estado = request.GET.get("estado")
-        if estado is None:
-            estado = "Activo"
-        
-        if estado: # Si es "" (Todos), no filtramos
+        if estado:  # solo filtra si el usuario eligió algo
+            matriculas = matriculas.filter(estado=estado)
+                
+        if estado:  # Si es "" (Todos), no filtramos
             matriculas = matriculas.filter(estado=estado)
 
         # Optimización
@@ -546,6 +550,8 @@ def students_view(request):
     
     return render(request, "modules/students.html", contexto)
 
+
+# MÓDULO DE REPRESENTANTES
 def parents_list(request):
     q = request.GET.get('q', '')
     grado = request.GET.get('grado', '')
@@ -611,3 +617,137 @@ def parent_delete(request, pk):
     parent = get_object_or_404(Representante, id_representante=pk)
     parent.delete()
     return redirect('parents')
+
+
+# MODULO DE MATRÍCULA
+@login_required
+@user_passes_test(es_admin_o_directivo, login_url="home")
+def academic_record(request):
+
+    # 1) Crear nuevo año escolar
+    if request.method == "POST" and request.POST.get("action") == "create_year":
+        anio_escolar = request.POST.get("anio_escolar")      # texto: 2025-2026
+        fecha_inicio = request.POST.get("fecha_inicio")
+        fecha_fin = request.POST.get("fecha_fin")
+
+        if not anio_escolar or not fecha_inicio or not fecha_fin:
+            messages.error(request, "Todos los campos del año escolar son obligatorios.")
+        elif AnioEscolar.objects.filter(anio_escolar=anio_escolar).exists():
+            messages.error(request, "Ya existe un año escolar con ese nombre.")
+        else:
+            AnioEscolar.objects.create(
+                anio_escolar=anio_escolar,
+                fecha_inicio=fecha_inicio,
+                fecha_fin=fecha_fin,
+                activo=False,
+            )
+            messages.success(request, "Año escolar creado correctamente.")
+        return redirect("academic")
+
+    # 2) Marcar año escolar activo
+    if request.method == "POST" and request.POST.get("action") == "set_active":
+        anio_id = request.POST.get("anio_id")
+        try:
+            with transaction.atomic():
+                AnioEscolar.objects.update(activo=False)
+                anio = AnioEscolar.objects.get(id_anio_escolar=anio_id)
+                anio.activo = True
+                anio.save()
+            messages.success(request, f"Año escolar {anio.anio_escolar} activado.")
+        except AnioEscolar.DoesNotExist:
+            messages.error(request, "El año escolar seleccionado no existe.")
+        return redirect("academic")
+
+    # 3) Promoción / repetición / egreso
+    if request.method == "POST" and request.POST.get("action") == "promote":
+        origen_anio_id = request.POST.get("origen_anio")
+        origen_grado_id = request.POST.get("origen_grado")
+        origen_seccion_id = request.POST.get("origen_seccion")
+
+        destino_anio_id = request.POST.get("destino_anio")
+        destino_grado_id = request.POST.get("destino_grado")
+        destino_seccion_id = request.POST.get("destino_seccion")
+
+        try:
+            with transaction.atomic():
+                origen_anio = AnioEscolar.objects.get(id_anio_escolar=origen_anio_id)
+                destino_anio = AnioEscolar.objects.get(id_anio_escolar=destino_anio_id)
+
+                origen_grado = Grado.objects.get(id_grado=origen_grado_id)
+                origen_seccion = Seccion.objects.get(id_seccion=origen_seccion_id)
+
+                destino_grado = Grado.objects.get(id_grado=destino_grado_id)
+                destino_seccion = Seccion.objects.get(id_seccion=destino_seccion_id)
+
+                # Tomamos todas las matrículas de ese grupo en el año de origen
+                matriculas_origen = (
+                    Matricula.objects.filter(
+                        id_anio_escolar=origen_anio,
+                        id_grado=origen_grado,
+                        id_seccion=origen_seccion,
+                    )
+                    .exclude(estado="Promovido")  # no volver a mover egresados
+                    .select_related("id_estudiante", "id_representante", "id_turno")
+                )
+
+                total_regulares = 0
+                total_promovidos = 0  # egresados
+                total_repetidos = 0
+
+                for m in matriculas_origen:
+                    # Caso egreso: 6to grado
+                    if origen_grado.orden == 6:
+                        m.estado = "Promovido"  # egresado de la escuela
+                        m.save()
+                        total_promovidos += 1
+                        continue
+
+                    # Misma combinación de grado -> Repetido
+                    if origen_grado.id_grado == destino_grado.id_grado:
+                        nuevo_estado = "Repetido"
+                        total_repetidos += 1
+                    else:
+                        # cambia de grado -> Regular
+                        nuevo_estado = "Regular"
+                        total_regulares += 1
+
+                    Matricula.objects.create(
+                        id_estudiante=m.id_estudiante,
+                        id_representante=m.id_representante,
+                        id_grado=destino_grado,
+                        id_seccion=destino_seccion,
+                        id_turno=m.id_turno,
+                        id_anio_escolar=destino_anio,
+                        anio_ingreso=destino_anio.fecha_inicio.year,
+                        fecha_matricula=m.fecha_matricula,
+                        estado=nuevo_estado,
+                        observaciones=(
+                            f"Promocionado desde {origen_grado.nombre} "
+                            f"{origen_seccion.letra} ({origen_anio.anio_escolar})"
+                        ),
+                    )
+
+                messages.success(
+                    request,
+                    f"Proceso completado. Regulares: {total_regulares}, "
+                    f"Repetidos: {total_repetidos}, Promovidos (egresados): {total_promovidos}."
+                )
+
+        except Exception as e:
+            messages.error(request, f"Error en la promoción: {str(e)}")
+
+        return redirect("academic")
+
+    # GET: datos para mostrar formulario
+    anios = AnioEscolar.objects.all().order_by("-fecha_inicio")
+    anio_activo = AnioEscolar.objects.filter(activo=True).first()
+    grados = Grado.objects.all().order_by("orden")
+    secciones = Seccion.objects.all().order_by("letra")
+
+    context = {
+        "anios": anios,
+        "anio_activo": anio_activo,
+        "grados": grados,
+        "secciones": secciones,
+    }
+    return render(request, "modules/academic_record.html", context)
