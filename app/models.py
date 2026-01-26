@@ -17,7 +17,7 @@ class AnioEscolar(models.Model):
     activo = models.BooleanField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'anio_escolar'
 
 
@@ -36,7 +36,7 @@ class Estudiante(models.Model):
     talla_zapato = models.CharField(max_length=10, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'estudiante'
 
 
@@ -47,7 +47,7 @@ class Grado(models.Model):
     orden = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'grado'
 
 
@@ -66,7 +66,7 @@ class Matricula(models.Model):
     observaciones = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'matricula'
 
 
@@ -81,7 +81,7 @@ class Representante(models.Model):
     correo = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'representante'
 
 
@@ -91,7 +91,7 @@ class Seccion(models.Model):
     letra = models.CharField(max_length=10)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'seccion'
 
 # TURNO
@@ -100,5 +100,5 @@ class Turno(models.Model):
     nombre = models.CharField(max_length=50)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'turno'
