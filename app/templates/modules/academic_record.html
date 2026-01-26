@@ -1,179 +1,244 @@
 {% extends "layout/navbar.html" %}
-{% block title %}Promoción Académica{% endblock %}
+{% block title %}Matrícula - Gestión{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" style="background-color:#050816; min-height:100vh;">
 
-  <div class="row mb-4">
-    <!-- Tarjeta: Año escolar -->
-    <div class="col-lg-4 mb-3">
-      <div class="card bg-dark text-light shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-3" style="color:#22c55e;">Gestión de Año Escolar</h5>
-
-          <!-- Crear nuevo año -->
-          <form method="post" class="mb-3">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="create_year">
-
-            <div class="mb-2">
-              <label class="form-label">Nombre del año</label>
-              <input type="text" name="anio_escolar" class="form-control form-control-sm"
-                     placeholder="2025-2026">
-            </div>
-
-            <div class="mb-2">
-              <label class="form-label">Fecha de inicio</label>
-              <input type="date" name="fecha_inicio" class="form-control form-control-sm">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Fecha de fin</label>
-              <input type="date" name="fecha_fin" class="form-control form-control-sm">
-            </div>
-
-            <button type="submit" class="btn btn-success btn-sm w-100">
-              Crear nuevo año escolar
-            </button>
-          </form>
-
-          <hr class="border-secondary">
-
-          <h6 class="mb-2">Año escolar activo:</h6>
-          <p class="mb-3">
-            {% if anio_activo %}
-              <span class="badge bg-success">{{ anio_activo.anio_escolar }}</span>
-            {% else %}
-              <span class="text-warning">No hay año activo</span>
-            {% endif %}
-          </p>
-
-          <!-- Seleccionar cuál es activo -->
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="set_active">
-            <div class="input-group input-group-sm">
-              <select name="anio_id" class="form-select form-select-sm">
-                {% for a in anios %}
-                  <option value="{{ a.id_anio_escolar }}"
-                    {% if anio_activo and a.id_anio_escolar == anio_activo.id_anio_escolar %}selected{% endif %}>
-                    {{ a.anio_escolar }}
-                  </option>
-                {% endfor %}
-              </select>
-              <button class="btn btn-outline-success" type="submit">
-                Marcar activo
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tarjeta: Promoción de estudiantes -->
-    <div class="col-lg-8 mb-3">
-      <div class="card bg-dark text-light shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title mb-2" style="color:#22c55e;">Promoción de Año Escolar</h5>
-          <p class="text-muted" style="font-size:0.9rem;">
-            Promueva o repita grupos completos de estudiantes manteniendo su historial de matrículas.
-          </p>
-
-          <form method="post">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="promote">
-
-            <div class="row">
-              <!-- Origen -->
-              <div class="col-md-6 mb-3">
-                <div class="p-3 rounded" style="background:#0f172a;">
-                  <h6 class="mb-3" style="color:#f97316;">1. Origen (año y grado actual)</h6>
-
-                  <div class="mb-2">
-                    <label class="form-label">Año escolar</label>
-                    <select name="origen_anio" class="form-select form-select-sm">
-                      {% for a in anios %}
-                        <option value="{{ a.id_anio_escolar }}">{{ a.anio_escolar }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <div class="mb-2">
-                    <label class="form-label">Grado</label>
-                    <select name="origen_grado" class="form-select form-select-sm">
-                      {% for g in grados %}
-                        <option value="{{ g.id_grado }}">{{ g.nombre }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <div class="mb-2">
-                    <label class="form-label">Sección</label>
-                    <select name="origen_seccion" class="form-select form-select-sm">
-                      {% for s in secciones %}
-                        <option value="{{ s.id_seccion }}">{{ s.letra }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <small class="text-secondary">
-                    Se tomarán las matrículas activas de este grupo.
-                  </small>
-                </div>
-              </div>
-
-              <!-- Destino -->
-              <div class="col-md-6 mb-3">
-                <div class="p-3 rounded" style="background:#020617;">
-                  <h6 class="mb-3" style="color:#22c55e;">2. Destino (nuevo año / grado)</h6>
-
-                  <div class="mb-2">
-                    <label class="form-label">Año escolar</label>
-                    <select name="destino_anio" class="form-select form-select-sm">
-                      {% for a in anios %}
-                        <option value="{{ a.id_anio_escolar }}"
-                          {% if anio_activo and a.id_anio_escolar == anio_activo.id_anio_escolar %}selected{% endif %}>
-                          {{ a.anio_escolar }}
-                        </option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <div class="mb-2">
-                    <label class="form-label">Grado</label>
-                    <select name="destino_grado" class="form-select form-select-sm">
-                      {% for g in grados %}
-                        <option value="{{ g.id_grado }}">{{ g.nombre }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <div class="mb-2">
-                    <label class="form-label">Sección</label>
-                    <select name="destino_seccion" class="form-select form-select-sm">
-                      {% for s in secciones %}
-                        <option value="{{ s.id_seccion }}">{{ s.letra }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <small class="text-secondary">
-                    Si eliges el mismo grado, el estudiante quedará como <strong>repetido</strong>.
-                  </small>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-3 text-end">
-              <button type="submit" class="btn btn-success">
-                Confirmar promoción
-              </button>
-            </div>
-          </form>
-
-        </div>
-      </div>
+<!-- HEADER CON CONTADOR -->
+<div class="mb-4">
+  <div class="row align-items-center mb-4">
+    <div class="col-md-8">
+      <h2 class="fw-semibold mb-0">Gestión de Matrícula</h2>
+      <span class="badge bg-primary ms-2 fs-6">{{ total_matriculados|default:"0" }}</span>
+      <small class="text-muted d-block">personas matriculadas</small>
     </div>
   </div>
 </div>
+
+<div class="row g-4">
+
+  <!-- GESTIÓN AÑO ESCOLAR -->
+  <div class="col-lg-4">
+    <div class="card card-soft h-100">
+      <div class="card-body">
+        <h5 class="card-title mb-3" style="color: var(--brand-blue);">
+          <i class="bi bi-calendar3 me-2"></i>
+          Gestión de Año Escolar
+        </h5>
+
+        <!-- Crear nuevo año -->
+        <form method="post" class="mb-4">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_year">
+
+          <div class="mb-2">
+            <label class="form-label small">Nombre del año</label>
+            <input type="text" name="anio_escolar" class="form-control form-control-sm"
+                   placeholder="2026-2027" required>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label small">Inicio</label>
+              <input type="date" name="fecha_inicio" class="form-control form-control-sm">
+            </div>
+            <div class="col-6">
+              <label class="form-label small">Fin</label>
+              <input type="date" name="fecha_fin" class="form-control form-control-sm">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-sm w-100 rounded-btn">
+            <i class="bi bi-plus-circle me-1"></i>
+            Crear año escolar
+          </button>
+        </form>
+
+        <hr>
+
+        <!-- Año activo -->
+        <h6 class="mb-2" style="color: var(--brand-blue);">Año escolar activo:</h6>
+        {% if anio_activo %}
+          <span class="badge bg-info text-white mb-2 fs-6">{{ anio_activo.anio_escolar }}</span>
+        {% else %}
+          <span class="badge bg-secondary text-white mb-2" style="font-size: 0.75em;">Sin año activo</span>
+        {% endif %}
+
+        <!-- Cambiar año activo -->
+        <form method="post" class="mt-3">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="set_active">
+          <div class="input-group input-group-sm">
+            <select name="anio_id" class="form-select">
+              {% for a in anios %}
+                <option value="{{ a.id_anio_escolar }}"
+                  {% if anio_activo and a.id_anio_escolar == anio_activo.id_anio_escolar %}selected{% endif %}>
+                  {{ a.anio_escolar }}
+                </option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-outline-primary" type="submit">
+              <i class="bi bi-check-circle"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMOCIÓN ESTUDIANTES -->
+  <div class="col-lg-8">
+    <div class="card card-soft h-100">
+      <div class="card-body">
+        <h5 class="card-title mb-3" style="color: var(--brand-blue);">
+          <i class="bi bi-arrow-right-circle me-2"></i>
+          Promoción de Estudiantes
+        </h5>
+
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="promote">
+
+          <div class="row g-3">
+            <!-- ORIGEN -->
+            <div class="col-md-6">
+              <div class="p-3 rounded-3" style="background: rgba(53,110,194,0.08); border: 1px solid rgba(53,110,194,0.2);">
+                <h6 class="mb-3 fw-semibold" style="color: var(--brand-blue);">
+                  <i class="bi bi-arrow-left-circle me-1"></i>
+                  1. Origen (grupo actual)
+                </h6>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Año escolar</label>
+                  <select name="origen_anio" class="form-select form-select-sm">
+                    {% for a in anios %}
+                      <option value="{{ a.id_anio_escolar }}">{{ a.anio_escolar }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- FILTROS ORIGEN -->
+                <div class="row g-2 mb-3">
+                  <div class="col-4">
+                    <label class="form-label small">Grado</label>
+                    <select name="origen_grado" class="form-select form-select-sm" required>
+                      <option value="">Grado</option>
+                      <option value="1">1ro</option>
+                      <option value="2">2do</option>
+                      <option value="3">3ro</option>
+                      <option value="4">4to</option>
+                      <option value="5">5to</option>
+                      <option value="6">6to</option>
+                    </select>
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Sección</label>
+                    <select name="origen_seccion" class="form-select form-select-sm" required>
+                      <option value="">Secc.</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Turno</label>
+                    <select name="origen_turno" class="form-select form-select-sm" required>
+                      <option value="">Turno</option>
+                      <option value="M">Mañana</option>
+                      <option value="T">Tarde</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- CÉDULA/CARNET ESTUDIANTIL -->
+                <div class="mb-2">
+                  <label class="form-label small fw-semibold">Cédula</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text" style="background-color: rgba(53,110,194,0.1);">
+                      <i class="bi bi-card-text" style="color: var(--brand-blue);"></i>
+                    </span>
+                    <input type="text" 
+                           name="cedula_carnet_origen" 
+                           class="form-control form-control-sm" 
+                           placeholder="V12345678"
+                           required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DESTINO -->
+            <div class="col-md-6">
+              <div class="p-3 rounded-3" style="background: rgba(53,110,194,0.08); border: 1px solid rgba(53,110,194,0.2);">
+                <h6 class="mb-3 fw-semibold" style="color: var(--brand-blue);">
+                  <i class="bi bi-arrow-right-circle me-1"></i>
+                  2. Destino (nuevo grupo)
+                </h6>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">Año escolar</label>
+                  <select name="destino_anio" class="form-select form-select-sm">
+                    {% for a in anios %}
+                      <option value="{{ a.id_anio_escolar }}"
+                        {% if anio_activo and a.id_anio_escolar == anio_activo.id_anio_escolar %}selected{% endif %}>
+                        {{ a.anio_escolar }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- FILTROS DESTINO -->
+                <div class="row g-2 mb-3">
+                  <div class="col-4">
+                    <label class="form-label small">Grado</label>
+                    <select name="destino_grado" class="form-select form-select-sm" required>
+                      <option value="">Grado</option>
+                      <option value="1">1ro</option>
+                      <option value="2">2do</option>
+                      <option value="3">3ro</option>
+                      <option value="4">4to</option>
+                      <option value="5">5to</option>
+                      <option value="6">6to</option>
+                    </select>
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Sección</label>
+                    <select name="destino_seccion" class="form-select form-select-sm" required>
+                      <option value="">Secc.</option>
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                    </select>
+                  </div>
+                  <div class="col-4">
+                    <label class="form-label small">Turno</label>
+                    <select name="destino_turno" class="form-select form-select-sm" required>
+                      <option value="">Turno</option>
+                      <option value="M">Mañana</option>
+                      <option value="T">Tarde</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- NOTA SIMPLE -->
+                <div class="alert alert-info small mb-0">
+                  <i class="bi bi-info-circle me-1"></i>
+                  <strong>Mismo grado:</strong> Repetir | <strong>Grado +1:</strong> Promover
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-primary rounded-btn px-4">
+              <i class="bi bi-check-circle me-2"></i>
+              Confirmar Promoción
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 {% endblock %}
