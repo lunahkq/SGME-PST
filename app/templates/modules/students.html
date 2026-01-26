@@ -20,24 +20,21 @@
   </div>
 </div>
 
-<!-- Mensajes de feedback -->
 {% if messages %}
-{% for message in messages %}
-<div
-  class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
-  role="alert">
-  {{ message }}
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-{% endfor %}
+  {% for message in messages %}
+  <div
+    class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
+    role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
 {% endif %}
 
-<!-- Alerta si no hay año escolar activo -->
 {% if not hay_anio_activo %}
 <div class="alert alert-warning" role="alert">
   <i class="bi bi-exclamation-triangle-fill me-2"></i>
-  <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active
-  uno.
+  <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active uno.
 </div>
 {% endif %}
 
@@ -45,6 +42,13 @@
 <div class="card-soft p-3 mb-3">
   <form method="GET" action="{% url 'students' %}">
     <div class="row g-2">
+      <div class="col-sm-3">
+        <input type="text"
+               name="q"
+               value="{{ q|default_if_none:'' }}"
+               class="form-control"
+               placeholder="Buscar por nombres, apellidos o cédula">
+      </div>
       <div class="col-sm-2">
         <select name="grado" id="filterGrado" class="form-select">
           <option value="">Todos los grados</option>
@@ -69,23 +73,25 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-sm-1">
         <select name="sexo" id="filterSexo" class="form-select">
-          <option value="">Ambos sexos</option>
-          <option value="F" {% if selected_sexo.F %}selected{% endif %}>Femenino</option>
-          <option value="M" {% if selected_sexo.M %}selected{% endif %}>Masculino</option>
+          <option value="">Sexo</option>
+          <option value="F" {% if selected_sexo.F %}selected{% endif %}>F</option>
+          <option value="M" {% if selected_sexo.M %}selected{% endif %}>M</option>
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-sm-1">
         <select name="estado" id="filterEstado" class="form-select">
           <option value="Activo" {% if selected_estado.Activo %}selected{% endif %}>Activos</option>
           <option value="Retirado" {% if selected_estado.Retirado %}selected{% endif %}>Retirados</option>
           <option value="" {% if selected_estado.Todos %}selected{% endif %}>Todos</option>
         </select>
       </div>
-      <div class="col-sm-2 d-flex">
-        <button class="btn btn-outline-primary me-2" type="submit">Aplicar</button>
-        <a href="{% url 'students' %}" class="btn btn-outline-secondary">Reset</a>
+      <div class="col-sm-1 d-flex">
+        <button class="btn btn-outline-primary me-2 w-100" type="submit">Aplicar</button>
+      </div>
+      <div class="col-sm-1 d-flex">
+        <a href="{% url 'students' %}" class="btn btn-outline-secondary w-100">Reset</a>
       </div>
     </div>
   </form>
@@ -97,8 +103,9 @@
     <table class="table align-middle table-hover">
       <thead class="table-light">
         <tr>
-          <th>Nombre Completo</th>
-          <th>Cédula</th>
+          <th>Nombres</th>
+          <th>Apellidos</th>
+          <th>Cédula o Carnet</th>
           <th>Grado</th>
           <th>Sección</th>
           <th>Turno</th>
@@ -110,46 +117,290 @@
       </thead>
       <tbody id="studentsBody">
         {% if estudiantes %}
-        {% for s in estudiantes %}
-        <tr>
-          <td><strong>{{ s.nombres }} {{ s.apellidos }}</strong></td>
-          <td>{{ s.cedula|default:"Sin cédula" }}</td>
-          <td>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</td>
-          <td>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</td>
-          <td>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</td>
-          <td>
-            {% if s.sexo == "F" %}
-            <span class="badge bg-info">Femenino</span>
-            {% elif s.sexo == "M" %}
-            <span class="badge bg-primary">Masculino</span>
-            {% else %}
-            -
-            {% endif %}
-          </td>
-          <td>
-            {% if s.matricula_activa %}
-            {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
-            {% else %}
-            <small class="text-muted">Sin cargar</small>
-            {% endif %}
-          </td>
-          <td><span class="badge bg-success">Activo</span></td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-outline-primary me-1" type="button" title="Editar">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado">
-              <i class="bi bi-person-dash"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
+          {% for s in estudiantes %}
+          <tr>
+            <td><strong>{{ s.nombres }}</strong></td>
+            <td><strong>{{ s.apellidos }}</strong></td>
+            <td>{{ s.cedula|default:"Sin cédula" }}</td>
+            <td>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</td>
+            <td>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</td>
+            <td>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</td>
+            <td>
+              {% if s.sexo == "F" %}
+              <span class="badge bg-info">Femenino</span>
+              {% elif s.sexo == "M" %}
+              <span class="badge bg-primary">Masculino</span>
+              {% else %}
+              -
+              {% endif %}
+            </td>
+            <td>
+              {% if s.matricula_activa %}
+              {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
+              {% else %}
+              <small class="text-muted">Sin cargar</small>
+              {% endif %}
+            </td>
+            <td><span class="badge bg-success">Activo</span></td>
+            <td class="text-center">
+              <!-- Ver datos completos -->
+              <button class="btn btn-sm btn-outline-info me-1"
+                      type="button"
+                      title="Ver datos completos"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalVerEst{{ s.id_estudiante }}">
+                <i class="bi bi-person"></i>
+              </button>
+              <!-- Editar -->
+              <button class="btn btn-sm btn-outline-primary me-1"
+                      type="button"
+                      title="Editar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEditEst{{ s.id_estudiante }}">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <!-- Retirar / Eliminar (aún sin lógica) -->
+              <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado">
+                <i class="bi bi-person-dash"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Modal ver datos completos del estudiante -->
+          <div class="modal fade" id="modalVerEst{{ s.id_estudiante }}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header bg-light">
+                  <h5 class="modal-title">
+                    <i class="bi bi-person me-2"></i>Datos completos del estudiante
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <h6 class="text-primary mb-2">Datos personales</h6>
+                  <p><strong>Nombres:</strong> {{ s.nombres }}</p>
+                  <p><strong>Apellidos:</strong> {{ s.apellidos }}</p>
+                  <p><strong>Cédula:</strong> {{ s.cedula|default:"Sin cédula" }}</p>
+                  <p><strong>Sexo:</strong>
+                    {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
+                  </p>
+                  <p><strong>Fecha de nacimiento:</strong> {{ s.fecha_nacimiento }}</p>
+                  <p><strong>Lugar de nacimiento:</strong> {{ s.lugar_nacimiento|default:"-" }}</p>
+
+                  <hr>
+                  <h6 class="text-primary mb-2">Datos de matrícula</h6>
+                  <p><strong>Grado:</strong> {{ s.matricula_activa.id_grado.nombre|default:"-" }}</p>
+                  <p><strong>Sección:</strong> {{ s.matricula_activa.id_seccion.letra|default:"-" }}</p>
+                  <p><strong>Turno:</strong> {{ s.matricula_activa.id_turno.nombre|default:"-" }}</p>
+                  <p><strong>Representante:</strong>
+                    {% if s.matricula_activa %}
+                      {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
+                    {% else %}-{% endif %}
+                  </p>
+
+                  <hr>
+                  <h6 class="text-primary mb-2">Tallas de uniforme</h6>
+                  <p><strong>Camisa:</strong> {{ s.talla_camisa|default:"-" }}</p>
+                  <p><strong>Pantalón:</strong> {{ s.talla_pantalon|default:"-" }}</p>
+                  <p><strong>Zapato:</strong> {{ s.talla_zapato|default:"-" }}</p>
+                </div>
+                <div class="modal-footer">
+                  <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal editar estudiante -->
+          <div class="modal fade" id="modalEditEst{{ s.id_estudiante }}" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+              <div class="modal-content">
+                <div class="modal-header bg-light">
+                  <h5 class="modal-title">
+                    <i class="bi bi-pencil me-2"></i>Editar Estudiante
+                  </h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <form method="post" action="{% url 'students' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="est_id" value="{{ s.id_estudiante }}">
+
+                    <!-- DATOS DEL ESTUDIANTE -->
+                    <div class="mb-4">
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-person-fill me-2"></i>Datos del Estudiante
+                      </h6>
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="nombres" value="{{ s.nombres }}" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="apellidos" value="{{ s.apellidos }}" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Cédula o Carnet</label>
+                          <input type="text" class="form-control" name="cedula" value="{{ s.cedula }}">
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Sexo <span class="text-danger">*</span></label>
+                          <select name="sexo" class="form-select" required>
+                            <option value="Femenino" {% if s.sexo == "F" %}selected{% endif %}>Femenino</option>
+                            <option value="Masculino" {% if s.sexo == "M" %}selected{% endif %}>Masculino</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                          <input type="date"
+                                 name="fecha_nacimiento"
+                                 class="form-control"
+                                 value="{{ s.fecha_nacimiento|date:'Y-m-d' }}"
+                                 required>
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label">Lugar de Nacimiento</label>
+                          <input type="text" class="form-control" name="lugar_nacimiento" value="{{ s.lugar_nacimiento }}">
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- DATOS DE MATRÍCULA -->
+                    <div class="mb-4">
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-book-fill me-2"></i>Datos de Matrícula
+                      </h6>
+                      <div class="row g-3">
+                        <div class="col-md-4">
+                          <label class="form-label">Grado <span class="text-danger">*</span></label>
+                          <select name="grado" class="form-select" required>
+                            <option value="">Seleccione grado</option>
+                            {% for grado in grados %}
+                            <option value="{{ grado.nombre }}"
+                              {% if s.matricula_activa and s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
+                              {{ grado.nombre }}
+                            </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Sección <span class="text-danger">*</span></label>
+                          <select name="seccion" class="form-select" required>
+                            <option value="">Seleccione sección</option>
+                            {% for seccion in secciones %}
+                            <option value="{{ seccion.letra }}"
+                              {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>
+                              {{ seccion.letra }}
+                            </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Turno <span class="text-danger">*</span></label>
+                          <select name="turno" class="form-select" required>
+                            <option value="">Seleccione turno</option>
+                            {% for turno in turnos %}
+                            <option value="{{ turno.nombre }}"
+                              {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>
+                              {{ turno.nombre }}
+                            </option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- DATOS DEL REPRESENTANTE -->
+                    <div class="mb-4">
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-person-vcard-fill me-2"></i>Datos del Representante
+                      </h6>
+                      <div class="row g-3">
+                        {% if s.matricula_activa %}
+                        {% with rep=s.matricula_activa.id_representante %}
+                        <div class="col-md-6">
+                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_nombres" value="{{ rep.nombres }}" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_apellidos" value="{{ rep.apellidos }}" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_cedula" value="{{ rep.cedula }}" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_telefono" value="{{ rep.telefono }}" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Correo Electrónico</label>
+                          <input type="email" class="form-control" name="rep_correo" value="{{ rep.correo }}">
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label">Dirección</label>
+                          <textarea class="form-control" name="rep_direccion" rows="2">{{ rep.direccion }}</textarea>
+                        </div>
+                        {% endwith %}
+                        {% else %}
+                        <!-- Sin matrícula activa: campos vacíos -->
+                        <div class="col-md-6">
+                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_nombres" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_apellidos" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_cedula" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_telefono" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Correo Electrónico</label>
+                          <input type="email" class="form-control" name="rep_correo">
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label">Dirección</label>
+                          <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <!-- Observaciones -->
+                    <div class="mb-3">
+                      <label class="form-label">Observaciones</label>
+                      <textarea name="observaciones" class="form-control" rows="3">
+{% if s.matricula_activa %}{{ s.matricula_activa.observaciones }}{% endif %}
+                      </textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                      <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                      <button class="btn btn-success" type="submit">
+                        <i class="bi bi-check-circle me-1"></i>Guardar cambios
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
         {% else %}
         <tr>
-          <td colspan="9" class="text-center text-muted py-4">
+          <td colspan="10" class="text-center text-muted py-4">
             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
             No hay estudiantes registrados.
           </td>
@@ -160,7 +411,7 @@
   </div>
 </div>
 
-<!-- Modal registro/edición -->
+<!-- Modal registro (crear estudiante) -->
 <div class="modal fade" id="modalEst" tabindex="-1">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -182,33 +433,32 @@
             </h6>
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="nombres" class="form-label">Nombres <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="nombres" name="nombres" required>
+                <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="nombres" required>
               </div>
               <div class="col-md-6">
-                <label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="apellidos" required>
               </div>
               <div class="col-md-4">
-                <label for="cedula" class="form-label">Cédula</label>
-                <input type="text" class="form-control" id="cedula" name="cedula" placeholder="V-12345678">
+                <label class="form-label">Cédula o Carnet</label>
+                <input type="text" class="form-control" name="cedula">
               </div>
               <div class="col-md-4">
-                <label for="sexo" class="form-label">Sexo <span class="text-danger">*</span></label>
-                <select id="sexo" name="sexo" class="form-select" required>
+                <label class="form-label">Sexo <span class="text-danger">*</span></label>
+                <select name="sexo" class="form-select" required>
+                  <option value="">Seleccione sexo</option>
                   <option value="Femenino">Femenino</option>
                   <option value="Masculino">Masculino</option>
                 </select>
               </div>
               <div class="col-md-4">
-                <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento <span
-                    class="text-danger">*</span></label>
-                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
+                <label class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                <input type="date" name="fecha_nacimiento" class="form-control" required>
               </div>
               <div class="col-md-12">
-                <label for="lugar_nacimiento" class="form-label">Lugar de Nacimiento</label>
-                <input type="text" class="form-control" id="lugar_nacimiento" name="lugar_nacimiento"
-                  placeholder="Ciudad, Estado">
+                <label class="form-label">Lugar de Nacimiento</label>
+                <input type="text" class="form-control" name="lugar_nacimiento">
               </div>
             </div>
           </div>
@@ -220,8 +470,8 @@
             </h6>
             <div class="row g-3">
               <div class="col-md-4">
-                <label for="grado" class="form-label">Grado <span class="text-danger">*</span></label>
-                <select id="grado" name="grado" class="form-select" required>
+                <label class="form-label">Grado <span class="text-danger">*</span></label>
+                <select name="grado" class="form-select" required>
                   <option value="">Seleccione grado</option>
                   {% for grado in grados %}
                   <option value="{{ grado.nombre }}">{{ grado.nombre }}</option>
@@ -229,8 +479,8 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label for="seccion" class="form-label">Sección <span class="text-danger">*</span></label>
-                <select id="seccion" name="seccion" class="form-select" required>
+                <label class="form-label">Sección <span class="text-danger">*</span></label>
+                <select name="seccion" class="form-select" required>
                   <option value="">Seleccione sección</option>
                   {% for seccion in secciones %}
                   <option value="{{ seccion.letra }}">{{ seccion.letra }}</option>
@@ -238,8 +488,8 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label for="turno" class="form-label">Turno <span class="text-danger">*</span></label>
-                <select id="turno" name="turno" class="form-select" required>
+                <label class="form-label">Turno <span class="text-danger">*</span></label>
+                <select name="turno" class="form-select" required>
                   <option value="">Seleccione turno</option>
                   {% for turno in turnos %}
                   <option value="{{ turno.nombre }}">{{ turno.nombre }}</option>
@@ -249,86 +499,49 @@
             </div>
           </div>
 
-          <!-- TALLAS -->
-          <div class="mb-4">
-            <h6 class="text-primary mb-3">
-              <i class="bi bi-rulers me-2"></i>Tallas de Uniforme
-            </h6>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="talla_camisa" class="form-label">Talla Camisa</label>
-                <input type="text" class="form-control" id="talla_camisa" name="talla_camisa" placeholder="S, M, L, XL">
-              </div>
-              <div class="col-md-4">
-                <label for="talla_pantalon" class="form-label">Talla Pantalón</label>
-                <input type="text" class="form-control" id="talla_pantalon" name="talla_pantalon"
-                  placeholder="28, 30, 32">
-              </div>
-              <div class="col-md-4">
-                <label for="talla_zapato" class="form-label">Talla Zapato</label>
-                <input type="text" class="form-control" id="talla_zapato" name="talla_zapato" placeholder="35, 36, 37">
-              </div>
-            </div>
-          </div>
-
           <!-- DATOS DEL REPRESENTANTE -->
           <div class="mb-4">
             <h6 class="text-primary mb-3">
               <i class="bi bi-person-vcard-fill me-2"></i>Datos del Representante
             </h6>
-            <div class="alert alert-info">
-              <small>
-                <i class="bi bi-info-circle me-1"></i>
-                Si el representante ya existe en el sistema, solo ingresa su cédula y sus datos se actualizarán.
-              </small>
-            </div>
             <div class="row g-3">
               <div class="col-md-6">
-                <label for="rep_nombres" class="form-label">Nombres <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="rep_nombres" name="rep_nombres" required>
+                <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="rep_nombres" required>
               </div>
               <div class="col-md-6">
-                <label for="rep_apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="rep_apellidos" name="rep_apellidos" required>
+                <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="rep_apellidos" required>
               </div>
               <div class="col-md-4">
-                <label for="rep_cedula" class="form-label">Cédula <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="rep_cedula" name="rep_cedula" placeholder="V-12345678"
-                  required>
+                <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="rep_cedula" required>
               </div>
               <div class="col-md-4">
-                <label for="rep_telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="rep_telefono" name="rep_telefono" placeholder="0412-1234567"
-                  required>
+                <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="rep_telefono" required>
               </div>
               <div class="col-md-4">
-                <label for="rep_correo" class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" id="rep_correo" name="rep_correo"
-                  placeholder="correo@ejemplo.com">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" name="rep_correo">
               </div>
               <div class="col-md-12">
-                <label for="rep_direccion" class="form-label">Dirección</label>
-                <textarea class="form-control" id="rep_direccion" name="rep_direccion" rows="2"
-                  placeholder="Dirección completa del representante"></textarea>
+                <label class="form-label">Dirección</label>
+                <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
               </div>
             </div>
           </div>
 
-          <!-- OBSERVACIONES -->
+          <!-- Observaciones -->
           <div class="mb-3">
-            <label for="observaciones" class="form-label">
-              <i class="bi bi-chat-left-text me-1"></i>Observaciones
-            </label>
-            <textarea id="observaciones" name="observaciones" class="form-control" rows="3"
-              placeholder="Información adicional relevante sobre el estudiante..."></textarea>
+            <label class="form-label">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="3"></textarea>
           </div>
 
           <div class="modal-footer">
-            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
-              <i class="bi bi-x-circle me-1"></i>Cancelar
-            </button>
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
             <button class="btn btn-success" type="submit">
-              <i class="bi bi-check-circle me-1"></i>Guardar Estudiante
+              <i class="bi bi-check-circle me-1"></i>Registrar estudiante
             </button>
           </div>
         </form>
@@ -369,7 +582,6 @@
 
 {% block scripts %}
 <script>
-  // Script para limpiar el formulario cuando se cierre el modal
   document.getElementById('modalEst').addEventListener('hidden.bs.modal', function () {
     document.getElementById('formEst').reset();
   });
