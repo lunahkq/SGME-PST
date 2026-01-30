@@ -5,169 +5,274 @@
 
 {% block content %}
 
-<h2 class="fw-semibold mb-3">Gestión de Representantes</h2>
+<div class="container-fluid py-3">
+  <!-- Título -->
+  <h2 class="fw-semibold mb-4 text-primary">Gestión de Representantes</h2>
 
-<!-- Filtros y barra de búsqueda -->
-<form method="get" class="row g-2 mb-3">
+  <!-- Mensajes de éxito -->
+  {% if messages %}
+    <div class="alert alert-success alert-dismissible fade show mb-4 border-0" role="alert" style="border-radius: 10px;">
+      <i class="fas fa-check-circle me-2"></i>
+      {% for message in messages %}
+        <strong>{{ message }}</strong>
+      {% endfor %}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endif %}
 
-  <!-- Búsqueda por nombres/apellidos -->
-  <div class="col-12 col-md-4">
-    <input type="text"
-           name="q"
-           value="{{ q|default_if_none:'' }}"
-           class="form-control"
-           placeholder="Buscar por nombres o apellidos">
-  </div>
-
-  <div class="col-12 col-md-2">
-    <select name="grado" class="form-select">
-      <option value="">Todos los grados</option>
-      <!-- GRADOS DE 1RO A 6TO -->
-      <option value="1" {% if grado == "1" %}selected{% endif %}>1°</option>
-      <option value="2" {% if grado == "2" %}selected{% endif %}>2°</option>
-      <option value="3" {% if grado == "3" %}selected{% endif %}>3°</option>
-      <option value="4" {% if grado == "4" %}selected{% endif %}>4°</option>
-      <option value="5" {% if grado == "5" %}selected{% endif %}>5°</option>
-      <option value="6" {% if grado == "6" %}selected{% endif %}>6°</option>
-    </select>
-  </div>
-
-  <div class="col-12 col-md-2">
-    <select name="seccion" class="form-select">
-      <option value="">Todas las secciones</option>
-      <option value="A" {% if seccion == "A" %}selected{% endif %}>A</option>
-      <option value="B" {% if seccion == "B" %}selected{% endif %}>B</option>
-      <option value="C" {% if seccion == "C" %}selected{% endif %}>C</option>
-    </select>
-  </div>
-
-  <div class="col-12 col-md-2">
-    <select name="estado" class="form-select">
-      <option value="">Todos</option>
-      <option value="activo" {% if estado == "activo" %}selected{% endif %}>Activo</option>
-      <option value="inactivo" {% if estado == "inactivo" %}selected{% endif %}>Inactivo</option>
-    </select>
-  </div>
-
-  <div class="col-12 col-md-2">
-    <button class="btn btn-primary w-100" type="submit">Filtrar</button>
-  </div>
-</form>
-
-<!-- Tabla de representantes -->
-<div class="table-responsive">
-  <table class="table align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Nombres</th>
-        <th>Apellidos</th>
-        <th>Cédula</th>
-        <th>Teléfono</th>
-        <th>Correo electrónico</th>
-        <th>Estudiantes asociados</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for p in parents %}
-      <tr>
-        <td>{{ p.nombres }}</td>
-        <td>{{ p.apellidos }}</td>
-        <td>{{ p.cedula }}</td>
-        <td>{{ p.telefono }}</td>
-        <td>{{ p.correo }}</td>
-        <td>{{ p.num_estudiantes }}</td>
-        <td>
-          <!-- Botón ver info completa -->
-          <button class="btn btn-sm btn-secondary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#infoParentModal{{ p.id_representante }}">
-            Ver información completa
+  <!-- Filtros - IGUAL QUE ESTUDIANTES -->
+  <div class="card-soft p-3 mb-3" style="border-radius: 10px; border: 1px solid #dee2e6;">
+    <form method="GET">
+      <div class="row g-2">
+        <div class="col-sm-3">
+          <input type="text"
+                 name="q"
+                 value="{{ q|default_if_none:'' }}"
+                 class="form-control"
+                 placeholder="Buscar por nombres o apellidos">
+        </div>
+        <div class="col-sm-2">
+          <select name="grado" class="form-select">
+            <option value="">Todos los grados</option>
+            <option value="1" {% if grado == "1" %}selected{% endif %}>1°</option>
+            <option value="2" {% if grado == "2" %}selected{% endif %}>2°</option>
+            <option value="3" {% if grado == "3" %}selected{% endif %}>3°</option>
+            <option value="4" {% if grado == "4" %}selected{% endif %}>4°</option>
+            <option value="5" {% if grado == "5" %}selected{% endif %}>5°</option>
+            <option value="6" {% if grado == "6" %}selected{% endif %}>6°</option>
+          </select>
+        </div>
+        <div class="col-sm-2">
+          <select name="seccion" class="form-select">
+            <option value="">Todas las secciones</option>
+            <option value="A" {% if seccion == "A" %}selected{% endif %}>A</option>
+            <option value="B" {% if seccion == "B" %}selected{% endif %}>B</option>
+            <option value="C" {% if seccion == "C" %}selected{% endif %}>C</option>
+          </select>
+        </div>
+        <div class="col-sm-2">
+          <select name="turno" class="form-select">
+            <option value="">Todos los turnos</option>
+            <option value="mañana" {% if turno == "mañana" %}selected{% endif %}>Mañana</option>
+            <option value="tarde" {% if turno == "tarde" %}selected{% endif %}>Tarde</option>
+          </select>
+        </div>
+        <div class="col-sm-1">
+          <select name="estado" class="form-select">
+            <option value="">Estado</option>
+            <option value="activo" {% if estado == "activo" %}selected{% endif %}>Activo</option>
+            <option value="inactivo" {% if estado == "inactivo" %}selected{% endif %}>Inactivo</option>
+          </select>
+        </div>
+        <div class="col-sm-1 d-flex">
+          <button class="btn btn-outline-primary me-2 w-100" type="submit">Aplicar</button>
+        </div>
+        <div class="col-sm-1 d-flex">
+          <button type="button" class="btn btn-outline-secondary w-100" onclick="window.location.href=window.location.pathname+'?';">
+            Reset
           </button>
-
-          <!-- Botón editar -->
-          <button class="btn btn-sm btn-warning"
-                  data-bs-toggle="modal"
-                  data-bs-target="#editParentModal{{ p.id_representante }}">
-            Editar
-          </button>
-        </td>
-      </tr>
-
-      <!-- Modal información completa -->
-      <div class="modal fade" id="infoParentModal{{ p.id_representante }}" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Información completa del representante</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <h6>Datos del representante</h6>
-              <p><strong>Cédula:</strong> {{ p.cedula }}</p>
-              <p><strong>Nombres:</strong> {{ p.nombres }}</p>
-              <p><strong>Apellidos:</strong> {{ p.apellidos }}</p>
-              <p><strong>Correo:</strong> {{ p.correo }}</p>
-              <p><strong>Teléfono:</strong> {{ p.telefono }}</p>
-              <p><strong>Dirección:</strong> {{ p.direccion }}</p>
-
-              <hr>
-              <h6>Estudiantes asociados</h6>
-              <ul class="mb-0">
-                <!-- Más adelante podemos rellenar esta parte desde la view -->
-                <li>Funcionalidad de estudiantes asociados en desarrollo.</li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
+    </form>
+  </div>
 
-      <!-- Modal Editar -->
-      <div class="modal fade" id="editParentModal{{ p.id_representante }}" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <form method="post" action="{% url 'parent_edit' p.id_representante %}">
-              {% csrf_token %}
-              <div class="modal-header">
-                <h5 class="modal-title">Editar representante</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <!-- CARD TABLA REPRESENTANTES -->
+  <div class="card shadow-sm border-0" style="border-radius: 12px; border: 1px solid #dee2e6;">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Nombres</th>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Apellidos</th>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Cédula</th>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Teléfono</th>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Correo</th>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Estudiantes</th>
+              <th class="border-top-0 py-3 px-4 fw-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for p in parents %}
+            <tr>
+              <td class="py-3 px-4 fw-semibold text-primary">{{ p.nombres }}</td>
+              <td class="py-3 px-4">{{ p.apellidos }}</td>
+              <td class="py-3 px-4">
+                <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">
+                  {{ p.cedula }}
+                </span>
+              </td>
+              <td class="py-3 px-4">{{ p.telefono }}</td>
+              <td class="py-3 px-4">{{ p.correo|slice:":25" }}{% if p.correo|length > 25 %}...{% endif %}</td>
+              <td class="py-3 px-4">
+                {% if p.num_estudiantes > 0 %}
+                  <span class="badge bg-success px-2 py-1 rounded-pill">{{ p.num_estudiantes }}</span>
+                {% else %}
+                  <span class="badge bg-secondary px-2 py-1 rounded-pill">0</span>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button class="btn btn-outline-primary px-3 py-1" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#infoParentModal{{ p.id_representante }}">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-outline-warning px-3 py-1" 
+                          data-bs-toggle="modal" 
+                          data-bs-target="#editParentModal{{ p.id_representante }}">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Modal Información Completa -->
+            <div class="modal fade" id="infoParentModal{{ p.id_representante }}" tabindex="-1">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+                  <div class="modal-header bg-primary text-white py-3" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="modal-title mb-0 fw-semibold">
+                      <i class="fas fa-user me-2"></i>{{ p.nombres }} {{ p.apellidos }}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body p-4">
+                    <div class="row g-4">
+                      <div class="col-lg-8">
+                        <h6 class="fw-bold text-primary mb-3">Información del Representante</h6>
+                        <div class="row g-3">
+                          <div class="col-md-6">
+                            <label class="fw-semibold text-muted small mb-1">Cédula</label>
+                            <p class="mb-0 fw-medium text-primary">{{ p.cedula }}</p>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="fw-semibold text-muted small mb-1">Estado</label>
+                            <span class="badge bg-success px-2 py-1">{% if p.estado == 'activo' %}Activo{% else %}Inactivo{% endif %}</span>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="fw-semibold text-muted small mb-1">Teléfono</label>
+                            <p class="mb-0">{{ p.telefono }}</p>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="fw-semibold text-muted small mb-1">Correo</label>
+                            <p class="mb-0">{{ p.correo }}</p>
+                          </div>
+                          <div class="col-12">
+                            <label class="fw-semibold text-muted small mb-1">Dirección</label>
+                            <p class="mb-0">{{ p.direccion|default:"No especificada" }}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4">
+                        <h6 class="fw-bold text-primary mb-3">Estudiantes Asociados</h6>
+                        {% if p.estudiantes_asociados %}
+                          <div class="list-group list-group-flush">
+                            {% for estudiante in p.estudiantes_asociados %}
+                              <div class="list-group-item px-2 py-2">
+                                <div class="d-flex justify-content-between">
+                                  <small>{{ estudiante.nombres }} {{ estudiante.apellidos }}</small>
+                                  <span class="badge bg-info">{{ estudiante.grado }}°{{ estudiante.seccion }}</span>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          </div>
+                        {% else %}
+                          <div class="text-center p-4 bg-light rounded" style="border-radius: 8px;">
+                            <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                            <p class="text-muted small mb-0">Sin estudiantes</p>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modal-footer border-0 bg-light py-2">
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cerrar</button>
+                  </div>
+                </div>
               </div>
-              <div class="modal-body">
-                <div class="mb-2">
-                  <label class="form-label">Nombres</label>
-                  <input type="text" name="nombres" value="{{ p.nombres }}" class="form-control">
-                </div>
-                <div class="mb-2">
-                  <label class="form-label">Apellidos</label>
-                  <input type="text" name="apellidos" value="{{ p.apellidos }}" class="form-control">
-                </div>
-                <div class="mb-2">
-                  <label class="form-label">Correo electrónico</label>
-                  <input type="email" name="correo" value="{{ p.correo }}" class="form-control">
-                </div>
-                <div class="mb-2">
-                  <label class="form-label">Teléfono</label>
-                  <input type="text" name="telefono" value="{{ p.telefono }}" class="form-control">
+            </div>
+
+            <!-- Modal Editar -->
+            <div class="modal fade" id="editParentModal{{ p.id_representante }}" tabindex="-1">
+              <div class="modal-dialog modal-lg">
+                <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+                  <div class="modal-header bg-warning text-dark py-3" style="border-radius: 12px 12px 0 0;">
+                    <h5 class="modal-title mb-0 fw-semibold">
+                      <i class="fas fa-edit me-2"></i>Editar Representante
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <form method="post" action="{% url 'parent_edit' p.id_representante %}">
+                    {% csrf_token %}
+                    <div class="modal-body p-4">
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Nombres *</label>
+                          <input type="text" name="nombres" value="{{ p.nombres }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Apellidos *</label>
+                          <input type="text" name="apellidos" value="{{ p.apellidos }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Cédula *</label>
+                          <input type="text" name="cedula" value="{{ p.cedula }}" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label fw-semibold">Teléfono *</label>
+                          <input type="tel" name="telefono" value="{{ p.telefono }}" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label fw-semibold">Correo</label>
+                          <input type="email" name="correo" value="{{ p.correo }}" class="form-control">
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label fw-semibold">Dirección</label>
+                          <textarea name="direccion" class="form-control" rows="2">{{ p.direccion }}</textarea>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light py-2">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary fw-semibold">Guardar Cambios</button>
+                    </div>
+                  </form>
                 </div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar cambios</button>
-              </div>
-            </form>
-          </div>
-        </div>
+            </div>
+
+          {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-5" style="background-color: #f8f9fa;">
+                <div class="text-muted py-4">
+                  <i class="fas fa-users fa-3x mb-3 opacity-75"></i>
+                  <h5 class="fw-semibold text-primary mb-2">No hay representantes registrados</h5>
+                  <p class="mb-0">Registra el primer representante</p>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
       </div>
-
-    {% empty %}
-      <tr>
-        <td colspan="6" class="text-center text-muted">
-          No hay representantes registrados.
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+    </div>
+  </div>
 </div>
 
+<style>
+tr:hover {
+  background-color: #e3f2fd !important;
+}
+.card-soft {
+  background-color: #f8f9fa;
+}
+@media (max-width: 768px) {
+  .btn-group-sm .btn {
+    padding: 0.375rem 0.75rem;
+  }
+}
+</style>
+
 {% endblock %}
+
