@@ -15,7 +15,7 @@ from django.db.models import Q, Count
 from django.contrib.auth import authenticate
 from datetime import date
 
-
+# Commit para ver si se arregla la cosa
 
 # Importando modelos de la base de datos
 from .models import AnioEscolar
