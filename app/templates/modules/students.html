@@ -151,6 +151,7 @@
                       data-bs-target="#modalVerEst{{ s.id_estudiante }}">
                 <i class="bi bi-person"></i>
               </button>
+
               <!-- Editar -->
               <button class="btn btn-sm btn-outline-primary me-1"
                       type="button"
@@ -159,53 +160,167 @@
                       data-bs-target="#modalEditEst{{ s.id_estudiante }}">
                 <i class="bi bi-pencil"></i>
               </button>
-              <!-- Retirar / Eliminar (aún sin lógica) -->
-              <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado">
+
+              <!-- Retirar (confirmación SI/NO) -->
+              <button class="btn btn-sm btn-outline-warning me-1"
+                      type="button"
+                      title="Marcar como retirado"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalConfirmRetiro"
+                      data-est-id="{{ s.id_estudiante }}"
+                      data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
                 <i class="bi bi-person-dash"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar">
+
+              <!-- Eliminar (pide contraseña) -->
+              <button class="btn btn-sm btn-outline-danger"
+                      type="button"
+                      title="Eliminar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEliminar"
+                      data-est-id="{{ s.id_estudiante }}"
+                      data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
                 <i class="bi bi-trash"></i>
               </button>
             </td>
           </tr>
 
-          <!-- Modal ver datos completos del estudiante -->
+          <!-- Modal ver datos completos del estudiante (mejorado) -->
           <div class="modal fade" id="modalVerEst{{ s.id_estudiante }}" tabindex="-1">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-xl">
               <div class="modal-content">
                 <div class="modal-header bg-light">
                   <h5 class="modal-title">
-                    <i class="bi bi-person me-2"></i>Datos completos del estudiante
+                    <i class="bi bi-person me-2"></i>Información completa del estudiante
                   </h5>
                   <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                  <h6 class="text-primary mb-2">Datos personales</h6>
-                  <p><strong>Nombres:</strong> {{ s.nombres }}</p>
-                  <p><strong>Apellidos:</strong> {{ s.apellidos }}</p>
-                  <p><strong>Cédula:</strong> {{ s.cedula|default:"Sin cédula" }}</p>
-                  <p><strong>Sexo:</strong>
-                    {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
-                  </p>
-                  <p><strong>Fecha de nacimiento:</strong> {{ s.fecha_nacimiento }}</p>
-                  <p><strong>Lugar de nacimiento:</strong> {{ s.lugar_nacimiento|default:"-" }}</p>
+                  <div class="row g-4">
+                    <!-- Columna datos del estudiante -->
+                    <div class="col-lg-6">
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-person-fill me-2"></i>Datos personales
+                      </h6>
+                      <div class="row g-2">
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Nombres</small>
+                          <span class="fw-semibold">{{ s.nombres }}</span>
+                        </div>
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Apellidos</small>
+                          <span class="fw-semibold">{{ s.apellidos }}</span>
+                        </div>
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Cédula / Carnet</small>
+                          <span>{{ s.cedula|default:"Sin cédula" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Sexo</small>
+                          <span>
+                            {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
+                          </span>
+                        </div>
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Fecha de nacimiento</small>
+                          <span>{{ s.fecha_nacimiento }}</span>
+                        </div>
+                        <div class="col-md-6">
+                          <small class="text-muted d-block">Lugar de nacimiento</small>
+                          <span>{{ s.lugar_nacimiento|default:"-" }}</span>
+                        </div>
+                      </div>
 
-                  <hr>
-                  <h6 class="text-primary mb-2">Datos de matrícula</h6>
-                  <p><strong>Grado:</strong> {{ s.matricula_activa.id_grado.nombre|default:"-" }}</p>
-                  <p><strong>Sección:</strong> {{ s.matricula_activa.id_seccion.letra|default:"-" }}</p>
-                  <p><strong>Turno:</strong> {{ s.matricula_activa.id_turno.nombre|default:"-" }}</p>
-                  <p><strong>Representante:</strong>
-                    {% if s.matricula_activa %}
-                      {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
-                    {% else %}-{% endif %}
-                  </p>
+                      <hr class="my-3">
 
-                  <hr>
-                  <h6 class="text-primary mb-2">Tallas de uniforme</h6>
-                  <p><strong>Camisa:</strong> {{ s.talla_camisa|default:"-" }}</p>
-                  <p><strong>Pantalón:</strong> {{ s.talla_pantalon|default:"-" }}</p>
-                  <p><strong>Zapato:</strong> {{ s.talla_zapato|default:"-" }}</p>
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-rulers me-2"></i>Tallas de uniforme
+                      </h6>
+                      <div class="row g-2">
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Camisa</small>
+                          <span>{{ s.talla_camisa|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Pantalón</small>
+                          <span>{{ s.talla_pantalon|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Zapato</small>
+                          <span>{{ s.talla_zapato|default:"-" }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Columna matrícula y representante -->
+                    <div class="col-lg-6">
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-book-fill me-2"></i>Datos de matrícula
+                      </h6>
+                      <div class="row g-2">
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Grado</small>
+                          <span>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Sección</small>
+                          <span>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Turno</small>
+                          <span>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</span>
+                        </div>
+                        <div class="col-12">
+                          <small class="text-muted d-block">Observaciones</small>
+                          <span>
+                            {% if s.matricula_activa %}
+                              {{ s.matricula_activa.observaciones|default:"Sin observaciones" }}
+                            {% else %}
+                              -
+                            {% endif %}
+                          </span>
+                        </div>
+                      </div>
+
+                      <hr class="my-3">
+
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-person-vcard-fill me-2"></i>Representante asociado
+                      </h6>
+                      {% if s.matricula_activa %}
+                        {% with rep=s.matricula_activa.id_representante %}
+                        <div class="row g-2">
+                          <div class="col-md-6">
+                            <small class="text-muted d-block">Nombres</small>
+                            <span class="fw-semibold">{{ rep.nombres }}</span>
+                          </div>
+                          <div class="col-md-6">
+                            <small class="text-muted d-block">Apellidos</small>
+                            <span class="fw-semibold">{{ rep.apellidos }}</span>
+                          </div>
+                          <div class="col-md-6">
+                            <small class="text-muted d-block">Cédula</small>
+                            <span>{{ rep.cedula }}</span>
+                          </div>
+                          <div class="col-md-6">
+                            <small class="text-muted d-block">Teléfono</small>
+                            <span>{{ rep.telefono|default:"-" }}</span>
+                          </div>
+                          <div class="col-12">
+                            <small class="text-muted d-block">Correo electrónico</small>
+                            <span>{{ rep.correo|default:"-" }}</span>
+                          </div>
+                          <div class="col-12">
+                            <small class="text-muted d-block">Dirección</small>
+                            <span>{{ rep.direccion|default:"No especificada" }}</span>
+                          </div>
+                        </div>
+                        {% endwith %}
+                      {% else %}
+                        <p class="text-muted mb-0">Sin representante asociado.</p>
+                      {% endif %}
+                    </div>
+                  </div>
                 </div>
                 <div class="modal-footer">
                   <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -228,6 +343,7 @@
                   <form method="post" action="{% url 'students' %}">
                     {% csrf_token %}
                     <input type="hidden" name="est_id" value="{{ s.id_estudiante }}">
+                    <input type="hidden" name="accion" value="editar">
 
                     <!-- DATOS DEL ESTUDIANTE -->
                     <div class="mb-4">
@@ -425,6 +541,7 @@
         <form id="formEst" method="post" action="{% url 'students' %}">
           {% csrf_token %}
           <input type="hidden" id="estId" name="est_id">
+          <input type="hidden" name="accion" value="crear">
 
           <!-- DATOS DEL ESTUDIANTE -->
           <div class="mb-4">
@@ -550,29 +667,65 @@
   </div>
 </div>
 
-<!-- Modal retirar -->
-<div class="modal fade" id="modalRetirar" tabindex="-1">
+<!-- Modal confirmar retiro (SI/NO) -->
+<div class="modal fade" id="modalConfirmRetiro" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header bg-warning">
         <h5 class="modal-title">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Retiro
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar retiro
         </h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p>
-          Para marcar al estudiante como <strong>Retirado</strong>, introduce tu contraseña
-          de administrador para confirmar esta acción.
+        <p id="textoConfirmRetiro" class="mb-0">
+          ¿Está seguro que quiere retirar este estudiante del año escolar?
         </p>
-        <label for="confirmAdminPass" class="form-label">Contraseña de Administrador</label>
-        <input type="password" id="confirmAdminPass" class="form-control" placeholder="Ingresa tu contraseña">
-        <input type="hidden" id="retirarEstId">
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-danger" type="button">
-          <i class="bi bi-person-dash me-1"></i>Confirmar Retiro
+        <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <form method="post" action="{% url 'students' %}" class="d-inline">
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="retirar">
+          <input type="hidden" name="est_id" id="retirarEstId">
+          <button class="btn btn-warning" type="submit">
+            <i class="bi bi-person-dash me-1"></i>Sí, retirar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal eliminar (pide contraseña) -->
+<div class="modal fade" id="modalEliminar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-trash3-fill me-2"></i>Eliminar estudiante
+        </h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p id="textoConfirmEliminar">
+          ¿Está seguro que quiere eliminar este estudiante de la base de datos?
+        </p>
+        <form method="post" action="{% url 'students' %}" id="formEliminarEst">
+          {% csrf_token %}
+          <input type="hidden" name="accion" value="eliminar">
+          <input type="hidden" name="est_id" id="eliminarEstId">
+          <div class="mb-3">
+            <label for="adminPass" class="form-label">Ingrese su contraseña para confirmar</label>
+            <input type="password" name="password" id="adminPass" class="form-control"
+                   placeholder="Contraseña de usuario" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+        <button class="btn btn-danger" type="submit" form="formEliminarEst">
+          <i class="bi bi-check-circle me-1"></i>Sí, eliminar
         </button>
       </div>
     </div>
@@ -582,8 +735,46 @@
 
 {% block scripts %}
 <script>
+  // Reset formulario de registro al cerrar
   document.getElementById('modalEst').addEventListener('hidden.bs.modal', function () {
     document.getElementById('formEst').reset();
   });
+
+  // Modal confirmar retiro
+  const modalRetiro = document.getElementById('modalConfirmRetiro');
+  if (modalRetiro) {
+    modalRetiro.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const estId = button.getAttribute('data-est-id');
+      const estNombre = button.getAttribute('data-est-nombre');
+      const inputId = modalRetiro.querySelector('#retirarEstId');
+      const texto = modalRetiro.querySelector('#textoConfirmRetiro');
+
+      inputId.value = estId;
+      texto.textContent =
+        `¿Está seguro que quiere retirar a ${estNombre} del año escolar actual?`;
+    });
+  }
+
+  // Modal eliminar
+  const modalEliminar = document.getElementById('modalEliminar');
+  if (modalEliminar) {
+    modalEliminar.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const estId = button.getAttribute('data-est-id');
+      const estNombre = button.getAttribute('data-est-nombre');
+      const inputId = modalEliminar.querySelector('#eliminarEstId');
+      const texto = modalEliminar.querySelector('#textoConfirmEliminar');
+      const passInput = modalEliminar.querySelector('#adminPass');
+
+      inputId.value = estId;
+      texto.textContent =
+        `¿Está seguro que quiere eliminar a ${estNombre} de la base de datos?`;
+      passInput.value = '';
+    });
+  }
 </script>
+
 {% endblock %}
+
+
