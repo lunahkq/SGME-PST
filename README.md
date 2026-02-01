@@ -20,8 +20,8 @@ _virtualenv recomendado_
 - Windows:
 ``` bash
 pip install virtualenv 
-virtualenv venv
-venv\Scripts\activate
+python -m venv venv
+venv\Scripts\activate.bat
 ```
   
 - Linux/macOS:
