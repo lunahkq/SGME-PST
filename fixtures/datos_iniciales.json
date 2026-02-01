@@ -1,0 +1,92 @@
+[
+  {
+    "model": "app.grado",
+    "pk": 1,
+    "fields": {
+      "nombre": "1er Grado",
+      "orden": 1
+    }
+  },
+  {
+    "model": "app.grado",
+    "pk": 2,
+    "fields": {
+      "nombre": "2do Grado",
+      "orden": 2
+    }
+  },
+  {
+    "model": "app.grado",
+    "pk": 3,
+    "fields": {
+      "nombre": "3er Grado",
+      "orden": 3
+    }
+  },
+  {
+    "model": "app.grado",
+    "pk": 4,
+    "fields": {
+      "nombre": "4to Grado",
+      "orden": 4
+    }
+  },
+  {
+    "model": "app.grado",
+    "pk": 5,
+    "fields": {
+      "nombre": "5to Grado",
+      "orden": 5
+    }
+  },
+  {
+    "model": "app.grado",
+    "pk": 6,
+    "fields": {
+      "nombre": "6to Grado",
+      "orden": 6
+    }
+  },
+  {
+    "model": "app.seccion",
+    "pk": 1,
+    "fields": {
+      "letra": "A"
+    }
+  },
+  {
+    "model": "app.seccion",
+    "pk": 2,
+    "fields": {
+      "letra": "B"
+    }
+  },
+  {
+    "model": "app.seccion",
+    "pk": 3,
+    "fields": {
+      "letra": "C"
+    }
+  },
+  {
+    "model": "app.seccion",
+    "pk": 4,
+    "fields": {
+      "letra": "D"
+    }
+  },
+  {
+    "model": "app.turno",
+    "pk": 1,
+    "fields": {
+      "nombre": "Mañana"
+    }
+  },
+  {
+    "model": "app.turno",
+    "pk": 2,
+    "fields": {
+      "nombre": "Tarde"
+    }
+  }
+]

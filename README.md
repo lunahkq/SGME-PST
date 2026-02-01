@@ -84,6 +84,11 @@ Si no hay ningún error, ejecuta:`python manage.py migrate`
 
 
 ---
+## Importar datos iniciales
+Grados, secciones y turnos
+``` bash
+python manage.py loaddata fixtures/datos_iniciales.json
+```
 
 # Importar roles
 Para poder porbar los accesos diferenciados de la aplicación, importar los grupos con:
