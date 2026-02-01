@@ -21,7 +21,8 @@ _virtualenv recomendado_
 ``` bash
 pip install virtualenv 
 python -m venv venv
-venv\Scripts\activate.bat
+venv\Scripts\activate.bat o
+.\venv\Scripts\Activate.ps1
 ```
   
 - Linux/macOS:
