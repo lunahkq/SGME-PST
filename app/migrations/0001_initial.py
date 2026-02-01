@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'anio_escolar',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'estudiante',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'grado',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'matricula',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'representante',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -95,7 +95,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'seccion',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -106,7 +106,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'turno',
-                'managed': False,
+                'managed': True,
             },
         ),
     ]
