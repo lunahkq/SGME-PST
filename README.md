@@ -76,9 +76,9 @@ TEMPLATE template1;
 
 ## Importar base de datos  
 
-Con el entorno virtual activado, ejecuta: `python manage.py makemigrations`  
-
-Si no hay ningún error, ejecuta:`python manage.py migrate`  
+``` bash
+python manage.py migrate
+```
 
 > NOTA: Asegurarse que el usuario de PostgreSQL que esta usando sea el anotado anteriormente en el .env y que tenga permisos para crear tablas en el esquema public de la base de datos sgme_bd para evitar errores.
 
