@@ -2,9 +2,19 @@
 
 {% block title %}Inicio - Dashboard{% endblock %}
 
-{% block content %}
+{% block head %}
+<style>
+  .chart-container {
+    position: relative; 
+    height: 160px;
+    width: 100%;
+    margin-top: 8px;
+  }
+</style>
+{% endblock %}
 
-<!-- BIENVENIDA -->
+{% block content %}
+<!-- TU DISEÑO EXACTO -->
 <div class="mb-4">
   <h2 class="fw-semibold">
     Bienvenid@, {{ request.user.first_name|default:request.user.username }} 
@@ -14,29 +24,23 @@
   </p>
 </div>
 
-<!-- HEADER DEL DASHBOARD -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h4 class="mb-0">Panel de control</h4>
     <small class="text-muted">Resumen de matrícula y estadísticas</small>
   </div>
-
   <a href="{% url 'students' %}" class="btn btn-action rounded-btn">
     <i class="bi bi-people me-2"></i> Gestionar Estudiantes
   </a>
 </div>
 
-<!-- TARJETAS -->
 <div class="row g-3 mb-3">
-
-  <!-- TOTAL MATRÍCULA -->
+  <!-- GRADO -->
   <div class="col-12 col-md-6 col-xl-4">
     <div class="p-3 card-soft h-100">
-      <h6 class="mb-2 text-primary">
-        Total por grado / sección / turno
-      </h6>
-      <div id="matricula-list" class="text-muted small">
-        Cargando datos de matrícula (modo demo)...
+      <h6 class="mb-2 text-primary">Estudiantes por grado</h6>
+      <div class="chart-container">
+        <canvas id="gradoChart"></canvas>
       </div>
     </div>
   </div>
@@ -44,27 +48,121 @@
   <!-- SEXO -->
   <div class="col-12 col-md-6 col-xl-4">
     <div class="p-3 card-soft h-100">
-      <h6 class="mb-2 text-primary">
-        Distribución por sexo
-      </h6>
-      <canvas id="sexoChart" height="120"></canvas>
+      <h6 class="mb-2 text-primary">Distribución por sexo</h6>
+      <div class="chart-container">
+        <canvas id="sexoChart"></canvas>
+      </div>
     </div>
   </div>
 
-  <!-- POR GRADO -->
+  <!-- AÑO -->
   <div class="col-12 col-md-6 col-xl-4">
     <div class="p-3 card-soft h-100">
-      <h6 class="mb-2 text-primary">
-        Estudiantes por grado
-      </h6>
-      <canvas id="gradoChart" height="120"></canvas>
+      <h6 class="mb-2 text-primary">Matrículas por año</h6>
+      <div class="chart-container">
+        <canvas id="yearChart"></canvas>
+      </div>
     </div>
   </div>
-
 </div>
-
 {% endblock %}
 
 {% block scripts %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// DATOS DESDE DJANGO
+window.gradeLabels = {{ grade_labels|safe|default:'["1ro","2do"]' }};
+window.gradeData = {{ grade_data|safe|default:'[1,0]' }};
+window.genderLabels = {{ gender_labels|safe|default:'["M","F"]' }};
+window.genderData = {{ gender_data|safe|default:'[1,0]' }};
+window.yearLabels = {{ year_labels|safe|default:'["2026"]' }};
+window.yearData = {{ year_data|safe|default:'[1]' }};
 
+// COLORES GRADO: 1ro CLARITO → 6to OSCURO
+const gradeColors = [
+  'rgba(170, 200, 255, 0.8)',  // 1ro - CLARÍSIMO 💙
+  'rgba(140, 180, 240, 0.8)',  // 2do
+  'rgba(110, 160, 225, 0.8)',  // 3ro
+  'rgba(80, 140, 210, 0.8)',   // 4to
+  'rgba(50, 120, 195, 0.85)',  // 5to
+  'rgba(25, 80, 170, 0.9)'     // 6to - OSCURÍSIMO 💙
+];
+
+// ESPERAR CARGA
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // 1. GRADO CHART - Azul degradé
+  const gradoCtx = document.getElementById('gradoChart').getContext('2d');
+  new Chart(gradoCtx, {
+    type: 'bar',
+    data: {
+      labels: window.gradeLabels,
+      datasets: [{
+        data: window.gradeData,
+        backgroundColor: gradeColors.slice(0, window.gradeLabels.length),
+        borderRadius: 4,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // 2. SEXO CHART - M=AZUL, F=ROSADO
+  const sexoCtx = document.getElementById('sexoChart').getContext('2d');
+  new Chart(sexoCtx, {
+    type: 'doughnut',
+    data: {
+      labels: window.genderLabels,
+      datasets: [{
+        data: window.genderData,
+        backgroundColor: window.genderLabels.map((label, index) => {
+          if (label.toUpperCase().includes('F') || label.toUpperCase().includes('FEMENINO')) {
+            return 'rgba(255, 182, 193, 0.85)';  // 💕 ROSADO para Femenino (F)
+          } else {
+            return 'rgba(100, 149, 237, 0.9)';   // 💙 AZUL para Masculino (M)
+          }
+        }),
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  // 3. AÑO CHART - Verde
+  const yearCtx = document.getElementById('yearChart').getContext('2d');
+  new Chart(yearCtx, {
+    type: 'line',
+    data: {
+      labels: window.yearLabels,
+      datasets: [{
+        data: window.yearData,
+        borderColor: '#2fa44f',
+        backgroundColor: 'rgba(47,164,79,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+});
+</script>
 {% endblock %}

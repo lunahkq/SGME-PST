@@ -126,12 +126,19 @@
             <td>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</td>
             <td>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</td>
             <td>
-              {% if s.sexo == "F" %}
-              <span class="badge bg-info">Femenino</span>
+ {% if s.sexo == "F" %}
+              <span class="badge px-3 py-2 fw-semibold" 
+                    style="background-color: rgba(255, 182, 193, 0.85); color: #000; border: 1px solid rgba(255, 182, 193, 0.3);">
+                Femenino
+              </span>
               {% elif s.sexo == "M" %}
-              <span class="badge bg-primary">Masculino</span>
+              <span class="badge px-3 py-2 fw-semibold" 
+                    style="background-color: rgba(100, 149, 237, 0.9); color: #fff; border: 1px solid rgba(100, 149, 237, 0.3);">
+                Masculino
+              </span>
               {% else %}
-              -
+              <span class="badge bg-secondary">-</span>
+              
               {% endif %}
             </td>
             <td>
@@ -218,7 +225,13 @@
                         <div class="col-md-6">
                           <small class="text-muted d-block">Sexo</small>
                           <span>
-                            {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
+                          {% if s.sexo == "F" %}
+<span class="badge" style="background-color: rgba(255, 182, 193, 0.85); color: #333; padding: 0.4em 0.8em;">Femenino</span>
+{% elif s.sexo == "M" %}
+<span class="badge" style="background-color: rgba(100, 149, 237, 0.9); color: #fff; padding: 0.4em 0.8em;">Masculino</span>
+{% else %}
+<span class="badge bg-secondary">Sin sexo</span>
+{% endif %}
                           </span>
                         </div>
                         <div class="col-md-6">
