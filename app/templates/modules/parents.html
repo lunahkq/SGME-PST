@@ -126,9 +126,9 @@
           </td>
         </tr>
 
-        <!-- Modal información completa -->
+        <!-- Modal información completa del representante -->
         <div class="modal fade" id="infoParentModal{{ p.id_representante }}" tabindex="-1">
-          <div class="modal-dialog modal-lg">
+          <div class="modal-dialog modal-xl">
             <div class="modal-content">
               <div class="modal-header bg-light">
                 <h5 class="modal-title">
@@ -137,19 +137,85 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
-                <h6 class="text-primary mb-2">Datos del representante</h6>
-                <p><strong>Cédula:</strong> {{ p.cedula }}</p>
-                <p><strong>Nombres:</strong> {{ p.nombres }}</p>
-                <p><strong>Apellidos:</strong> {{ p.apellidos }}</p>
-                <p><strong>Correo:</strong> {{ p.correo|default:"-" }}</p>
-                <p><strong>Teléfono:</strong> {{ p.telefono|default:"-" }}</p>
-                <p><strong>Dirección:</strong> {{ p.direccion|default:"-" }}</p>
+                <div class="row g-4">
+                  <!-- Columna datos del representante -->
+                  <div class="col-lg-6">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-person-fill me-2"></i>Datos personales
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Cédula</small>
+                        <span class="fw-semibold">{{ p.cedula }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Nombres</small>
+                        <span class="fw-semibold">{{ p.nombres }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Apellidos</small>
+                        <span class="fw-semibold">{{ p.apellidos }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Teléfono</small>
+                        <span>{{ p.telefono|default:"-" }}</span>
+                      </div>
+                      <div class="col-12">
+                        <small class="text-muted d-block">Correo electrónico</small>
+                        <span>{{ p.correo|default:"-" }}</span>
+                      </div>
+                      <div class="col-12">
+                        <small class="text-muted d-block">Dirección</small>
+                        <span>{{ p.direccion|default:"No especificada" }}</span>
+                      </div>
+                    </div>
+                  </div>
 
-                <hr>
-                <h6 class="text-primary mb-2">Estudiantes asociados</h6>
-                <ul class="mb-0">
-                  <li>Funcionalidad de estudiantes asociados en desarrollo.</li>
-                </ul>
+                  <!-- Columna estudiantes asociados - EXACTAMENTE 6 CAMPOS -->
+                  <div class="col-lg-6">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-people-fill me-2"></i>Estudiantes asociados
+                    </h6>
+                    {% if p.num_estudiantes > 0 %}
+                      {% for matricula in p.matricula_set.all %}
+                        {% with estudiante=matricula.id_estudiante %}
+                        <div class="border-start border-primary ps-3 mb-3 pb-2">
+                          <div class="row g-2">
+                            <div class="col-md-4">
+                              <small class="text-muted d-block">Nombres</small>
+                              <span class="fw-semibold">{{ estudiante.nombres }}</span>
+                            </div>
+                            <div class="col-md-4">
+                              <small class="text-muted d-block">Apellidos</small>
+                              <span class="fw-semibold">{{ estudiante.apellidos }}</span>
+                            </div>
+                            <div class="col-md-4">
+                              <small class="text-muted d-block">Cédula</small>
+                              <span>{{ estudiante.cedula|default:"-" }}</span>
+                            </div>
+                            <div class="col-md-4">
+                              <small class="text-muted d-block">Grado</small>
+                              <span>{{ matricula.id_grado.nombre }}</span>
+                            </div>
+                            <div class="col-md-4">
+                              <small class="text-muted d-block">Sección</small>
+                              <span>{{ matricula.id_seccion.letra }}</span>
+                            </div>
+                            <div class="col-md-4">
+                              <small class="text-muted d-block">Turno</small>
+                              <span>{% if matricula.turno == 'M' %}Mañana{% else %}Tarde{% endif %}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {% endwith %}
+                      {% endfor %}
+                    {% else %}
+                      <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle me-2"></i>No hay estudiantes asociados.
+                      </p>
+                    {% endif %}
+                  </div>
+                </div>
               </div>
               <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -218,4 +284,3 @@
 </div>
 
 {% endblock %}
-
