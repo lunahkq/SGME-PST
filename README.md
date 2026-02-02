@@ -8,8 +8,8 @@
 
 ## Clonar el repositorio
 ```bash
-git clone https://github.com/lunahkq/Sistema-Web-de-Gesti-n-de-Matr-cula-Escolar-Proyecto-SocioTecnologico.git
-cd "Sistema-Web-de-Gesti-n-de-Matr-cula-Escolar-Proyecto-SocioTecnologico"
+git clone https://github.com/lunahkq/SGME-PST.git
+cd "SGME-PST"
 ```
 
 ---
