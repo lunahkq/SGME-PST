@@ -367,6 +367,7 @@ def students_view(request):
         accion = request.POST.get("accion")
         est_id = request.POST.get("est_id")
 
+
         # RETIRAR ESTUDIANTE
         if accion == "retirar":
             try:
@@ -391,7 +392,7 @@ def students_view(request):
                 messages.error(request, f"Error al retirar estudiante: {str(e)}")
                 return redirect("students")
 
-        # ELIMINAR ESTUDIANTE
+        # ELIMINAR ESTUDIANTE + REPRESENTANTE HUÉRFANO (VERSIÓN FINAL CORREGIDA)
         elif accion == "eliminar":
             try:
                 estudiante = get_object_or_404(Estudiante, id_estudiante=est_id)
@@ -403,17 +404,44 @@ def students_view(request):
                     messages.error(request, "❌ Contraseña incorrecta. No se eliminó el estudiante.")
                     return redirect("students")
                 
-                # Eliminar primero matrículas relacionadas
-                Matricula.objects.filter(id_estudiante=estudiante).delete()
-                # Eliminar el estudiante
-                estudiante.delete()
-                messages.success(request, "✅ Estudiante eliminado permanentemente de la base de datos.")
+                with transaction.atomic():
+                    # OBTENER REPRESENTANTE ANTES DE ELIMINAR
+                    matricula_activa = Matricula.objects.filter(
+                        id_estudiante=estudiante,
+                        id_anio_escolar__activo=True
+                    ).select_related('id_representante').first()
+                    
+                    representante = None
+                    if matricula_activa and matricula_activa.id_representante:
+                        representante = matricula_activa.id_representante
+                    
+                    # 1. Eliminar TODAS las matrículas del estudiante PRIMERO
+                    Matricula.objects.filter(id_estudiante=estudiante).delete()
+                    
+                    # 2. Eliminar el estudiante
+                    estudiante.delete()
+                    
+                    messages.success(request, "✅ Estudiante eliminado permanentemente de la base de datos.")
+                    
+                    # 3. VERIFICAR Y ELIMINAR REPRESENTANTE SOLO SI REALMENTE ESTÁ HUÉRFANO
+                    if representante:
+                        # CONTAR matrículas restantes del representante (TODAS)
+                        count_matriculas = Matricula.objects.filter(
+                            id_representante=representante
+                        ).count()
+                        
+                        if count_matriculas == 0:
+                            representante.delete()
+                            messages.info(request, f"🗑️ Representante {representante.nombres} {representante.apellidos} eliminado (sin estudiantes).")
+                        else:
+                            messages.info(request, f"ℹ️ Representante conservado (tiene {count_matriculas} matrícula(s) restante(s)).")
+                
                 return redirect("students")
             except Exception as e:
                 messages.error(request, f"Error al eliminar estudiante: {str(e)}")
                 return redirect("students")
 
-        # CREAR / EDITAR ESTUDIANTE (tu código original)
+        # CREAR / EDITAR ESTUDIANTE 
         else:
             try:
                 with transaction.atomic():
@@ -544,6 +572,7 @@ def students_view(request):
                             'observaciones': observaciones,
                         }
                     )
+                    
 
                     if not mat_created:
                         matricula.id_representante = representante
@@ -660,7 +689,6 @@ def students_view(request):
         "q": q,
     }
     return render(request, "modules/students.html", contexto)
-
 
 
 
