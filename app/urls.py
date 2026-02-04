@@ -17,4 +17,7 @@ urlpatterns = [
     path ('academic/', views.academic_record, name = 'academic' ),
     path ('profile/', views.profile_user, name = 'profile_user' ),
     path ('help/', views.help, name = 'help' ),
+
+    # API
+    path('api/check_representative/<str:cedula>/', views.check_representative_by_cedula, name='check_representative'),
 ]

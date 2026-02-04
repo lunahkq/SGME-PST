@@ -45,7 +45,8 @@
     <div class="row g-2">
       <!-- Búsqueda -->
       <div class="col-12 col-md-3">
-        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control" placeholder="Buscar por nombre, apellidos o cédula">
+        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control"
+          placeholder="Buscar por nombre, apellidos o cédula">
       </div>
 
       <!-- Filtro Año Escolar (NUEVO) -->
@@ -396,47 +397,43 @@
                     </div>
                   </div>
 
-                  <!-- DATOS DE MATRÍCULA -->
-                  <div class="mb-4">
-                    <h6 class="text-primary mb-3">
-                      <i class="bi bi-book-fill me-2"></i>Datos de Matrícula
-                    </h6>
-                    <div class="row g-3">
-                      <div class="col-md-4">
-                        <label class="form-label">Grado <span class="text-danger">*</span></label>
-                        <select name="grado" class="form-select" required>
-                          <option value="">Seleccione grado</option>
-                          {% for grado in grados %}
-                          <option value="{{ grado.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
-                            {{ grado.nombre }}
-                          </option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Sección <span class="text-danger">*</span></label>
-                        <select name="seccion" class="form-select" required>
-                          <option value="">Seleccione sección</option>
-                          {% for seccion in secciones %}
-                          <option value="{{ seccion.letra }}" {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>
-                            {{ seccion.letra }}
-                          </option>
-                          {% endfor %}
-                        </select>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Turno <span class="text-danger">*</span></label>
-                        <select name="turno" class="form-select" required>
-                          <option value="">Seleccione turno</option>
-                          {% for turno in turnos %}
-                          <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>
-                            {{ turno.nombre }}
-                          </option>
-                          {% endfor %}
-                        </select>
+                    <!-- DATOS DE MATRÍCULA -->
+                    <div class="mb-4">
+                      <h6 class="text-primary mb-3">
+                        <i class="bi bi-book-fill me-2"></i>Datos de Matrícula
+                      </h6>
+                      <div class="row g-3">
+                        <div class="col-md-4">
+                          <label class="form-label">Grado <span class="text-danger">*</span></label>
+                          <select name="grado" class="form-select" required>
+                            <option value="">Seleccione grado</option>
+                            {% for grado in grados %}
+                              <option value="{{ grado.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>{{ grado.nombre }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
                       </div>
                     </div>
+
+                  <div class="col-md-4">
+                    <label class="form-label">Sección <span class="text-danger">*</span></label>
+                    <select name="seccion" class="form-select" required>
+                      <option value="">Seleccione sección</option>
+                      {% for seccion in secciones %}
+                        <option value="{{ seccion.letra }}" {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>{{ seccion.letra }}</option>
+                      {% endfor %}
+                    </select>
                   </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Turno <span class="text-danger">*</span></label>
+                    <select name="turno" class="form-select" required>
+                      <option value="">Seleccione turno</option>
+                      {% for turno in turnos %}
+                        <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>{{ turno.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
                   <!-- DATOS DE UNIFORME -->
                   <div class="mb-4">
                     <h6 class="text-primary mb-3">
@@ -457,7 +454,6 @@
                       </div>
                     </div>
                   </div>
-
                   <!-- DATOS DEL REPRESENTANTE -->
                   <div class="mb-4">
                     <h6 class="text-primary mb-3">
@@ -465,67 +461,77 @@
                     </h6>
                     <div class="row g-3">
                       {% if s.matricula_activa %}
-                      {% with rep=s.matricula_activa.id_representante %}
-                      <div class="col-md-6">
-                        <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_nombres" value="{{ rep.nombres }}" required>
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_apellidos" value="{{ rep.apellidos }}"
-                          required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_cedula" value="{{ rep.cedula }}" required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_telefono" value="{{ rep.telefono }}" required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" name="rep_correo" value="{{ rep.correo }}">
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label">Dirección</label>
-                        <textarea class="form-control" name="rep_direccion" rows="2">{{ rep.direccion }}</textarea>
-                      </div>
-                      {% endwith %}
+                        {% with rep=s.matricula_activa.id_representante %}
+                          <div class="col-md-6">
+                            <label class="form-label">
+                              Nombres{% if not rep.nombres %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            <input type="text" class="form-control" name="rep_nombres" value="{{ rep.nombres|default:'' }}"
+                              {% if rep.nombres %}required="false"{% else %}required{% endif %}>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label">
+                              Apellidos{% if not rep.apellidos %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            <input type="text" class="form-control" name="rep_apellidos" value="{{ rep.apellidos|default:'' }}"
+                              {% if rep.apellidos %}required="false"{% else %}required{% endif %}>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="rep_cedula" value="{{ rep.cedula }}" required>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">
+                              Teléfono{% if not rep.telefono %}<span class="text-danger">*</span>{% endif %}
+                            </label>
+                            <input type="text" class="form-control" name="rep_telefono" value="{{ rep.telefono|default:'' }}"
+                              {% if rep.telefono %}required="false"{% else %}required{% endif %}>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" name="rep_correo" value="{{ rep.correo|default:'' }}">
+                          </div>
+                          <div class="col-md-12">
+                            <label class="form-label">Dirección</label>
+                            <textarea class="form-control" name="rep_direccion" rows="2">{{ rep.direccion|default:'' }}</textarea>
+                          </div>
+                        {% endwith %}
                       {% else %}
-                      <!-- Sin matrícula activa: campos vacíos -->
-                      <div class="col-md-6">
-                        <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_nombres" required>
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_apellidos" required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_cedula" required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="rep_telefono" required>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" name="rep_correo">
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label">Dirección</label>
-                        <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
-                      </div>
+                        <!-- Sin matrícula activa: campos vacíos -->
+                        <div class="col-md-6">
+                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_nombres" required>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_apellidos" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_cedula" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                          <input type="text" class="form-control" name="rep_telefono" required>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label">Correo Electrónico</label>
+                          <input type="email" class="form-control" name="rep_correo">
+                        </div>
+                        <div class="col-md-12">
+                          <label class="form-label">Dirección</label>
+                          <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
+                        </div>
                       {% endif %}
                     </div>
                   </div>
 
+
                   <!-- Observaciones -->
                   <div class="mb-3">
                     <label class="form-label">Observaciones</label>
-                    <textarea name="observaciones" class="form-control" rows="3">{% if s.matricula_activa %}{{ s.matricula_activa.observaciones }}{% endif %}</textarea>
+                    <textarea name="observaciones" class="form-control"
+                      rows="3">{% if s.matricula_activa %}{{ s.matricula_activa.observaciones }}{% endif %}</textarea>
                   </div>
 
                   <div class="modal-footer">
@@ -786,6 +792,28 @@
   document.getElementById('modalEst').addEventListener('hidden.bs.modal', function () {
     document.getElementById('formEst').reset();
   });
+
+  // AUTO-FILL REPRESENTANTE
+  const repCedulaInput = document.querySelector('#formEst input[name="rep_cedula"]');
+  if (repCedulaInput) {
+    repCedulaInput.addEventListener('blur', function () {
+      const cedula = this.value.trim();
+      if (cedula) {
+        fetch(`/api/check_representative/${cedula}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.found) {
+              document.querySelector('#formEst input[name="rep_nombres"]').value = data.nombres;
+              document.querySelector('#formEst input[name="rep_apellidos"]').value = data.apellidos;
+              document.querySelector('#formEst input[name="rep_telefono"]').value = data.telefono;
+              document.querySelector('#formEst input[name="rep_correo"]').value = data.correo || '';
+              document.querySelector('#formEst textarea[name="rep_direccion"]').value = data.direccion || '';
+            }
+          })
+          .catch(err => console.error('Error fetching representative:', err));
+      }
+    });
+  }
 
   // Modal confirmar retiro
   const modalRetiro = document.getElementById('modalConfirmRetiro');

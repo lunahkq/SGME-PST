@@ -1024,3 +1024,24 @@ def reporte_matricula(request):
         "estudiantes": estudiantes,
     }
     return render(request, "matricula/reporte_matricula.html", context)
+
+
+# API para verificar representante
+from django.http import JsonResponse
+
+@login_required
+def check_representative_by_cedula(request, cedula):
+    try:
+        rep = Representante.objects.get(cedula=cedula)
+        data = {
+            'found': True,
+            'nombres': rep.nombres,
+            'apellidos': rep.apellidos,
+            'telefono': rep.telefono,
+            'correo': rep.correo,
+            'direccion': rep.direccion
+        }
+    except Representante.DoesNotExist:
+        data = {'found': False}
+    
+    return JsonResponse(data)
