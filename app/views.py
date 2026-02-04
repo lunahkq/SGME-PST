@@ -88,16 +88,19 @@ def home_view(request):
     gender_labels = [item['sexo'] or 'No especificado' for item in students_by_gender]
     gender_data = [item['total'] for item in students_by_gender]
     
-    # 3. GRÁFICO: Matrículas por Año (usando fecha_matricula de Matricula)
+    # 3. GRÁFICO: Matrículas por Año Escolar (últimos 5)
     records_by_year = (
         Matricula.objects
-        .annotate(year=TruncYear('fecha_matricula'))
-        .values('year')
+        .values('id_anio_escolar__anio_escolar')
         .annotate(total=Count('id_matricula'))
-        .order_by('year')
+        .order_by('-id_anio_escolar__fecha_inicio')[:5]  # Últimos 5 cronológicamente
     )
-    year_labels = [str(item['year'].year) if item['year'] else 'Sin fecha' for item in records_by_year]
-    year_data = [item['total'] for item in records_by_year]
+    
+    # Convertir a lista e invertir para que en el gráfico salgan de izquierda a derecha (antiguo -> nuevo)
+    records_list = list(reversed(records_by_year))
+    
+    year_labels = [item['id_anio_escolar__anio_escolar'] for item in records_list]
+    year_data = [item['total'] for item in records_list]
     
     # CONTEXT EXACTO para tu template narbar.html
     context = {

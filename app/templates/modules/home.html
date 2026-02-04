@@ -58,7 +58,7 @@
   <!-- AÑO -->
   <div class="col-12 col-md-6 col-xl-4">
     <div class="p-3 card-soft h-100">
-      <h6 class="mb-2 text-primary">Matrículas por año</h6>
+      <h6 class="mb-2 text-primary">Matrículados por año</h6>
       <div class="chart-container">
         <canvas id="yearChart"></canvas>
       </div>
@@ -81,12 +81,12 @@ window.yearData = {{ year_data|safe|default:'[1]' }};
 
 // COLORES GRADO: 1ro CLARITO → 6to OSCURO
 const gradeColors = [
-  'rgba(170, 200, 255, 0.8)',  // 1ro - CLARÍSIMO 💙
+  'rgba(170, 200, 255, 0.8)',  // 1ro - CLARÍSIMO
   'rgba(140, 180, 240, 0.8)',  // 2do
   'rgba(110, 160, 225, 0.8)',  // 3ro
   'rgba(80, 140, 210, 0.8)',   // 4to
   'rgba(50, 120, 195, 0.85)',  // 5to
-  'rgba(25, 80, 170, 0.9)'     // 6to - OSCURÍSIMO 💙
+  'rgba(25, 80, 170, 0.9)'     // 6to - OSCURÍSIMO
 ];
 
 // ESPERAR CARGA
