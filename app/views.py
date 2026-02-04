@@ -669,16 +669,61 @@ def students_view(request):
 
     # Aplicar filtro de estado
     if selected_estado == "Activo":
-        # "Activo" para el usuario significa: Activo, Nuevo o Regular
-        matriculas = matriculas.filter(estado__in=["Activo", "Nuevo", "Regular"])
-    elif selected_estado == "Retirado":
-        matriculas = matriculas.filter(estado="Retirado")
-    # Si selected_estado == "" (Todos), no filtramos nada
-        
-    matriculas = matriculas.select_related('id_grado', 'id_seccion', 'id_turno', 'id_representante')
+        # "Activo" agrupa: Nuevo, Regular, Repetido (y por seguridad "Activo")
+        matriculas = matriculas.filter(estado__in=["Activo", "Nuevo", "Regular", "Repetido"])
+        # Filtramos estudiantes que tengan esas matrículas
+        student_ids = matriculas.values_list('id_estudiante_id', flat=True)
+        estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
 
-    student_ids = matriculas.values_list('id_estudiante_id', flat=True)
-    estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
+    elif selected_estado == "Inactivo":
+        # "Inactivo" agrupa: Inactivo, Retirado Y los que NO tienen matrícula en el año (si hay año filtro)
+        if anio_filtro:
+            # 1. Identificar estudiantes ACTIVOS en este año
+            active_ids = Matricula.objects.filter(
+                id_anio_escolar=anio_filtro,
+                estado__in=["Activo", "Nuevo", "Regular", "Repetido"]
+            ).values_list('id_estudiante', flat=True)
+            
+            # 2. Excluir a los activos (quedan Retirados, Inactivos y SIN matrícula)
+            estudiantes = estudiantes.exclude(id_estudiante__in=active_ids)
+            
+            # No filtramos 'matriculas' aquí porque necesitamos que contenga las de 'Retirado'
+            # para mostrarlas en la tabla. 'matriculas' trae TODO del año filtro.
+        else:
+            # Si no hay año filtro, "Inactivo" solo puede ser los explícitamente marcados
+            matriculas = matriculas.filter(estado__in=["Inactivo", "Retirado"])
+            student_ids = matriculas.values_list('id_estudiante_id', flat=True)
+            estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
+
+    # Si selected_estado == "" (Todos), no filtramos nada, pero:
+    elif selected_estado == "":
+         # Si estamos viendo TODOS, y hay año filtro, la logica actual de estudiantes toma 
+         # student_ids from matriculas. Esto OCULTA a los "Sin matrícula". 
+         # Para ver "Todos" real (incluyendo sin matricula en este año), NO debemos filtrar estudiantes por matricula.
+         pass
+         
+    # IMPORTANTE: Si NO filtramos estudiantes por matriculas (Active o Inactivo case 1), 
+    # entonces student_ids NO debe restringir.
+    
+    # Lógica original restringía siempre:
+    # student_ids = matriculas.values_list('id_estudiante_id', flat=True)
+    # estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
+    
+    # NUEVA LÓGICA DE VINCULACIÓN:
+    # Solo aplicamos el filtro inverso si NO es el caso de "Inactivo" con año filtro,
+    # y si NO es el caso de "Todos".
+    # Pero espera, si selecciono "Activo", ya filtré arriba.
+    # Si selecciono "Inactivo" (con año), ya filtré exclude arriba.
+    # Si selecciono "Todos", quiero VER TODOS (incluso sin matricula).
+    
+    # Entonces, ELIMINAMOS el filtro genérico de abajo y confiamos en los ifs.
+    # Pero debemos filtrar por otros criterios (grado, seccion) si aplican.
+    
+    if grado or seccion or turno:
+        # Si hay filtros de atributo de matricula, entonces SÍ debemos restringir a quienes tengan esa matricula
+        # IMPORTANTE: Esto ocultará a los "Sin matrícula" si filtras por Grado (lógico, no tienen grado en este año).
+        student_ids_attr = matriculas.values_list('id_estudiante_id', flat=True)
+        estudiantes = estudiantes.filter(id_estudiante__in=student_ids_attr)
 
     matricula_map = {m.id_estudiante_id: m for m in matriculas}
     for est in estudiantes:
@@ -706,7 +751,7 @@ def students_view(request):
 
     context_estado = {
         "Activo": selected_estado == "Activo",
-        "Retirado": selected_estado == "Retirado",
+        "Inactivo": selected_estado == "Inactivo",
         "Todos": selected_estado == ""
     }
 
