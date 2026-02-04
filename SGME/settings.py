@@ -41,6 +41,11 @@ SESSION_COOKIE_SECURE = True  # Solo HTTPS en producción
 SESSION_COOKIE_HTTPONLY = True  # Protege contra XSS
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
 
+
+LOGIN_URL = '/'  # ← TU login en raíz '', NO /accounts/login/
+LOGOUT_REDIRECT_URL = '/'  # Tras logout → login
+LOGIN_REDIRECT_URL = '/home/'  # Tras login → dashboard
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -57,6 +62,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'app.middleware.SessionExpiryMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

@@ -154,6 +154,14 @@
         <hr class="separator" />
         <h3 class="sistema-titulo">Sistema de Gestión de Matrícula</h3>
 
+        {% if request.GET.expired %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-clock-history"></i> 
+                Sesión expirada por seguridad. Inicia sesión nuevamente.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endif %}
+
         <!-- Formulario de Login usando AuthenticationForm -->
         <form method="post">
             {% csrf_token %}
