@@ -58,10 +58,16 @@ def home_view(request):
     total_parents = Representante.objects.count()
     total_records = Matricula.objects.count()
     
-    # 1. GRÁFICO: Estudiantes por Grado (usando relación con Matricula)
+    # Obtener el Año Escolar Activo
+    anio_activo = AnioEscolar.objects.filter(activo=True).first()
+
+    # 1. GRÁFICO: Estudiantes por Grado (solo año activo)
     students_by_grade = (
         Estudiante.objects
-        .filter(matricula__estado__in=['Activo', 'Regular', 'Nuevo'])  # Solo estudiantes matriculados activos
+        .filter(
+            matricula__estado__in=['Activo', 'Regular', 'Nuevo'],
+            matricula__id_anio_escolar=anio_activo
+        )
         .values('matricula__id_grado__nombre')
         .annotate(total=Count('id_estudiante'))
         .order_by('matricula__id_grado__nombre')
@@ -69,9 +75,13 @@ def home_view(request):
     grade_labels = [item['matricula__id_grado__nombre'] or 'Sin grado' for item in students_by_grade]
     grade_data = [item['total'] for item in students_by_grade]
     
-    # 2. GRÁFICO: Estudiantes por Género (campo sexo del modelo Estudiante)
+    # 2. GRÁFICO: Estudiantes por Género (solo activos en el año actual)
     students_by_gender = (
         Estudiante.objects
+        .filter(
+            matricula__estado__in=['Activo', 'Regular', 'Nuevo'],
+            matricula__id_anio_escolar=anio_activo
+        )
         .values('sexo')
         .annotate(total=Count('id_estudiante'))
     )
