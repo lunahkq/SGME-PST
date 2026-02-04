@@ -434,7 +434,7 @@ def students_view(request):
                     # 2. Eliminar el estudiante
                     estudiante.delete()
                     
-                    messages.success(request, "✅ Estudiante eliminado permanentemente de la base de datos.")
+                    messages.success(request, "Estudiante eliminado permanentemente de la base de datos.")
                     
                     # 3. VERIFICAR Y ELIMINAR REPRESENTANTE SOLO SI REALMENTE ESTÁ HUÉRFANO
                     if representante:
@@ -445,9 +445,9 @@ def students_view(request):
                         
                         if count_matriculas == 0:
                             representante.delete()
-                            messages.info(request, f"🗑️ Representante {representante.nombres} {representante.apellidos} eliminado (sin estudiantes).")
+                            messages.info(request, f" Representante {representante.nombres} {representante.apellidos} eliminado (sin estudiantes).")
                         else:
-                            messages.info(request, f"ℹ️ Representante conservado (tiene {count_matriculas} matrícula(s) restante(s)).")
+                            messages.info(request, f" Representante conservado (tiene {count_matriculas} matrícula(s) restante(s)).")
                 
                 return redirect("students")
             except Exception as e:
@@ -866,6 +866,22 @@ def academic_record(request):
             messages.success(request, f"Año escolar {anio.anio_escolar} activado.")
         except AnioEscolar.DoesNotExist:
             messages.error(request, "El año escolar seleccionado no existe.")
+        return redirect("academic")
+
+    # Eliminar año escolar
+    if request.method == "POST" and request.POST.get("action") == "delete_year":
+        anio_id = request.POST.get("anio_id")
+        try:
+            anio = AnioEscolar.objects.get(id_anio_escolar=anio_id)
+            if anio.activo:
+                 messages.error(request, "No puedes eliminar el año escolar activo.")
+            else:
+                 anio.delete()
+                 messages.success(request, "Año escolar eliminado con éxito.")
+        except AnioEscolar.DoesNotExist:
+            messages.error(request, "El año escolar no existe.")
+        except Exception as e:
+            messages.error(request, f"Error al eliminar: {str(e)}")
         return redirect("academic")
 
     # Promoción / repetición / egreso
