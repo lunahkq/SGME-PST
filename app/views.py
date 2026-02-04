@@ -877,7 +877,7 @@ def academic_record(request):
                  messages.error(request, "No puedes eliminar el año escolar activo.")
             else:
                  anio.delete()
-                 messages.success(request, "Año escolar eliminado con éxito.")
+                 messages.error(request, "Año escolar eliminado con éxito.")
         except AnioEscolar.DoesNotExist:
             messages.error(request, "El año escolar no existe.")
         except Exception as e:
