@@ -34,6 +34,13 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 
+SESSION_COOKIE_AGE = 600  # 10 minutos 
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Logout al cerrar navegador
+SESSION_SAVE_EVERY_REQUEST = True  # Reinicia timer en cada página visitada
+SESSION_COOKIE_SECURE = True  # Solo HTTPS en producción
+SESSION_COOKIE_HTTPONLY = True  # Protege contra XSS
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+
 # Application definition
 
 INSTALLED_APPS = [
