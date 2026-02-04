@@ -45,13 +45,13 @@
     <div class="row g-2">
       <!-- Búsqueda -->
       <div class="col-12 col-md-3">
-        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control" placeholder="Buscar...">
+        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control" placeholder="Buscar por nombre, apellidos o cédula">
       </div>
 
       <!-- Filtro Año Escolar (NUEVO) -->
       <div class="col-6 col-md-2">
         <select name="anio" class="form-select">
-          <option value="">Año Actual</option>
+          <option value="">Todos los años escolares</option>
           {% for a in anios %}
           <option value="{{ a.id_anio_escolar }}" {% if a.id_anio_escolar == selected_anio_id %}selected{% endif %}>
             {{ a.anio_escolar }}
@@ -63,7 +63,7 @@
       <!-- Filtros existentes -->
       <div class="col-6 col-md-2">
         <select name="grado" id="filterGrado" class="form-select">
-          <option value="">Grado</option>
+          <option value="">Todos los grados</option>
           {% for grado in grados %}
           <option value="{{ grado.nombre }}" {% if grado.selected %}selected{% endif %}>{{ grado.nombre }}</option>
           {% endfor %}
@@ -71,7 +71,7 @@
       </div>
       <div class="col-6 col-md-1">
         <select name="seccion" id="filterSeccion" class="form-select">
-          <option value="">Sección</option>
+          <option value="">Todas las secciones</option>
           {% for seccion in secciones %}
           <option value="{{ seccion.letra }}" {% if seccion.selected %}selected{% endif %}>{{ seccion.letra }}</option>
           {% endfor %}
@@ -79,7 +79,7 @@
       </div>
       <div class="col-6 col-md-2">
         <select name="turno" id="filterTurno" class="form-select">
-          <option value="">Turno</option>
+          <option value="">Todos los turnos</option>
           {% for turno in turnos %}
           <option value="{{ turno.nombre }}" {% if turno.selected %}selected{% endif %}>{{ turno.nombre }}</option>
           {% endfor %}
@@ -87,7 +87,7 @@
       </div>
       <div class="col-6 col-md-1">
         <select name="sexo" id="filterSexo" class="form-select">
-          <option value="">Sexo</option>
+          <option value="">Todos los géneros</option>
           <option value="F" {% if selected_sexo.F %}selected{% endif %}>F</option>
           <option value="M" {% if selected_sexo.M %}selected{% endif %}>M</option>
         </select>
@@ -103,14 +103,15 @@
       <!-- BOTONES (Responsive) -->
       <div class="col-12 col-md-auto d-flex gap-2">
         <button class="btn btn-outline-primary flex-fill" type="submit" title="Filtrar">
-          <i class="bi bi-funnel"></i>
+          <i class="bi bi-funnel"></i> Aplicar
         </button>
         <a href="{% url 'students' %}" class="btn btn-outline-secondary flex-fill" title="Resetear filtros">
           <i class="bi bi-arrow-counterclockwise"></i>
+          Reset
         </a>
         <a href="#" class="btn btn-success flex-fill" onclick="alert('Reporte PDF próximamente disponible')"
           title="Reporte PDF">
-          <i class="bi bi-file-earmark-pdf"></i>
+          <i class="bi bi-file-earmark-pdf"></i> Generar Reporte
         </a>
       </div>
     </div>
