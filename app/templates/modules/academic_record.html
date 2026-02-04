@@ -3,17 +3,42 @@
 
 {% block content %}
 
-<!-- MENSAJES -->
+<!-- MENSAJES  -->
 {% if messages %}
-<div class="alert-container">
-  {% for message in messages %}
-  <div class="alert alert-success alert-dismissible fade show small" role="alert">
+{% for message in messages %}
+<div
+  class="alert 
+    {% if message.tags == 'success' %}alert-success
+    {% elif message.tags == 'error' %}alert-danger
+    {% else %}alert-info{% endif %} 
+  alert-dismissible fade show"
+  role="alert">
+
+  {% if "año escolar" in message|stringformat:"s"|lower and "creado" in message|stringformat:"s"|lower %}
+    <i class="bi bi-calendar-plus-fill me-2"></i>
+    <strong>Año Escolar creado correctamente.</strong><br>
+    <small>{{ message }}</small>
+
+  {% elif "año escolar" in message|stringformat:"s"|lower and "eliminado" in message|stringformat:"s"|lower %}
+    <i class="bi bi-trash-fill me-2"></i>
+    <strong>Año Escolar eliminado del sistema.</strong><br>
+    <small>{{ message }}</small>
+
+  {% elif "activo" in message|stringformat:"s"|lower %}
+    <i class="bi bi-calendar-check-fill me-2"></i>
+    <strong>Año Escolar activo actualizado.</strong><br>
+    <small>{{ message }}</small>
+
+  {% else %}
     {{ message }}
-    <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
-  </div>
-  {% endfor %}
+  {% endif %}
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
+{% endfor %}
 {% endif %}
+
+
 
 <!-- HEADER CON CONTADOR -->
 <div class="mb-4">
