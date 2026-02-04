@@ -717,6 +717,7 @@ def parents_list(request):
     q = request.GET.get('q', '')
     grado = request.GET.get('grado', '')
     seccion = request.GET.get('seccion', '')
+    turno = request.GET.get('turno', '')
     estado = request.GET.get('estado', '')
 
     parents = (
@@ -731,34 +732,62 @@ def parents_list(request):
             Q(cedula__icontains=q)
         )
 
-    # Filtro por grado (id_grado numérico que viene del select)
+    # Filtro por grado (nombre)
     if grado:
         parents = parents.filter(
-            matricula__id_grado__id_grado=grado
+            matricula__id_grado__nombre=grado
         ).distinct()
 
-    # Filtro por sección (A, B, C)
+    # Filtro por sección (letra)
     if seccion:
         parents = parents.filter(
             matricula__id_seccion__letra=seccion
         ).distinct()
 
-    # Filtro por estado de la matrícula (si decides usarlo)
-    if estado == 'activo':
+    # Filtro por turno (nombre)
+    if turno: # Corrección: ahora filtra por nombre del turno, no 'M'/'T'
+        parents = parents.filter(
+            matricula__id_turno__nombre=turno
+        ).distinct()
+
+    # Filtro por estado de la matrícula
+    if estado == 'Activo':
         parents = parents.filter(
             matricula__estado='Activo'
         ).distinct()
-    elif estado == 'inactivo':
+    elif estado == 'Inactivo': # Corrección: Inactivo capitalizado para consistencia
         parents = parents.filter(
             matricula__estado='Inactivo'
         ).distinct()
 
+    # Listas para los filtros (Dynamic)
+    grados = Grado.objects.all().order_by("orden")
+    secciones = Seccion.objects.all()
+    turnos = Turno.objects.all()
+
+    # Marcar seleccionados para mantener el estado en el filtro
+    grados_list = list(grados)
+    for g in grados_list:
+        g.selected = (g.nombre == grado)
+
+    secciones_list = list(secciones)
+    for s in secciones_list:
+        s.selected = (s.letra == seccion)
+
+    turnos_list = list(turnos)
+    for t in turnos_list:
+        t.selected = (t.nombre == turno) # Ahora comparamos con nombre completo
+
     context = {
         'parents': parents,
         'q': q,
-        'grado': grado,
-        'seccion': seccion,
-        'estado': estado,
+        'grados': grados_list,
+        'secciones': secciones_list,
+        'turnos': turnos_list,
+        'selected_grado': grado,
+        'selected_seccion': seccion,
+        'selected_turno': turno,
+        'selected_estado': estado,
     }
     return render(request, 'modules/parents.html', context)
 

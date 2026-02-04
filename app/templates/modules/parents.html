@@ -11,65 +11,67 @@
 </div>
 
 {% if messages %}
-  {% for message in messages %}
-  <div
-    class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
-    role="alert">
-    {{ message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  {% endfor %}
+{% for message in messages %}
+<div
+  class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
+  role="alert">
+  {{ message }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
 {% endif %}
 
 <!-- Filtros (mismo estilo que estudiantes) -->
 <div class="card-soft p-3 mb-3">
   <form method="GET" action="{% url 'parents' %}">
     <div class="row g-2">
-      <div class="col-sm-3">
-        <input type="text"
-               name="q"
-               value="{{ q|default_if_none:'' }}"
-               class="form-control"
-               placeholder="Buscar por nombres, apellidos o cédula">
+      <!-- Búsqueda -->
+      <div class="col-12 col-md-3">
+        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control"
+          placeholder="Buscar por nombres, apellidos o cédula">
       </div>
-      <div class="col-sm-2">
+
+      <!-- Filtros Dinámicos -->
+      <div class="col-6 col-md-2">
         <select name="grado" class="form-select">
           <option value="">Todos los grados</option>
-          <option value="1" {% if grado == "1" %}selected{% endif %}>1°</option>
-          <option value="2" {% if grado == "2" %}selected{% endif %}>2°</option>
-          <option value="3" {% if grado == "3" %}selected{% endif %}>3°</option>
-          <option value="4" {% if grado == "4" %}selected{% endif %}>4°</option>
-          <option value="5" {% if grado == "5" %}selected{% endif %}>5°</option>
-          <option value="6" {% if grado == "6" %}selected{% endif %}>6°</option>
+          {% for g in grados %}
+          <option value="{{ g.nombre }}" {% if g.selected %}selected{% endif %}>{{ g.nombre }}</option>
+          {% endfor %}
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-6 col-md-2">
         <select name="seccion" class="form-select">
           <option value="">Todas las secciones</option>
-          <option value="A" {% if seccion == "A" %}selected{% endif %}>A</option>
-          <option value="B" {% if seccion == "B" %}selected{% endif %}>B</option>
-          <option value="C" {% if seccion == "C" %}selected{% endif %}>C</option>
+          {% for s in secciones %}
+          <option value="{{ s.letra }}" {% if s.selected %}selected{% endif %}>{{ s.letra }}</option>
+          {% endfor %}
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-6 col-md-2">
         <select name="turno" class="form-select">
           <option value="">Todos los turnos</option>
-          <option value="M" {% if turno == "M" %}selected{% endif %}>Mañana</option>
-          <option value="T" {% if turno == "T" %}selected{% endif %}>Tarde</option>
+          {% for t in turnos %}
+          <option value="{{ t.nombre }}" {% if t.selected %}selected{% endif %}>{{ t.nombre }}</option>
+          {% endfor %}
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-6 col-md-2">
         <select name="estado" class="form-select">
           <option value="">Todos</option>
-          <option value="activo" {% if estado == "activo" %}selected{% endif %}>Activo</option>
-          <option value="inactivo" {% if estado == "inactivo" %}selected{% endif %}>Inactivo</option>
+          <option value="Activo" {% if selected_estado == "Activo" %}selected{% endif %}>Activo</option>
+          <option value="Inactivo" {% if selected_estado == "Inactivo" %}selected{% endif %}>Inactivo</option>
         </select>
       </div>
-      <div class="col-sm-1 d-flex">
-        <button class="btn btn-outline-primary me-2 w-100" type="submit">Aplicar</button>
-      </div>
-      <div class="col-sm-1 d-flex">
-        <a href="{% url 'parents' %}" class="btn btn-outline-secondary w-100">Reset</a>
+
+      <!-- BOTONES -->
+      <div class="col-12 col-md-auto d-flex gap-2">
+        <button class="btn btn-outline-primary flex-fill" type="submit" title="Filtrar">
+          <i class="bi bi-funnel"></i> Aplicar
+        </button>
+        <a href="{% url 'parents' %}" class="btn btn-outline-secondary flex-fill" title="Resetear filtros">
+          <i class="bi bi-arrow-counterclockwise"></i> Reset
+        </a>
       </div>
     </div>
   </form>
@@ -91,7 +93,7 @@
         </tr>
       </thead>
       <tbody>
-      {% if parents %}
+        {% if parents %}
         {% for p in parents %}
         <tr>
           <td><strong>{{ p.nombres }}</strong></td>
@@ -101,26 +103,20 @@
           <td>{{ p.correo|default:"-" }}</td>
           <td>
             {% if p.num_estudiantes > 0 %}
-              <span class="badge bg-success">{{ p.num_estudiantes }}</span>
+            <span class="badge bg-success">{{ p.num_estudiantes }}</span>
             {% else %}
-              <span class="badge bg-secondary">0</span>
+            <span class="badge bg-secondary">0</span>
             {% endif %}
           </td>
           <td class="text-center">
             <!-- Ver info completa -->
-            <button class="btn btn-sm btn-outline-info me-1"
-                    type="button"
-                    title="Ver información completa"
-                    data-bs-toggle="modal"
-                    data-bs-target="#infoParentModal{{ p.id_representante }}">
+            <button class="btn btn-sm btn-outline-info me-1" type="button" title="Ver información completa"
+              data-bs-toggle="modal" data-bs-target="#infoParentModal{{ p.id_representante }}">
               <i class="bi bi-person-vcard"></i>
             </button>
             <!-- Editar -->
-            <button class="btn btn-sm btn-outline-primary"
-                    type="button"
-                    title="Editar"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editParentModal{{ p.id_representante }}">
+            <button class="btn btn-sm btn-outline-primary" type="button" title="Editar" data-bs-toggle="modal"
+              data-bs-target="#editParentModal{{ p.id_representante }}">
               <i class="bi bi-pencil"></i>
             </button>
           </td>
@@ -177,42 +173,42 @@
                       <i class="bi bi-people-fill me-2"></i>Estudiantes asociados
                     </h6>
                     {% if p.num_estudiantes > 0 %}
-                      {% for matricula in p.matricula_set.all %}
-                        {% with estudiante=matricula.id_estudiante %}
-                        <div class="border-start border-primary ps-3 mb-3 pb-2">
-                          <div class="row g-2">
-                            <div class="col-md-4">
-                              <small class="text-muted d-block">Nombres</small>
-                              <span class="fw-semibold">{{ estudiante.nombres }}</span>
-                            </div>
-                            <div class="col-md-4">
-                              <small class="text-muted d-block">Apellidos</small>
-                              <span class="fw-semibold">{{ estudiante.apellidos }}</span>
-                            </div>
-                            <div class="col-md-4">
-                              <small class="text-muted d-block">Cédula</small>
-                              <span>{{ estudiante.cedula|default:"-" }}</span>
-                            </div>
-                            <div class="col-md-4">
-                              <small class="text-muted d-block">Grado</small>
-                              <span>{{ matricula.id_grado.nombre }}</span>
-                            </div>
-                            <div class="col-md-4">
-                              <small class="text-muted d-block">Sección</small>
-                              <span>{{ matricula.id_seccion.letra }}</span>
-                            </div>
-                            <div class="col-md-4">
-                              <small class="text-muted d-block">Turno</small>
-                              <span>{% if matricula.turno == 'M' %}Mañana{% else %}Tarde{% endif %}</span>
-                            </div>
-                          </div>
+                    {% for matricula in p.matricula_set.all %}
+                    {% with estudiante=matricula.id_estudiante %}
+                    <div class="border-start border-primary ps-3 mb-3 pb-2">
+                      <div class="row g-2">
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Nombres</small>
+                          <span class="fw-semibold">{{ estudiante.nombres }}</span>
                         </div>
-                        {% endwith %}
-                      {% endfor %}
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Apellidos</small>
+                          <span class="fw-semibold">{{ estudiante.apellidos }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Cédula</small>
+                          <span>{{ estudiante.cedula|default:"-" }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Grado</small>
+                          <span>{{ matricula.id_grado.nombre }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Sección</small>
+                          <span>{{ matricula.id_seccion.letra }}</span>
+                        </div>
+                        <div class="col-md-4">
+                          <small class="text-muted d-block">Turno</small>
+                          <span>{% if matricula.turno == 'M' %}Mañana{% else %}Tarde{% endif %}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {% endwith %}
+                    {% endfor %}
                     {% else %}
-                      <p class="text-muted mb-0">
-                        <i class="bi bi-info-circle me-2"></i>No hay estudiantes asociados.
-                      </p>
+                    <p class="text-muted mb-0">
+                      <i class="bi bi-info-circle me-2"></i>No hay estudiantes asociados.
+                    </p>
                     {% endif %}
                   </div>
                 </div>
@@ -270,14 +266,14 @@
         </div>
 
         {% endfor %}
-      {% else %}
+        {% else %}
         <tr>
           <td colspan="7" class="text-center text-muted py-4">
             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
             No hay representantes registrados.
           </td>
         </tr>
-      {% endif %}
+        {% endif %}
       </tbody>
     </table>
   </div>
