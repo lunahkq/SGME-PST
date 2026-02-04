@@ -616,13 +616,15 @@ def students_view(request):
     selected_anio_id = request.GET.get("anio")
     anio_filtro = None
 
-    if selected_anio_id:
+    if selected_anio_id is None:
+        anio_filtro = anio_activo
+    elif selected_anio_id == "":
+        anio_filtro = None
+    else:
         try:
             anio_filtro = AnioEscolar.objects.get(id_anio_escolar=selected_anio_id)
         except AnioEscolar.DoesNotExist:
             anio_filtro = anio_activo
-    else:
-        anio_filtro = anio_activo
 
     sexo = request.GET.get("sexo")
     if sexo:
@@ -632,19 +634,20 @@ def students_view(request):
     if anio_filtro:
         matriculas = Matricula.objects.filter(id_anio_escolar=anio_filtro)
     else:
-        matriculas = Matricula.objects.none()
+        matriculas = Matricula.objects.all()
 
-        grado = request.GET.get("grado")
-        if grado:
-            matriculas = matriculas.filter(id_grado__nombre=grado)
+    # Filtros adicionales
+    grado = request.GET.get("grado")
+    if grado:
+        matriculas = matriculas.filter(id_grado__nombre=grado)
 
-        seccion = request.GET.get("seccion")
-        if seccion:
-            matriculas = matriculas.filter(id_seccion__letra=seccion)
+    seccion = request.GET.get("seccion")
+    if seccion:
+        matriculas = matriculas.filter(id_seccion__letra=seccion)
 
-        turno = request.GET.get("turno")
-        if turno:
-            matriculas = matriculas.filter(id_turno__nombre=turno)
+    turno = request.GET.get("turno")
+    if turno:
+        matriculas = matriculas.filter(id_turno__nombre=turno)
 
     selected_estado = request.GET.get("estado")
     # Si no viene parámetro, por defecto filtramos "Activos"
@@ -701,7 +704,7 @@ def students_view(request):
         "turnos": turnos_list,
         "anios": anios,
         "hay_anio_activo": hay_anio_activo,
-        "selected_anio_id": int(selected_anio_id) if selected_anio_id else (anio_activo.id_anio_escolar if anio_activo else None),
+        "selected_anio_id": int(selected_anio_id) if selected_anio_id and selected_anio_id.isdigit() else ("" if selected_anio_id == "" else (anio_activo.id_anio_escolar if anio_activo else None)),
         "selected_sexo": context_sexo,
         "selected_estado": context_estado,
         "q": q,
