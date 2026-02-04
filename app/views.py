@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Value, IntegerField
 from django.db.models.functions import TruncYear
 from django.contrib.auth import authenticate
 from datetime import date
@@ -781,9 +781,18 @@ def parents_list(request):
     turno = request.GET.get('turno', '')
     estado = request.GET.get('estado', '')
 
+    anio_activo = AnioEscolar.objects.filter(activo=True).first()
+    active_statuses = ["Activo", "Nuevo", "Regular", "Repetido"]
+
     parents = (
-        Representante.objects
-        .annotate(num_estudiantes=Count('matricula__id_estudiante', distinct=True))
+        Representante.objects.annotate(
+            num_estudiantes=Count('matricula__id_estudiante', distinct=True),
+            num_activos=Count(
+                'matricula',
+                filter=Q(matricula__id_anio_escolar=anio_activo, matricula__estado__in=active_statuses),
+                distinct=True
+            ) if anio_activo else Value(0, output_field=IntegerField())
+        )
     )
 
     if q:
@@ -806,20 +815,37 @@ def parents_list(request):
         ).distinct()
 
     # Filtro por turno (nombre)
-    if turno: # Corrección: ahora filtra por nombre del turno, no 'M'/'T'
+    if turno: 
         parents = parents.filter(
             matricula__id_turno__nombre=turno
         ).distinct()
 
-    # Filtro por estado de la matrícula
+    # Filtro por estado del Representante (basado en sus estudiantes en el Año Escolar Activo)
+    anio_activo = AnioEscolar.objects.filter(activo=True).first()
+    active_statuses = ["Activo", "Nuevo", "Regular", "Repetido"]
+
     if estado == 'Activo':
-        parents = parents.filter(
-            matricula__estado='Activo'
-        ).distinct()
-    elif estado == 'Inactivo': # Corrección: Inactivo capitalizado para consistencia
-        parents = parents.filter(
-            matricula__estado='Inactivo'
-        ).distinct()
+        if anio_activo:
+            parents = parents.filter(
+                matricula__id_anio_escolar=anio_activo,
+                matricula__estado__in=active_statuses
+            ).distinct()
+        else:
+            # Si no hay año activo, nadie puede estar activo
+            parents = parents.none()
+
+    elif estado == 'Inactivo': 
+        if anio_activo:
+            # Excluir a los que tienen al menos un estudiante activo en el año actual
+            active_reps_ids = Representante.objects.filter(
+                matricula__id_anio_escolar=anio_activo,
+                matricula__estado__in=active_statuses
+            ).values_list('id_representante', flat=True)
+            
+            parents = parents.exclude(id_representante__in=active_reps_ids)
+        else:
+            # Si no hay año activo, todos son inactivos (no filtramos nada extra, solo devolvemos lo que hay)
+            pass
 
     # Listas para los filtros (Dynamic)
     grados = Grado.objects.all().order_by("orden")

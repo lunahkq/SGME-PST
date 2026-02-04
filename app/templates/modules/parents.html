@@ -89,6 +89,7 @@
           <th>Teléfono</th>
           <th>Correo electrónico</th>
           <th>Estudiantes asociados</th>
+          <th>Estado</th>
           <th class="text-center">Acciones</th>
         </tr>
       </thead>
@@ -103,9 +104,18 @@
           <td>{{ p.correo|default:"-" }}</td>
           <td>
             {% if p.num_estudiantes > 0 %}
-            <span class="badge bg-success">{{ p.num_estudiantes }}</span>
+            <span class="badge bg-primary">{{ p.num_estudiantes }}</span>
             {% else %}
             <span class="badge bg-secondary">0</span>
+            {% endif %}
+          </td>
+          <td>
+            <!-- La lógica de estado ya la hicimos en el view, pero visualmente podemos inferir: 
+                  Si tiene estudiantes asociados (en la query actual que filtra por activo), está activo. -->
+            {% if p.num_estudiantes > 0 %}
+            <span class="badge bg-success">Activo</span>
+            {% else %}
+            <span class="badge bg-secondary">Inactivo</span>
             {% endif %}
           </td>
           <td class="text-center">
