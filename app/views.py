@@ -598,6 +598,7 @@ def students_view(request):
     grados = Grado.objects.all().order_by("orden")
     secciones = Seccion.objects.all()
     turnos = Turno.objects.all()
+    anios = AnioEscolar.objects.all().order_by('-anio_escolar')  # Orden descendente (más reciente primero)
 
     # Búsqueda por nombre/apellido/cedula
     q = request.GET.get("q", "")
@@ -608,15 +609,30 @@ def students_view(request):
             Q(cedula__icontains=q)
         )
 
+    # 1. Determinar el Año Escolar a filtrar
     anio_activo = AnioEscolar.objects.filter(activo=True).first()
     hay_anio_activo = anio_activo is not None
+
+    selected_anio_id = request.GET.get("anio")
+    anio_filtro = None
+
+    if selected_anio_id:
+        try:
+            anio_filtro = AnioEscolar.objects.get(id_anio_escolar=selected_anio_id)
+        except AnioEscolar.DoesNotExist:
+            anio_filtro = anio_activo
+    else:
+        anio_filtro = anio_activo
 
     sexo = request.GET.get("sexo")
     if sexo:
         estudiantes = estudiantes.filter(sexo=sexo)
 
-    if hay_anio_activo:
-        matriculas = Matricula.objects.filter(id_anio_escolar=anio_activo)
+    # Filtrar matrículas por el año seleccionado (o el activo por defecto)
+    if anio_filtro:
+        matriculas = Matricula.objects.filter(id_anio_escolar=anio_filtro)
+    else:
+        matriculas = Matricula.objects.none()
 
         grado = request.GET.get("grado")
         if grado:
@@ -683,7 +699,9 @@ def students_view(request):
         "grados": grados_list,
         "secciones": secciones_list,
         "turnos": turnos_list,
+        "anios": anios,
         "hay_anio_activo": hay_anio_activo,
+        "selected_anio_id": int(selected_anio_id) if selected_anio_id else (anio_activo.id_anio_escolar if anio_activo else None),
         "selected_sexo": context_sexo,
         "selected_estado": context_estado,
         "q": q,

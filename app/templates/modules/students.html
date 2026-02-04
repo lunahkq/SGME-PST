@@ -21,20 +21,21 @@
 </div>
 
 {% if messages %}
-  {% for message in messages %}
-  <div
-    class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
-    role="alert">
-    {{ message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  {% endfor %}
+{% for message in messages %}
+<div
+  class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show"
+  role="alert">
+  {{ message }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
 {% endif %}
 
 {% if not hay_anio_activo %}
 <div class="alert alert-warning" role="alert">
   <i class="bi bi-exclamation-triangle-fill me-2"></i>
-  <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active uno.
+  <strong>Atención:</strong> No hay un año escolar activo. No se pueden registrar nuevos estudiantes hasta que se active
+  uno.
 </div>
 {% endif %}
 
@@ -42,64 +43,74 @@
 <div class="card-soft p-3 mb-3">
   <form method="GET" action="{% url 'students' %}">
     <div class="row g-2">
-      <div class="col-sm-3">
-        <input type="text"
-               name="q"
-               value="{{ q|default_if_none:'' }}"
-               class="form-control"
-               placeholder="Buscar por nombres, apellidos o cédula">
+      <!-- Búsqueda -->
+      <div class="col-12 col-md-3">
+        <input type="text" name="q" value="{{ q|default_if_none:'' }}" class="form-control" placeholder="Buscar...">
       </div>
-      <div class="col-sm-2">
+
+      <!-- Filtro Año Escolar (NUEVO) -->
+      <div class="col-6 col-md-2">
+        <select name="anio" class="form-select">
+          <option value="">Año Actual</option>
+          {% for a in anios %}
+          <option value="{{ a.id_anio_escolar }}" {% if a.id_anio_escolar == selected_anio_id %}selected{% endif %}>
+            {{ a.anio_escolar }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Filtros existentes -->
+      <div class="col-6 col-md-2">
         <select name="grado" id="filterGrado" class="form-select">
-          <option value="">Todos los grados</option>
+          <option value="">Grado</option>
           {% for grado in grados %}
           <option value="{{ grado.nombre }}" {% if grado.selected %}selected{% endif %}>{{ grado.nombre }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-6 col-md-1">
         <select name="seccion" id="filterSeccion" class="form-select">
-          <option value="">Todas las secciones</option>
+          <option value="">Sección</option>
           {% for seccion in secciones %}
           <option value="{{ seccion.letra }}" {% if seccion.selected %}selected{% endif %}>{{ seccion.letra }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-sm-2">
+      <div class="col-6 col-md-2">
         <select name="turno" id="filterTurno" class="form-select">
-          <option value="">Todos los turnos</option>
+          <option value="">Turno</option>
           {% for turno in turnos %}
           <option value="{{ turno.nombre }}" {% if turno.selected %}selected{% endif %}>{{ turno.nombre }}</option>
           {% endfor %}
         </select>
       </div>
-      <div class="col-sm-1">
+      <div class="col-6 col-md-1">
         <select name="sexo" id="filterSexo" class="form-select">
           <option value="">Sexo</option>
           <option value="F" {% if selected_sexo.F %}selected{% endif %}>F</option>
           <option value="M" {% if selected_sexo.M %}selected{% endif %}>M</option>
         </select>
       </div>
-      <div class="col-sm-1">
+      <div class="col-6 col-md-1">
         <select name="estado" id="filterEstado" class="form-select">
           <option value="Activo" {% if selected_estado.Activo %}selected{% endif %}>Activos</option>
           <option value="Retirado" {% if selected_estado.Retirado %}selected{% endif %}>Retirados</option>
           <option value="" {% if selected_estado.Todos %}selected{% endif %}>Todos</option>
         </select>
       </div>
-     
-</div>
- <!-- BOTONES A LA DERECHA -->
-      <div class="col-sm-3 d-flex justify-content-end gap-1 h-100">
-        <button class="btn btn-outline-primary flex-fill" type="submit">
-          <i class="bi bi-funnel me-1"></i>Aplicar
+
+      <!-- BOTONES (Responsive) -->
+      <div class="col-12 col-md-auto d-flex gap-2">
+        <button class="btn btn-outline-primary flex-fill" type="submit" title="Filtrar">
+          <i class="bi bi-funnel"></i>
         </button>
-        <a href="{% url 'students' %}" class="btn btn-outline-secondary flex-fill">
-          Reset
+        <a href="{% url 'students' %}" class="btn btn-outline-secondary flex-fill" title="Resetear filtros">
+          <i class="bi bi-arrow-counterclockwise"></i>
         </a>
-        <a href="#" class="btn btn-success flex-fill" 
-           onclick="alert('Reporte PDF próximamente disponible')" title="Reporte PDF">
-          <i class="bi bi-file-earmark-pdf me-1"></i>
+        <a href="#" class="btn btn-success flex-fill" onclick="alert('Reporte PDF próximamente disponible')"
+          title="Reporte PDF">
+          <i class="bi bi-file-earmark-pdf"></i>
         </a>
       </div>
     </div>
@@ -126,430 +137,409 @@
       </thead>
       <tbody id="studentsBody">
         {% if estudiantes %}
-          {% for s in estudiantes %}
-          <tr>
-            <td><strong>{{ s.nombres }}</strong></td>
-            <td><strong>{{ s.apellidos }}</strong></td>
-            <td>{{ s.cedula|default:"Sin cédula" }}</td>
-            <td>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</td>
-            <td>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</td>
-            <td>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</td>
-            <td>
- {% if s.sexo == "F" %}
-              <span class="badge px-3 py-2 fw-semibold" 
-                    style="background-color: rgba(255, 182, 193, 0.85); color: #000; border: 1px solid rgba(255, 182, 193, 0.3);">
-                Femenino
-              </span>
-              {% elif s.sexo == "M" %}
-              <span class="badge px-3 py-2 fw-semibold" 
-                    style="background-color: rgba(100, 149, 237, 0.9); color: #fff; border: 1px solid rgba(100, 149, 237, 0.3);">
-                Masculino
-              </span>
-              {% else %}
-              <span class="badge bg-secondary">-</span>
-              
-              {% endif %}
-            </td>
-            <td>
-              {% if s.matricula_activa %}
-              {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
-              {% else %}
-              <small class="text-muted">Sin cargar</small>
-              {% endif %}
-            </td>
-            <td><span class="badge bg-success">Activo</span></td>
-            <td class="text-center">
-              <!-- Ver datos completos -->
-              <button class="btn btn-sm btn-outline-info me-1"
-                      type="button"
-                      title="Ver datos completos"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalVerEst{{ s.id_estudiante }}">
-                <i class="bi bi-person"></i>
-              </button>
+        {% for s in estudiantes %}
+        <tr>
+          <td><strong>{{ s.nombres }}</strong></td>
+          <td><strong>{{ s.apellidos }}</strong></td>
+          <td>{{ s.cedula|default:"Sin cédula" }}</td>
+          <td>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</td>
+          <td>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</td>
+          <td>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</td>
+          <td>
+            {% if s.sexo == "F" %}
+            <span class="badge px-3 py-2 fw-semibold"
+              style="background-color: rgba(255, 182, 193, 0.85); color: #000; border: 1px solid rgba(255, 182, 193, 0.3);">
+              Femenino
+            </span>
+            {% elif s.sexo == "M" %}
+            <span class="badge px-3 py-2 fw-semibold"
+              style="background-color: rgba(100, 149, 237, 0.9); color: #fff; border: 1px solid rgba(100, 149, 237, 0.3);">
+              Masculino
+            </span>
+            {% else %}
+            <span class="badge bg-secondary">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.matricula_activa %}
+            {{ s.matricula_activa.id_representante.nombres }} {{ s.matricula_activa.id_representante.apellidos }}
+            {% else %}
+            <small class="text-muted">Sin cargar</small>
+            {% endif %}
+          </td>
+          <td><span class="badge bg-success">Activo</span></td>
+          <td class="text-center">
+            <!-- Ver datos completos -->
+            <button class="btn btn-sm btn-outline-info me-1" type="button" title="Ver datos completos"
+              data-bs-toggle="modal" data-bs-target="#modalVerEst{{ s.id_estudiante }}">
+              <i class="bi bi-person"></i>
+            </button>
 
-              <!-- Editar -->
-              <button class="btn btn-sm btn-outline-primary me-1"
-                      type="button"
-                      title="Editar"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalEditEst{{ s.id_estudiante }}">
-                <i class="bi bi-pencil"></i>
-              </button>
+            <!-- Editar -->
+            <button class="btn btn-sm btn-outline-primary me-1" type="button" title="Editar" data-bs-toggle="modal"
+              data-bs-target="#modalEditEst{{ s.id_estudiante }}">
+              <i class="bi bi-pencil"></i>
+            </button>
 
-              <!-- Retirar (confirmación SI/NO) -->
-              <button class="btn btn-sm btn-outline-warning me-1"
-                      type="button"
-                      title="Marcar como retirado"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalConfirmRetiro"
-                      data-est-id="{{ s.id_estudiante }}"
-                      data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
-                <i class="bi bi-person-dash"></i>
-              </button>
+            <!-- Retirar (confirmación SI/NO) -->
+            <button class="btn btn-sm btn-outline-warning me-1" type="button" title="Marcar como retirado"
+              data-bs-toggle="modal" data-bs-target="#modalConfirmRetiro" data-est-id="{{ s.id_estudiante }}"
+              data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
+              <i class="bi bi-person-dash"></i>
+            </button>
 
-              <!-- Eliminar (pide contraseña) -->
-              <button class="btn btn-sm btn-outline-danger"
-                      type="button"
-                      title="Eliminar"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalEliminar"
-                      data-est-id="{{ s.id_estudiante }}"
-                      data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
+            <!-- Eliminar (pide contraseña) -->
+            <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar" data-bs-toggle="modal"
+              data-bs-target="#modalEliminar" data-est-id="{{ s.id_estudiante }}"
+              data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
 
-          <!-- Modal ver datos completos del estudiante (mejorado) -->
-          <div class="modal fade" id="modalVerEst{{ s.id_estudiante }}" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-              <div class="modal-content">
-                <div class="modal-header bg-light">
-                  <h5 class="modal-title">
-                    <i class="bi bi-person me-2"></i>Información completa del estudiante
-                  </h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <div class="row g-4">
-                    <!-- Columna datos del estudiante -->
-                    <div class="col-lg-6">
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-person-fill me-2"></i>Datos personales
-                      </h6>
-                      <div class="row g-2">
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Nombres</small>
-                          <span class="fw-semibold">{{ s.nombres }}</span>
-                        </div>
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Apellidos</small>
-                          <span class="fw-semibold">{{ s.apellidos }}</span>
-                        </div>
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Cédula / Carnet</small>
-                          <span>{{ s.cedula|default:"Sin cédula" }}</span>
-                        </div>
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Sexo</small>
-                          <span>
-                            {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
-                          </span>
-                        </div>
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Fecha de nacimiento</small>
-                          <span>{{ s.fecha_nacimiento }}</span>
-                        </div>
-                        <div class="col-md-6">
-                          <small class="text-muted d-block">Lugar de nacimiento</small>
-                          <span>{{ s.lugar_nacimiento|default:"-" }}</span>
-                        </div>
+        <!-- Modal ver datos completos del estudiante (mejorado) -->
+        <div class="modal fade" id="modalVerEst{{ s.id_estudiante }}" tabindex="-1">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                  <i class="bi bi-person me-2"></i>Información completa del estudiante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="row g-4">
+                  <!-- Columna datos del estudiante -->
+                  <div class="col-lg-6">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-person-fill me-2"></i>Datos personales
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Nombres</small>
+                        <span class="fw-semibold">{{ s.nombres }}</span>
                       </div>
-
-                      <hr class="my-3">
-
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-rulers me-2"></i>Tallas de uniforme
-                      </h6>
-                      <div class="row g-2">
-                        <div class="col-md-4">
-                          <small class="text-muted d-block">Camisa</small>
-                          <span>{{ s.talla_camisa|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-4">
-                          <small class="text-muted d-block">Pantalón</small>
-                          <span>{{ s.talla_pantalon|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-4">
-                          <small class="text-muted d-block">Zapato</small>
-                          <span>{{ s.talla_zapato|default:"-" }}</span>
-                        </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Apellidos</small>
+                        <span class="fw-semibold">{{ s.apellidos }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Cédula / Carnet</small>
+                        <span>{{ s.cedula|default:"Sin cédula" }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Sexo</small>
+                        <span>
+                          {% if s.sexo == "F" %}Femenino{% elif s.sexo == "M" %}Masculino{% else %}-{% endif %}
+                        </span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Fecha de nacimiento</small>
+                        <span>{{ s.fecha_nacimiento }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Lugar de nacimiento</small>
+                        <span>{{ s.lugar_nacimiento|default:"-" }}</span>
                       </div>
                     </div>
 
-                    <!-- Columna matrícula y representante -->
-                    <div class="col-lg-6">
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-book-fill me-2"></i>Datos de matrícula
-                      </h6>
-                      <div class="row g-2">
-                        <div class="col-md-4">
-                          <small class="text-muted d-block">Grado</small>
-                          <span>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-4">
-                          <small class="text-muted d-block">Sección</small>
-                          <span>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</span>
-                        </div>
-                        <div class="col-md-4">
-                          <small class="text-muted d-block">Turno</small>
-                          <span>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</span>
-                        </div>
-                        <div class="col-12">
-                          <small class="text-muted d-block">Observaciones</small>
-                          <span>
-                            {% if s.matricula_activa %}
-                              {{ s.matricula_activa.observaciones|default:"Sin observaciones" }}
-                            {% else %}
-                              -
-                            {% endif %}
-                          </span>
-                        </div>
+                    <hr class="my-3">
+
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-rulers me-2"></i>Tallas de uniforme
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-4">
+                        <small class="text-muted d-block">Camisa</small>
+                        <span>{{ s.talla_camisa|default:"-" }}</span>
                       </div>
+                      <div class="col-md-4">
+                        <small class="text-muted d-block">Pantalón</small>
+                        <span>{{ s.talla_pantalon|default:"-" }}</span>
+                      </div>
+                      <div class="col-md-4">
+                        <small class="text-muted d-block">Zapato</small>
+                        <span>{{ s.talla_zapato|default:"-" }}</span>
+                      </div>
+                    </div>
+                  </div>
 
-                      <hr class="my-3">
+                  <!-- Columna matrícula y representante -->
+                  <div class="col-lg-6">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-book-fill me-2"></i>Datos de matrícula
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-4">
+                        <small class="text-muted d-block">Grado</small>
+                        <span>{{ s.matricula_activa.id_grado.nombre|default:"-" }}</span>
+                      </div>
+                      <div class="col-md-4">
+                        <small class="text-muted d-block">Sección</small>
+                        <span>{{ s.matricula_activa.id_seccion.letra|default:"-" }}</span>
+                      </div>
+                      <div class="col-md-4">
+                        <small class="text-muted d-block">Turno</small>
+                        <span>{{ s.matricula_activa.id_turno.nombre|default:"-" }}</span>
+                      </div>
+                      <div class="col-12">
+                        <small class="text-muted d-block">Observaciones</small>
+                        <span>
+                          {% if s.matricula_activa %}
+                          {{ s.matricula_activa.observaciones|default:"Sin observaciones" }}
+                          {% else %}
+                          -
+                          {% endif %}
+                        </span>
+                      </div>
+                    </div>
 
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-person-vcard-fill me-2"></i>Representante asociado
-                      </h6>
+                    <hr class="my-3">
+
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-person-vcard-fill me-2"></i>Representante asociado
+                    </h6>
+                    {% if s.matricula_activa %}
+                    {% with rep=s.matricula_activa.id_representante %}
+                    <div class="row g-2">
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Nombres</small>
+                        <span class="fw-semibold">{{ rep.nombres }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Apellidos</small>
+                        <span class="fw-semibold">{{ rep.apellidos }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Cédula</small>
+                        <span>{{ rep.cedula }}</span>
+                      </div>
+                      <div class="col-md-6">
+                        <small class="text-muted d-block">Teléfono</small>
+                        <span>{{ rep.telefono|default:"-" }}</span>
+                      </div>
+                      <div class="col-12">
+                        <small class="text-muted d-block">Correo electrónico</small>
+                        <span>{{ rep.correo|default:"-" }}</span>
+                      </div>
+                      <div class="col-12">
+                        <small class="text-muted d-block">Dirección</small>
+                        <span>{{ rep.direccion|default:"No especificada" }}</span>
+                      </div>
+                    </div>
+                    {% endwith %}
+                    {% else %}
+                    <p class="text-muted mb-0">Sin representante asociado.</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal editar estudiante -->
+        <div class="modal fade" id="modalEditEst{{ s.id_estudiante }}" tabindex="-1">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header bg-light">
+                <h5 class="modal-title">
+                  <i class="bi bi-pencil me-2"></i>Editar Estudiante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <form method="post" action="{% url 'students' %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="est_id" value="{{ s.id_estudiante }}">
+                  <input type="hidden" name="accion" value="editar">
+
+                  <!-- DATOS DEL ESTUDIANTE -->
+                  <div class="mb-4">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-person-fill me-2"></i>Datos del Estudiante
+                    </h6>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="nombres" value="{{ s.nombres }}" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="apellidos" value="{{ s.apellidos }}" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Cédula o Carnet</label>
+                        <input type="text" class="form-control" name="cedula" value="{{ s.cedula }}">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Sexo <span class="text-danger">*</span></label>
+                        <select name="sexo" class="form-select" required>
+                          <option value="Femenino" {% if s.sexo == "F" %}selected{% endif %}>Femenino</option>
+                          <option value="Masculino" {% if s.sexo == "M" %}selected{% endif %}>Masculino</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha_nacimiento" class="form-control"
+                          value="{{ s.fecha_nacimiento|date:'Y-m-d' }}" required>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label">Lugar de Nacimiento</label>
+                        <input type="text" class="form-control" name="lugar_nacimiento"
+                          value="{{ s.lugar_nacimiento }}">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DATOS DE MATRÍCULA -->
+                  <div class="mb-4">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-book-fill me-2"></i>Datos de Matrícula
+                    </h6>
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <label class="form-label">Grado <span class="text-danger">*</span></label>
+                        <select name="grado" class="form-select" required>
+                          <option value="">Seleccione grado</option>
+                          {% for grado in grados %}
+                          <option value="{{ grado.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
+                            {{ grado.nombre }}
+                          </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Sección <span class="text-danger">*</span></label>
+                        <select name="seccion" class="form-select" required>
+                          <option value="">Seleccione sección</option>
+                          {% for seccion in secciones %}
+                          <option value="{{ seccion.letra }}" {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>
+                            {{ seccion.letra }}
+                          </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Turno <span class="text-danger">*</span></label>
+                        <select name="turno" class="form-select" required>
+                          <option value="">Seleccione turno</option>
+                          {% for turno in turnos %}
+                          <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>
+                            {{ turno.nombre }}
+                          </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- DATOS DE UNIFORME -->
+                  <div class="mb-4">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-rulers me-2"></i>Tallas de Uniforme
+                    </h6>
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <label class="form-label">Camisa</label>
+                        <input type="text" class="form-control" name="talla_camisa" placeholder="Ej: S, M, L">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Pantalón</label>
+                        <input type="text" class="form-control" name="talla_pantalon" placeholder="Ej: 30, 32, 34">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Zapato</label>
+                        <input type="text" class="form-control" name="talla_zapato" placeholder="Ej: 38, 39, 40">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- DATOS DEL REPRESENTANTE -->
+                  <div class="mb-4">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-person-vcard-fill me-2"></i>Datos del Representante
+                    </h6>
+                    <div class="row g-3">
                       {% if s.matricula_activa %}
-                        {% with rep=s.matricula_activa.id_representante %}
-                        <div class="row g-2">
-                          <div class="col-md-6">
-                            <small class="text-muted d-block">Nombres</small>
-                            <span class="fw-semibold">{{ rep.nombres }}</span>
-                          </div>
-                          <div class="col-md-6">
-                            <small class="text-muted d-block">Apellidos</small>
-                            <span class="fw-semibold">{{ rep.apellidos }}</span>
-                          </div>
-                          <div class="col-md-6">
-                            <small class="text-muted d-block">Cédula</small>
-                            <span>{{ rep.cedula }}</span>
-                          </div>
-                          <div class="col-md-6">
-                            <small class="text-muted d-block">Teléfono</small>
-                            <span>{{ rep.telefono|default:"-" }}</span>
-                          </div>
-                          <div class="col-12">
-                            <small class="text-muted d-block">Correo electrónico</small>
-                            <span>{{ rep.correo|default:"-" }}</span>
-                          </div>
-                          <div class="col-12">
-                            <small class="text-muted d-block">Dirección</small>
-                            <span>{{ rep.direccion|default:"No especificada" }}</span>
-                          </div>
-                        </div>
-                        {% endwith %}
+                      {% with rep=s.matricula_activa.id_representante %}
+                      <div class="col-md-6">
+                        <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_nombres" value="{{ rep.nombres }}" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_apellidos" value="{{ rep.apellidos }}"
+                          required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_cedula" value="{{ rep.cedula }}" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_telefono" value="{{ rep.telefono }}" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" name="rep_correo" value="{{ rep.correo }}">
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label">Dirección</label>
+                        <textarea class="form-control" name="rep_direccion" rows="2">{{ rep.direccion }}</textarea>
+                      </div>
+                      {% endwith %}
                       {% else %}
-                        <p class="text-muted mb-0">Sin representante asociado.</p>
+                      <!-- Sin matrícula activa: campos vacíos -->
+                      <div class="col-md-6">
+                        <label class="form-label">Nombres <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_nombres" required>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Apellidos <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_apellidos" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Cédula <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_cedula" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="rep_telefono" required>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" name="rep_correo">
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label">Dirección</label>
+                        <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
+                      </div>
                       {% endif %}
                     </div>
                   </div>
-                </div>
-                <div class="modal-footer">
-                  <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
+
+                  <!-- Observaciones -->
+                  <div class="mb-3">
+                    <label class="form-label">Observaciones</label>
+                    <textarea name="observaciones" class="form-control" rows="3">{% if s.matricula_activa %}{{ s.matricula_activa.observaciones }}{% endif %}</textarea>
+                  </div>
+
+                  <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-success" type="submit">
+                      <i class="bi bi-check-circle me-1"></i>Guardar cambios
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Modal editar estudiante -->
-          <div class="modal fade" id="modalEditEst{{ s.id_estudiante }}" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-              <div class="modal-content">
-                <div class="modal-header bg-light">
-                  <h5 class="modal-title">
-                    <i class="bi bi-pencil me-2"></i>Editar Estudiante
-                  </h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                  <form method="post" action="{% url 'students' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="est_id" value="{{ s.id_estudiante }}">
-                    <input type="hidden" name="accion" value="editar">
-
-                    <!-- DATOS DEL ESTUDIANTE -->
-                    <div class="mb-4">
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-person-fill me-2"></i>Datos del Estudiante
-                      </h6>
-                      <div class="row g-3">
-                        <div class="col-md-6">
-                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="nombres" value="{{ s.nombres }}" required>
-                        </div>
-                        <div class="col-md-6">
-                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="apellidos" value="{{ s.apellidos }}" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Cédula o Carnet</label>
-                          <input type="text" class="form-control" name="cedula" value="{{ s.cedula }}">
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Sexo <span class="text-danger">*</span></label>
-                          <select name="sexo" class="form-select" required>
-                            <option value="Femenino" {% if s.sexo == "F" %}selected{% endif %}>Femenino</option>
-                            <option value="Masculino" {% if s.sexo == "M" %}selected{% endif %}>Masculino</option>
-                          </select>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
-                          <input type="date"
-                                 name="fecha_nacimiento"
-                                 class="form-control"
-                                 value="{{ s.fecha_nacimiento|date:'Y-m-d' }}"
-                                 required>
-                        </div>
-                        <div class="col-md-12">
-                          <label class="form-label">Lugar de Nacimiento</label>
-                          <input type="text" class="form-control" name="lugar_nacimiento" value="{{ s.lugar_nacimiento }}">
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- DATOS DE MATRÍCULA -->
-                    <div class="mb-4">
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-book-fill me-2"></i>Datos de Matrícula
-                      </h6>
-                      <div class="row g-3">
-                        <div class="col-md-4">
-                          <label class="form-label">Grado <span class="text-danger">*</span></label>
-                          <select name="grado" class="form-select" required>
-                            <option value="">Seleccione grado</option>
-                            {% for grado in grados %}
-                            <option value="{{ grado.nombre }}"
-                              {% if s.matricula_activa and s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
-                              {{ grado.nombre }}
-                            </option>
-                            {% endfor %}
-                          </select>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Sección <span class="text-danger">*</span></label>
-                          <select name="seccion" class="form-select" required>
-                            <option value="">Seleccione sección</option>
-                            {% for seccion in secciones %}
-                            <option value="{{ seccion.letra }}"
-                              {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>
-                              {{ seccion.letra }}
-                            </option>
-                            {% endfor %}
-                          </select>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Turno <span class="text-danger">*</span></label>
-                          <select name="turno" class="form-select" required>
-                            <option value="">Seleccione turno</option>
-                            {% for turno in turnos %}
-                            <option value="{{ turno.nombre }}"
-                              {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>
-                              {{ turno.nombre }}
-                            </option>
-                            {% endfor %}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-<!-- DATOS DE UNIFORME -->
-            <div class="mb-4">
-                <h6 class="text-primary mb-3">
-                  <i class="bi bi-rulers me-2"></i>Tallas de Uniforme
-                  </h6>
-                <div class="row g-3">
-                 <div class="col-md-4">
-               <label class="form-label">Camisa</label>
-                <input type="text" class="form-control" name="talla_camisa" placeholder="Ej: S, M, L">
-                 </div>
-               <div class="col-md-4">
-               <label class="form-label">Pantalón</label>
-                  <input type="text" class="form-control" name="talla_pantalon" placeholder="Ej: 30, 32, 34">
-                      </div>
-                    <div class="col-md-4">
-                           <label class="form-label">Zapato</label>
-                            <input type="text" class="form-control" name="talla_zapato" placeholder="Ej: 38, 39, 40">
-                          </div>
-                      </div>
-                      </div>
-
-                    <!-- DATOS DEL REPRESENTANTE -->
-                    <div class="mb-4">
-                      <h6 class="text-primary mb-3">
-                        <i class="bi bi-person-vcard-fill me-2"></i>Datos del Representante
-                      </h6>
-                      <div class="row g-3">
-                        {% if s.matricula_activa %}
-                        {% with rep=s.matricula_activa.id_representante %}
-                        <div class="col-md-6">
-                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_nombres" value="{{ rep.nombres }}" required>
-                        </div>
-                        <div class="col-md-6">
-                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_apellidos" value="{{ rep.apellidos }}" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_cedula" value="{{ rep.cedula }}" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_telefono" value="{{ rep.telefono }}" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Correo Electrónico</label>
-                          <input type="email" class="form-control" name="rep_correo" value="{{ rep.correo }}">
-                        </div>
-                        <div class="col-md-12">
-                          <label class="form-label">Dirección</label>
-                          <textarea class="form-control" name="rep_direccion" rows="2">{{ rep.direccion }}</textarea>
-                        </div>
-                        {% endwith %}
-                        {% else %}
-                        <!-- Sin matrícula activa: campos vacíos -->
-                        <div class="col-md-6">
-                          <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_nombres" required>
-                        </div>
-                        <div class="col-md-6">
-                          <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_apellidos" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_cedula" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                          <input type="text" class="form-control" name="rep_telefono" required>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Correo Electrónico</label>
-                          <input type="email" class="form-control" name="rep_correo">
-                        </div>
-                        <div class="col-md-12">
-                          <label class="form-label">Dirección</label>
-                          <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
-                        </div>
-                        {% endif %}
-                      </div>
-                    </div>
-
-                    <!-- Observaciones -->
-                    <div class="mb-3">
-                      <label class="form-label">Observaciones</label>
-                      <textarea name="observaciones" class="form-control" rows="3">
-{% if s.matricula_activa %}{{ s.matricula_activa.observaciones }}{% endif %}
-                      </textarea>
-                    </div>
-
-                    <div class="modal-footer">
-                      <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
-                      <button class="btn btn-success" type="submit">
-                        <i class="bi bi-check-circle me-1"></i>Guardar cambios
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {% endfor %}
+        {% endfor %}
         {% else %}
         <tr>
           <td colspan="10" class="text-center text-muted py-4">
@@ -651,27 +641,27 @@
               </div>
             </div>
           </div>
-<!-- DATOS DE UNIFORME -->
-            <div class="mb-4">
-                <h6 class="text-primary mb-3">
-                  <i class="bi bi-rulers me-2"></i>Tallas de Uniforme
-                  </h6>
-                <div class="row g-3">
-                 <div class="col-md-4">
-               <label class="form-label">Camisa</label>
+          <!-- DATOS DE UNIFORME -->
+          <div class="mb-4">
+            <h6 class="text-primary mb-3">
+              <i class="bi bi-rulers me-2"></i>Tallas de Uniforme
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Camisa</label>
                 <input type="text" class="form-control" name="talla_camisa" placeholder="Ej: S, M, L">
-                 </div>
-               <div class="col-md-4">
-               <label class="form-label">Pantalón</label>
-                  <input type="text" class="form-control" name="talla_pantalon" placeholder="Ej: 30, 32, 34">
-                      </div>
-                    <div class="col-md-4">
-                           <label class="form-label">Zapato</label>
-                            <input type="text" class="form-control" name="talla_zapato" placeholder="Ej: 38, 39, 40">
-                          </div>
-                      </div>
-                      </div>
-                      
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Pantalón</label>
+                <input type="text" class="form-control" name="talla_pantalon" placeholder="Ej: 30, 32, 34">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Zapato</label>
+                <input type="text" class="form-control" name="talla_zapato" placeholder="Ej: 38, 39, 40">
+              </div>
+            </div>
+          </div>
+
           <!-- DATOS DEL REPRESENTANTE -->
           <div class="mb-4">
             <h6 class="text-primary mb-3">
@@ -774,7 +764,7 @@
           <div class="mb-3">
             <label for="adminPass" class="form-label">Ingrese su contraseña para confirmar</label>
             <input type="password" name="password" id="adminPass" class="form-control"
-                   placeholder="Contraseña de usuario" required>
+              placeholder="Contraseña de usuario" required>
           </div>
         </form>
       </div>
@@ -832,5 +822,3 @@
 </script>
 
 {% endblock %}
-
-
