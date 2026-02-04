@@ -630,47 +630,47 @@ def students_view(request):
         if turno:
             matriculas = matriculas.filter(id_turno__nombre=turno)
 
-        estado = request.GET.get("estado")
-        if estado:
-            matriculas = matriculas.filter(estado=estado)
+    selected_estado = request.GET.get("estado")
+    # Si no viene parámetro, por defecto filtramos "Activos"
+    if selected_estado is None:
+        selected_estado = "Activo"
 
-        matriculas = matriculas.select_related('id_grado', 'id_seccion', 'id_turno', 'id_representante')
+    # Aplicar filtro de estado
+    if selected_estado == "Activo":
+        # "Activo" para el usuario significa: Activo, Nuevo o Regular
+        matriculas = matriculas.filter(estado__in=["Activo", "Nuevo", "Regular"])
+    elif selected_estado == "Retirado":
+        matriculas = matriculas.filter(estado="Retirado")
+    # Si selected_estado == "" (Todos), no filtramos nada
+        
+    matriculas = matriculas.select_related('id_grado', 'id_seccion', 'id_turno', 'id_representante')
 
-        student_ids = matriculas.values_list('id_estudiante_id', flat=True)
-        estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
+    student_ids = matriculas.values_list('id_estudiante_id', flat=True)
+    estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
 
-        matricula_map = {m.id_estudiante_id: m for m in matriculas}
-        for est in estudiantes:
-            est.matricula_activa = matricula_map.get(est.id_estudiante)
-    else:
-        for est in estudiantes:
-            est.matricula_activa = None
+    matricula_map = {m.id_estudiante_id: m for m in matriculas}
+    for est in estudiantes:
+        est.matricula_activa = matricula_map.get(est.id_estudiante)
 
     grados_list = list(grados)
     secciones_list = list(secciones)
     turnos_list = list(turnos)
 
-    selected_grado = request.GET.get("grado")
+    # Resto de selects para la vista
     for g in grados_list:
-        g.selected = (g.nombre == selected_grado)
+        g.selected = (g.nombre == request.GET.get("grado"))
 
-    selected_seccion = request.GET.get("seccion")
     for s in secciones_list:
-        s.selected = (s.letra == selected_seccion)
+        s.selected = (s.letra == request.GET.get("seccion"))
 
-    selected_turno = request.GET.get("turno")
     for t in turnos_list:
-        t.selected = (t.nombre == selected_turno)
+        t.selected = (t.nombre == request.GET.get("turno"))
 
     selected_sexo = request.GET.get("sexo")
     context_sexo = {
         "F": selected_sexo == "F",
         "M": selected_sexo == "M"
     }
-
-    selected_estado = request.GET.get("estado")
-    if selected_estado is None:
-        selected_estado = "Activo"
 
     context_estado = {
         "Activo": selected_estado == "Activo",
