@@ -207,13 +207,6 @@
               data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
               <i class="bi bi-person-dash"></i>
             </button>
-
-            <!-- Eliminar (pide contraseña) -->
-            <button class="btn btn-sm btn-outline-danger" type="button" title="Eliminar" data-bs-toggle="modal"
-              data-bs-target="#modalEliminar" data-est-id="{{ s.id_estudiante }}"
-              data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
-              <i class="bi bi-trash"></i>
-            </button>
           </td>
         </tr>
 
@@ -426,31 +419,35 @@
                         <select name="grado" class="form-select" required>
                           <option value="">Seleccione grado</option>
                           {% for grado in grados %}
-                            <option value="{{ grado.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>{{ grado.nombre }}</option>
+                            <option value="{{ grado.nombre }}" 
+                                    {% if s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
+                              {{ grado.nombre }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label">Sección <span class="text-danger">*</span></label>
+                        <select name="seccion" class="form-select" required>
+                          <option value="">Seleccione sección</option>
+                          {% for seccion in secciones %}
+                          <option value="{{ seccion.letra }}" {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>{{ seccion.letra }}
+                          </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Turno <span class="text-danger">*</span></label>
+                        <select name="turno" class="form-select" required>
+                          <option value="">Seleccione turno</option>
+                          {% for turno in turnos %}
+                          <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>{{ turno.nombre }}
+                          </option>
                           {% endfor %}
                         </select>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Sección <span class="text-danger">*</span></label>
-                    <select name="seccion" class="form-select" required>
-                      <option value="">Seleccione sección</option>
-                      {% for seccion in secciones %}
-                        <option value="{{ seccion.letra }}" {% if s.matricula_activa and s.matricula_activa.id_seccion.letra == seccion.letra %}selected{% endif %}>{{ seccion.letra }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Turno <span class="text-danger">*</span></label>
-                    <select name="turno" class="form-select" required>
-                      <option value="">Seleccione turno</option>
-                      {% for turno in turnos %}
-                        <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>{{ turno.nombre }}</option>
-                      {% endfor %}
-                    </select>
                   </div>
 
 
@@ -851,24 +848,6 @@
       inputId.value = estId;
       texto.textContent =
         `¿Está seguro que quiere retirar a ${estNombre} del año escolar actual?`;
-    });
-  }
-
-  // Modal eliminar
-  const modalEliminar = document.getElementById('modalEliminar');
-  if (modalEliminar) {
-    modalEliminar.addEventListener('show.bs.modal', function (event) {
-      const button = event.relatedTarget;
-      const estId = button.getAttribute('data-est-id');
-      const estNombre = button.getAttribute('data-est-nombre');
-      const inputId = modalEliminar.querySelector('#eliminarEstId');
-      const texto = modalEliminar.querySelector('#textoConfirmEliminar');
-      const passInput = modalEliminar.querySelector('#adminPass');
-
-      inputId.value = estId;
-      texto.textContent =
-        `¿Está seguro que quiere eliminar a ${estNombre} de la base de datos?`;
-      passInput.value = '';
     });
   }
 </script>
