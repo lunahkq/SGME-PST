@@ -20,4 +20,5 @@ urlpatterns = [
 
     # API
     path('api/check_representative/<str:cedula>/', views.check_representative_by_cedula, name='check_representative'),
+    path('api/student_last_enrollment/<str:cedula>/', views.check_student_last_enrollment, name='check_student_last_enrollment'),
 ]

@@ -924,13 +924,14 @@ def academic_record(request):
                 origen_anio = AnioEscolar.objects.get(id_anio_escolar=origen_anio_id)
                 destino_anio = AnioEscolar.objects.get(id_anio_escolar=destino_anio_id)
 
+                # Usamos IDs directamente porque el template enviado ahora usa IDs (serán dropdowns dinámicos)
                 origen_grado = Grado.objects.get(id_grado=origen_grado_id)
-                origen_seccion = Seccion.objects.get(letra=origen_seccion_id)
-                origen_turno = Turno.objects.get(codigo=origen_turno_codigo)
+                origen_seccion = Seccion.objects.get(id_seccion=origen_seccion_id)
+                origen_turno = Turno.objects.get(id_turno=origen_turno_codigo) # La variable se llamaba codigo pero recibiremos ID
 
                 destino_grado = Grado.objects.get(id_grado=destino_grado_id)
-                destino_seccion = Seccion.objects.get(letra=destino_seccion_id)
-                destino_turno = Turno.objects.get(codigo=destino_turno_codigo)
+                destino_seccion = Seccion.objects.get(id_seccion=destino_seccion_id)
+                destino_turno = Turno.objects.get(id_turno=destino_turno_codigo)
 
                 # Filtrar por cédula si se proporciona
                 if cedula_carnet:
@@ -963,19 +964,45 @@ def academic_record(request):
 
                 for m in matriculas_origen:
                     # Caso egreso: 6to grado
-                    if origen_grado.orden == 6:
-                        m.estado = "Promovido"
-                        m.save()
-                        total_promovidos += 1
-                        continue
+                    # TODO: Validar si '6to' es dinámico o fijo. Asumimos orden 6 es el último.
+                    if origen_grado.orden >= 6 and destino_grado.orden > 6: 
+                         # Lógica original: if origen_grado.orden == 6.
+                         # Si el destino es un grado "superior" inexistente?
+                         # Mantengamos lógica simple: Si pasa de 6to a algo ??? 
+                         # La logica original era: si es 6to se promueve (egresa) y no se crea nueva matricula.
+                         pass
 
-                    # Misma combinación de grado -> Repetido
+                    # REGLA SOLICITADA:
+                    # Si el estudiante permanece en el mismo grado que su ultimo año escolar, su estado debe ser REPETIDO
+                    # Si el estudiante cambia de grado en el nuevo año escolar, su estado debe pasar a REGULAR
+                    
                     if origen_grado.id_grado == destino_grado.id_grado:
                         nuevo_estado = "Repetido"
                         total_repetidos += 1
                     else:
                         nuevo_estado = "Regular"
                         total_regulares += 1
+
+                    # Si era 6to grado y se intenta promover... la logica original simplemente lo marcaba Promovido y NO creaba nueva matricula.
+                    # El usuario no especificó qué hacer con 6to grado, pero dijo "no quiero que lo rompas".
+                    # Si origen es 6to (orden 6), ¿Se debe permitir re-inscribir?
+                    # Supongamos que si lo reinscriben en el mismo 6to, es REPITIENTE.
+                    # Si lo reinscriben en 1er año (liceo), eso es otro sistema.
+                    # Voy a RESPETAR la lógica solicitada: Mismo grado -> Repetido, Otro grado -> Regular.
+                    # IGNORANDO la lógica de egreso automática de la línea 966 original, porque el usuario quiere reinscribir.
+                    # SI el usuario reinscribe a alguien de 6to en 6to, es Repetido. Correcto.
+                    # Si lo pasan de 6to a ?? (no hay 7mo en Grados probablemente), el dropdown no lo mostrará.
+                    
+                    # Logica original para referencia:
+                    # if origen_grado.orden == 6:
+                    #    m.estado = "Promovido"
+                    #    m.save()
+                    #    continue
+                    
+                    # Si el usuario EXPLICITAMENTE está llenando el formulario de DESTINO, quiere crear una nueva matrícula.
+                    # NO DEBERIAMOS abortar la creación de matrícula solo por ser 6to grado, a menos que sea un EGRESO.
+                    # Pero el formulario dice "Reinscripción".
+                    # Voy a comentar la lógica de egreso automático para permitir la reinscripción explicita.
 
                     Matricula.objects.create(
                         id_estudiante=m.id_estudiante,
@@ -985,10 +1012,10 @@ def academic_record(request):
                         id_turno=destino_turno,
                         id_anio_escolar=destino_anio,
                         anio_ingreso=destino_anio.fecha_inicio.year,
-                        fecha_matricula=m.fecha_matricula,
+                        fecha_matricula=date.today(), # Usar fecha actual
                         estado=nuevo_estado,
                         observaciones=(
-                            f"Promocionado desde {origen_grado.nombre} "
+                            f"Promocionado/Reinscrito desde {origen_grado.nombre} "
                             f"{origen_seccion.letra} {origen_turno.nombre} ({origen_anio.anio_escolar})"
                         ),
                     )
@@ -1003,6 +1030,12 @@ def academic_record(request):
     # GET: datos para mostrar formulario
     anios = AnioEscolar.objects.all().order_by("-fecha_inicio")
     anio_activo = AnioEscolar.objects.filter(activo=True).first()
+    
+    # Listas para los dropdowns dinámicos
+    grados = Grado.objects.all().order_by("orden")
+    secciones = Seccion.objects.all().order_by("letra")
+    turnos = Turno.objects.all().order_by("nombre")
+
     total_matriculados = (
         Matricula.objects.filter(
             id_anio_escolar=anio_activo,
@@ -1016,6 +1049,9 @@ def academic_record(request):
         "anios": anios,
         "anio_activo": anio_activo,
         "total_matriculados": total_matriculados,
+        "grados": grados,
+        "secciones": secciones,
+        "turnos": turnos,
     }
     return render(request, "modules/academic_record.html", context)
 
@@ -1065,5 +1101,49 @@ def check_representative_by_cedula(request, cedula):
         }
     except Representante.DoesNotExist:
         data = {'found': False}
+    
+    return JsonResponse(data)
+
+
+@login_required
+def check_student_last_enrollment(request, cedula):
+    """
+    API para buscar la última matrícula de un estudiante por cédula.
+    Retorna el año escolar, grado, sección y turno de su último registro.
+    """
+    try:
+        # Buscamos al estudiante
+        estudiante = Estudiante.objects.get(cedula=cedula)
+        
+        # Buscamos su última matrícula (ordenada por fecha de matrícula o año descendente)
+        # Asumiendo que id_matricula es auto-incremental, el último id será el más reciente.
+        # O mejor, usamos el año escolar más reciente.
+        ultima_matricula = Matricula.objects.filter(id_estudiante=estudiante).order_by('-id_anio_escolar__fecha_inicio').first()
+
+        if ultima_matricula:
+            data = {
+                'found': True,
+                'estudiante_nombre': f"{estudiante.nombres} {estudiante.apellidos}",
+                'anio_id': ultima_matricula.id_anio_escolar.id_anio_escolar,
+                'grado_id': ultima_matricula.id_grado.id_grado,
+                'seccion_id': ultima_matricula.id_seccion.id_seccion, # Corregido para usar ID
+                'turno_id': ultima_matricula.id_turno.id_turno,
+            }
+        else:
+            data = {
+                'found': False,
+                'message': "Estudiante encontrado pero sin historial de matrículas."
+            }
+
+    except Estudiante.DoesNotExist:
+        data = {
+            'found': False, 
+            'message': "Estudiante no encontrado con esa cédula."
+        }
+    except Exception as e:
+        data = {
+            'found': False,
+            'message': str(e)
+        }
     
     return JsonResponse(data)

@@ -6,31 +6,29 @@
 <!-- MENSAJES  -->
 {% if messages %}
 {% for message in messages %}
-<div
-  class="alert 
+<div class="alert 
     {% if message.tags == 'success' %}alert-success
     {% elif message.tags == 'error' %}alert-danger
     {% else %}alert-info{% endif %} 
-  alert-dismissible fade show"
-  role="alert">
+  alert-dismissible fade show" role="alert">
 
   {% if "año escolar" in message|stringformat:"s"|lower and "creado" in message|stringformat:"s"|lower %}
-    <i class="bi bi-calendar-plus-fill me-2"></i>
-    <strong>Año Escolar creado correctamente.</strong><br>
-    <small>{{ message }}</small>
+  <i class="bi bi-calendar-plus-fill me-2"></i>
+  <strong>Año Escolar creado correctamente.</strong><br>
+  <small>{{ message }}</small>
 
   {% elif "año escolar" in message|stringformat:"s"|lower and "eliminado" in message|stringformat:"s"|lower %}
-    <i class="bi bi-trash-fill me-2"></i>
-    <strong>Año Escolar eliminado del sistema.</strong><br>
-    <small>{{ message }}</small>
+  <i class="bi bi-trash-fill me-2"></i>
+  <strong>Año Escolar eliminado del sistema.</strong><br>
+  <small>{{ message }}</small>
 
   {% elif "activo" in message|stringformat:"s"|lower %}
-    <i class="bi bi-calendar-check-fill me-2"></i>
-    <strong>Año Escolar activo actualizado.</strong><br>
-    <small>{{ message }}</small>
+  <i class="bi bi-calendar-check-fill me-2"></i>
+  <strong>Año Escolar activo actualizado.</strong><br>
+  <small>{{ message }}</small>
 
   {% else %}
-    {{ message }}
+  {{ message }}
   {% endif %}
 
   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -40,7 +38,7 @@
 
 
 
-<!-- HEADER CON CONTADOR -->
+<!-- HEADER -->
 <div class="mb-4">
   <div class="row align-items-center mb-4">
     <div>
@@ -180,36 +178,33 @@
                   </select>
                 </div>
 
-                <!-- FILTROS ORIGEN -->
+                <!-- FILTROS ORIGEN (DINÁMICO) -->
                 <div class="row g-2 mb-3">
                   <div class="col-4">
                     <label class="form-label small">Grado</label>
-                    <select name="origen_grado" class="form-select form-select-sm" required>
+                    <select name="origen_grado" id="origen_grado" class="form-select form-select-sm" required>
                       <option value="">Grado</option>
-                      <option value="1">1ro</option>
-                      <option value="2">2do</option>
-                      <option value="3">3ro</option>
-                      <option value="4">4to</option>
-                      <option value="5">5to</option>
-                      <option value="6">6to</option>
+                      {% for g in grados %}
+                      <option value="{{ g.id_grado }}">{{ g.nombre }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                   <div class="col-4">
                     <label class="form-label small">Sección</label>
-                    <select name="origen_seccion" class="form-select form-select-sm" required>
+                    <select name="origen_seccion" id="origen_seccion" class="form-select form-select-sm" required>
                       <option value="">Secc.</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
+                      {% for s in secciones %}
+                      <option value="{{ s.id_seccion }}">{{ s.letra }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                   <div class="col-4">
                     <label class="form-label small">Turno</label>
-                    <select name="origen_turno" class="form-select form-select-sm" required>
+                    <select name="origen_turno" id="origen_turno" class="form-select form-select-sm" required>
                       <option value="">Turno</option>
-                      <option value="M">Mañana</option>
-                      <option value="T">Tarde</option>
+                      {% for t in turnos %}
+                      <option value="{{ t.id_turno }}">{{ t.nombre }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                 </div>
@@ -221,8 +216,8 @@
                     <span class="input-group-text" style="background-color: rgba(53,110,194,0.1);">
                       <i class="bi bi-card-text" style="color: var(--brand-blue);"></i>
                     </span>
-                    <input type="text" name="cedula_carnet_origen" class="form-control form-control-sm"
-                      placeholder="Cédula o Carnet de Registro" required>
+                    <input type="text" name="cedula_carnet_origen" id="cedula_input"
+                      class="form-control form-control-sm" placeholder="Cédula o Carnet de Registro" required>
                   </div>
                 </div>
               </div>
@@ -248,36 +243,33 @@
                   </select>
                 </div>
 
-                <!-- FILTROS DESTINO -->
+                <!-- FILTROS DESTINO (DINÁMICO) -->
                 <div class="row g-2 mb-3">
                   <div class="col-4">
                     <label class="form-label small">Grado</label>
                     <select name="destino_grado" class="form-select form-select-sm" required>
                       <option value="">Grado</option>
-                      <option value="1">1ro</option>
-                      <option value="2">2do</option>
-                      <option value="3">3ro</option>
-                      <option value="4">4to</option>
-                      <option value="5">5to</option>
-                      <option value="6">6to</option>
+                      {% for g in grados %}
+                      <option value="{{ g.id_grado }}">{{ g.nombre }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                   <div class="col-4">
                     <label class="form-label small">Sección</label>
                     <select name="destino_seccion" class="form-select form-select-sm" required>
                       <option value="">Secc.</option>
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
+                      {% for s in secciones %}
+                      <option value="{{ s.id_seccion }}">{{ s.letra }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                   <div class="col-4">
                     <label class="form-label small">Turno</label>
                     <select name="destino_turno" class="form-select form-select-sm" required>
                       <option value="">Turno</option>
-                      <option value="M">Mañana</option>
-                      <option value="T">Tarde</option>
+                      {% for t in turnos %}
+                      <option value="{{ t.id_turno }}">{{ t.nombre }}</option>
+                      {% endfor %}
                     </select>
                   </div>
                 </div>
@@ -332,7 +324,61 @@
 {% block scripts %}
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    // Aquí puedes dejar tu lógica JS si la necesitas
+
+    // AUTO-FILL DATA DE MATRÍCULA ANTERIOR
+    const cedulaInput = document.getElementById('cedula_input');
+
+    if (cedulaInput) {
+      cedulaInput.addEventListener('blur', function () {
+        const cedula = this.value.trim();
+        if (!cedula) return;
+
+        // Mostrar algún indicador de carga si se desea (opcional)
+        // ...
+
+        fetch(`/api/student_last_enrollment/${cedula}/`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.found) {
+              // Rellenar campos de ORIGEN
+
+              // Año Escolar Origen
+              const selectAnio = document.querySelector('select[name="origen_anio"]');
+              if (selectAnio) {
+                // Intentar seleccionar si existe la opción
+                selectAnio.value = data.anio_id;
+                // Si el año de origen no está en la lista (e.g. muy viejo), no se seleccionará, 
+                // sería bueno manejar ese caso, pero por ahora asumimos que está en la lista histórica.
+              }
+
+              // Grado
+              const selectGrado = document.getElementById('origen_grado');
+              if (selectGrado) selectGrado.value = data.grado_id;
+
+              // Sección
+              const selectSeccion = document.getElementById('origen_seccion');
+              if (selectSeccion) selectSeccion.value = data.seccion_id;
+
+              // Turno
+              const selectTurno = document.getElementById('origen_turno');
+              if (selectTurno) selectTurno.value = data.turno_id;
+
+              // Alerta visual de éxito (opcional)
+              // alert(`Datos encontrados de ${data.estudiante_nombre}`);
+
+            } else {
+              // Limpiar o avisar
+              alert(data.message || "Estudiante no encontrado o sin historial.");
+              // Limpiar selects origen?
+              document.getElementById('origen_grado').value = "";
+              document.getElementById('origen_seccion').value = "";
+              document.getElementById('origen_turno').value = "";
+            }
+          })
+          .catch(err => console.error('Error:', err));
+      });
+    }
+
   });
 </script>
 {% endblock %}
