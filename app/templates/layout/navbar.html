@@ -9,67 +9,80 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    <style>
-        :root{
-            --brand-blue: #356ec2;
-            --action-green: #2fa44f;
-            --card-bg: #ffffff;
-        }
-        body { background: #f4f6fb; margin: 0; }
+  <style>
+    :root{
+        --brand-blue: #356ec2;
+        --action-green: #2fa44f;
+        --card-bg: #ffffff;
+    }
+    body { background: #f4f6fb; margin: 0; }
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 240px;
-            background: linear-gradient(180deg, rgba(53,110,194,0.08), rgba(53,110,194,0.02));
-            min-height: 100vh;
-            padding: 1rem;
-            border-right: 1px solid rgba(0,0,0,0.04);
-            transition: width 0.2s ease;
-            overflow-x: hidden;
-            white-space: nowrap;
-            z-index: 1030;
-        }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 240px;
+        background: linear-gradient(180deg, rgba(53,110,194,0.08), rgba(53,110,194,0.02));
+        min-height: 100vh;
+        padding: 1rem;
+        border-right: 1px solid rgba(0,0,0,0.04);
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-x: hidden;
+        white-space: nowrap;
+        z-index: 1030;
+    }
 
-        .sidebar-collapsed {
-            width: 72px;
-        }
-        .sidebar-collapsed .brand-block,
-        .sidebar-collapsed .small-muted,
-        .sidebar-collapsed .nav-link span.link-text,
-        .sidebar-collapsed .mt-auto {
-            display: none;
-        }
+    /* Estado inicial sin animacion para evitar flash */
+    .sidebar-collapsed,
+    .sidebar[data-collapsed="true"] {
+        width: 72px !important;
+        transition: none;
+    }
 
-        .nav-link { color: #123; }
-        .card-soft { border-radius: 12px; box-shadow: 0 6px 18px rgba(12,32,80,0.06); background: var(--card-bg); }
-        .rounded-btn { border-radius: 12px; }
-        .brand-block .brand {
-            color: var(--brand-blue);
-            font-weight:700;
-            line-height: 1.1;
-        }
-        .small-muted { color: #6c757d; font-size: .9rem; }
-        .btn-action { background: var(--action-green); color: white; }
+    /* Animacion solo despues de cargar */
+    .sidebar[data-loaded="true"].sidebar-collapsed {
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        .main-content {
-            margin-left: 240px;
-            padding: 1.5rem 1rem;
-            min-height: 100vh;
-            background: #f4f6fb;
-            transition: margin-left 0.2s ease;
-        }
-        .sidebar-collapsed + .main-content {
-            margin-left: 72px;
-        }
-    </style>
+    .sidebar-collapsed .brand-block,
+    .sidebar-collapsed .small-muted,
+    .sidebar-collapsed .nav-link span.link-text,
+    .sidebar-collapsed .mt-auto {
+        display: none;
+    }
+
+    .nav-link { color: #123; }
+    .card-soft { border-radius: 12px; box-shadow: 0 6px 18px rgba(12,32,80,0.06); background: var(--card-bg); }
+    .rounded-btn { border-radius: 12px; }
+    .brand-block .brand {
+        color: var(--brand-blue);
+        font-weight:700;
+        line-height: 1.1;
+    }
+    .small-muted { color: #6c757d; font-size: .9rem; }
+    .btn-action { background: var(--action-green); color: white; }
+
+    .main-content {
+        margin-left: 240px;
+        padding: 1.5rem 1rem;
+        min-height: 100vh;
+        background: #f4f6fb;
+        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar-collapsed + .main-content {
+        margin-left: 72px;
+    }
+  </style>
 
   {% block head %}{% endblock %}
 </head>
 <body>
 
-<nav id="sidebar" class="sidebar d-flex flex-column">
+<!-- CSRF token necesario para futuros AJAX -->
+{% csrf_token %}
+
+<nav id="sidebar" class="sidebar d-flex flex-column {% if request.session.sidebar_collapsed %}sidebar-collapsed{% endif %}" data-collapsed="{% if request.session.sidebar_collapsed %}true{% else %}false{% endif %}">
   <div class="mb-4" style="padding-left: 0.5rem;">
     <button id="sidebarToggle" class="btn btn-outline-secondary mb-3">
       <i class="bi bi-list"></i>
@@ -84,8 +97,6 @@
   </div>
 
   <ul class="nav flex-column">
-      <!-- Por ahora TODOS los enlaces apuntan a "#".
-      Más adelante los cambiaremos a URLs reales. -->
     <li class="nav-item mb-1">
       <a class="nav-link py-2 d-flex align-items-center" href="{% url 'home' %}">
         <i class="bi bi-house-fill me-2"></i>
@@ -145,16 +156,12 @@
           Rol: <strong>Sin rol</strong>
         {% endif %}
       {% endwith %}
-    {% else %}
-      Rol: <strong>Invitado</strong>
     {% endif %}
   </div>
-
 </nav>
 
 <main id="mainContent" class="main-content">
   <div class="container-fluid">
-    <!-- Más adelante, los mensajes vendrán de django.contrib.messages -->
     {% block content %}{% endblock %}
   </div>
 </main>
@@ -164,18 +171,27 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  const sidebar   = document.getElementById('sidebar');
-  const main      = document.getElementById('mainContent');
-  const toggleBtn = document.getElementById('sidebarToggle');
-
-  function toggleSidebar() {
-    sidebar.classList.toggle('sidebar-collapsed');
-  }
-
-  toggleBtn.addEventListener('click', toggleSidebar);
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    
+    // Marcar como cargado para habilitar animaciones
+    sidebar.setAttribute('data-loaded', 'true');
+    
+    // Cargar estado desde localStorage (por si session no esta sincronizada)
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed && !sidebar.classList.contains('sidebar-collapsed')) {
+        sidebar.classList.add('sidebar-collapsed');
+    }
+    
+    toggleBtn.addEventListener('click', function() {
+        const willCollapse = !sidebar.classList.contains('sidebar-collapsed');
+        sidebar.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', willCollapse);
+    });
+});
 </script>
 
 {% block scripts %}{% endblock %}
-
 </body>
 </html>

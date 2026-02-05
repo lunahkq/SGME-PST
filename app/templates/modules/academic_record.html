@@ -119,7 +119,7 @@
         </form>
 
         <!-- Historial de años escolares -->
-        <h6 class="mt-4 mb-2" style="color: var(--brand-blue);">Historial de años:</h6>
+        <h6 class="mt-4 mb-2" style="color: var(--brand-blue);">Historial de años escolares:</h6>
         <div class="list-group list-group-flush small" style="max-height: 200px; overflow-y: auto;">
           {% for a in anios %}
           {% if not a.activo %}
@@ -148,13 +148,13 @@
     </div>
   </div>
 
-  <!-- PROMOCIÓN ESTUDIANTES -->
+  <!-- REINSCRIPCIÓN ESTUDIANTES -->
   <div class="col-lg-8">
     <div class="card card-soft h-100">
       <div class="card-body">
         <h5 class="card-title mb-3" style="color: var(--brand-blue);">
           <i class="bi bi-arrow-right-circle me-2"></i>
-          Promoción de Estudiantes
+          Reinscripción de Estudiantes
         </h5>
 
         <form method="post">
@@ -168,7 +168,7 @@
                 style="background: rgba(53,110,194,0.08); border: 1px solid rgba(53,110,194,0.2);">
                 <h6 class="mb-3 fw-semibold" style="color: var(--brand-blue);">
                   <i class="bi bi-arrow-left-circle me-1"></i>
-                  1. Origen (grupo actual)
+                  1. Año escolar de Origen (Úlrimo año escolar en el que se registró)
                 </h6>
 
                 <div class="mb-3">
@@ -216,13 +216,13 @@
 
                 <!-- CÉDULA/CARNET ESTUDIANTIL -->
                 <div class="mb-2">
-                  <label class="form-label small fw-semibold">Cédula</label>
+                  <label class="form-label small fw-semibold">Cédula o Carnet</label>
                   <div class="input-group input-group-sm">
                     <span class="input-group-text" style="background-color: rgba(53,110,194,0.1);">
                       <i class="bi bi-card-text" style="color: var(--brand-blue);"></i>
                     </span>
                     <input type="text" name="cedula_carnet_origen" class="form-control form-control-sm"
-                      placeholder="V12345678" required>
+                      placeholder="Cédula o Carnet de Registro" required>
                   </div>
                 </div>
               </div>
@@ -234,7 +234,7 @@
                 style="background: rgba(53,110,194,0.08); border: 1px solid rgba(53,110,194,0.2);">
                 <h6 class="mb-3 fw-semibold" style="color: var(--brand-blue);">
                   <i class="bi bi-arrow-right-circle me-1"></i>
-                  2. Destino (nuevo grupo)
+                  2. Año Escolar de Destino (Año escolar activo)
                 </h6>
 
                 <div class="mb-3">
@@ -285,7 +285,7 @@
                 <!-- NOTA SIMPLE -->
                 <div class="alert alert-info small mb-0">
                   <i class="bi bi-info-circle me-1"></i>
-                  <strong>Mismo grado:</strong> Repetir | <strong>Grado +1:</strong> Promover
+                  <strong>Mismo grado:</strong> Repetir | <strong>+1 Grado: </strong> Promover
                 </div>
               </div>
             </div>
@@ -294,7 +294,7 @@
           <div class="text-end mt-4">
             <button type="submit" class="btn btn-primary rounded-btn px-4">
               <i class="bi bi-check-circle me-2"></i>
-              Confirmar Promoción
+              Confirmar Reinscripción
             </button>
           </div>
         </form>
