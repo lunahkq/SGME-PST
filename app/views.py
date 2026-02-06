@@ -65,7 +65,7 @@ def home_view(request):
     students_by_grade = (
         Estudiante.objects
         .filter(
-            matricula__estado__in=['Activo', 'Regular', 'Nuevo'],
+            matricula__estado__in=['Activo', 'Regular', 'Nuevo', 'Repetido'],
             matricula__id_anio_escolar=anio_activo
         )
         .values('matricula__id_grado__nombre')
@@ -79,7 +79,7 @@ def home_view(request):
     students_by_gender = (
         Estudiante.objects
         .filter(
-            matricula__estado__in=['Activo', 'Regular', 'Nuevo'],
+            matricula__estado__in=['Activo', 'Regular', 'Nuevo', 'Repetido'],
             matricula__id_anio_escolar=anio_activo
         )
         .values('sexo')
