@@ -730,7 +730,7 @@ def parents_list(request):
     grado = request.GET.get('grado', '')
     seccion = request.GET.get('seccion', '')
     turno = request.GET.get('turno', '')
-    estado = request.GET.get('estado', '')
+    estado = request.GET.get('estado', 'Activo')
 
     anio_activo = AnioEscolar.objects.filter(activo=True).first()
     active_statuses = ["Activo", "Nuevo", "Regular", "Repetido"]

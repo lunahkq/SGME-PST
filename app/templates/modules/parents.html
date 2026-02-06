@@ -112,7 +112,7 @@
           <td>
             <!-- La lógica de estado ya la hicimos en el view, pero visualmente podemos inferir: 
                   Si tiene estudiantes asociados (en la query actual que filtra por activo), está activo. -->
-            {% if p.num_estudiantes > 0 %}
+            {% if p.num_activos > 0 %}
             <span class="badge bg-success">Activo</span>
             {% else %}
             <span class="badge bg-secondary">Inactivo</span>
