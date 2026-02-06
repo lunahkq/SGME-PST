@@ -963,15 +963,18 @@ def academic_record(request):
                 total_repetidos = 0
 
                 for m in matriculas_origen:
-                    # Caso egreso: 6to grado
-                    # TODO: Validar si '6to' es dinámico o fijo. Asumimos orden 6 es el último.
-                    if origen_grado.orden >= 6 and destino_grado.orden > 6: 
-                         # Lógica original: if origen_grado.orden == 6.
-                         # Si el destino es un grado "superior" inexistente?
-                         # Mantengamos lógica simple: Si pasa de 6to a algo ??? 
-                         # La logica original era: si es 6to se promueve (egresa) y no se crea nueva matricula.
-                         pass
-
+                    # Caso Especial: EGRESO de 6to Grado
+                    # Si el grado es 6to (orden 6) y el año destino es el mismo que el origen,
+                    # se considera que el estudiante se ha "Egresado" (Graduado).
+                    if origen_grado.orden == 6 and origen_anio.id_anio_escolar == destino_anio.id_anio_escolar:
+                         m.estado = "Egresado"
+                         # Preservamos observaciones anteriores y añadimos la nota de egreso
+                         obs_actual = m.observaciones if m.observaciones else ""
+                         m.observaciones = f"{obs_actual} | Marcado como Egresado el {date.today()}"
+                         m.save()
+                         total_promovidos += 1
+                         continue
+                    
                     # REGLA SOLICITADA:
                     # Si el estudiante permanece en el mismo grado que su ultimo año escolar, su estado debe ser REPETIDO
                     # Si el estudiante cambia de grado en el nuevo año escolar, su estado debe pasar a REGULAR
@@ -983,10 +986,9 @@ def academic_record(request):
                         nuevo_estado = "Regular"
                         total_regulares += 1
 
-                    # Si era 6to grado y se intenta promover... la logica original simplemente lo marcaba Promovido y NO creaba nueva matricula.
-                    # El usuario no especificó qué hacer con 6to grado, pero dijo "no quiero que lo rompas".
-                    # Si origen es 6to (orden 6), ¿Se debe permitir re-inscribir?
-                    # Supongamos que si lo reinscriben en el mismo 6to, es REPITIENTE.
+                    # Si era 6to grado y se intenta promover a otro grado diferente al mismo 6to
+                    # (ej. cambio de sistema), permitimos que siga el flujo normal de "Regular" 
+                    # o lo que el usuario haya seleccionado.
                     # Si lo reinscriben en 1er año (liceo), eso es otro sistema.
                     # Voy a RESPETAR la lógica solicitada: Mismo grado -> Repetido, Otro grado -> Regular.
                     # IGNORANDO la lógica de egreso automática de la línea 966 original, porque el usuario quiere reinscribir.
