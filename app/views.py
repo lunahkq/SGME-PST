@@ -906,7 +906,7 @@ def academic_record(request):
             messages.error(request, f"Error al eliminar: {str(e)}")
         return redirect("academic")
 
-    # Promoción / repetición / egreso
+    # Reinscripción / repetición / egreso
     if request.method == "POST" and request.POST.get("action") == "promote":
         origen_anio_id = request.POST.get("origen_anio")
         origen_grado_id = request.POST.get("origen_grado")
@@ -973,6 +973,7 @@ def academic_record(request):
                          m.observaciones = f"{obs_actual} | Marcado como Egresado el {date.today()}"
                          m.save()
                          total_promovidos += 1
+                         messages.success(request, f"El estudiante {m.id_estudiante.nombres} {m.id_estudiante.apellidos} ha sido egresado correctamente.")
                          continue
                     
                     # REGLA SOLICITADA:
@@ -986,25 +987,6 @@ def academic_record(request):
                         nuevo_estado = "Regular"
                         total_regulares += 1
 
-                    # Si era 6to grado y se intenta promover a otro grado diferente al mismo 6to
-                    # (ej. cambio de sistema), permitimos que siga el flujo normal de "Regular" 
-                    # o lo que el usuario haya seleccionado.
-                    # Si lo reinscriben en 1er año (liceo), eso es otro sistema.
-                    # Voy a RESPETAR la lógica solicitada: Mismo grado -> Repetido, Otro grado -> Regular.
-                    # IGNORANDO la lógica de egreso automática de la línea 966 original, porque el usuario quiere reinscribir.
-                    # SI el usuario reinscribe a alguien de 6to en 6to, es Repetido. Correcto.
-                    # Si lo pasan de 6to a ?? (no hay 7mo en Grados probablemente), el dropdown no lo mostrará.
-                    
-                    # Logica original para referencia:
-                    # if origen_grado.orden == 6:
-                    #    m.estado = "Promovido"
-                    #    m.save()
-                    #    continue
-                    
-                    # Si el usuario EXPLICITAMENTE está llenando el formulario de DESTINO, quiere crear una nueva matrícula.
-                    # NO DEBERIAMOS abortar la creación de matrícula solo por ser 6to grado, a menos que sea un EGRESO.
-                    # Pero el formulario dice "Reinscripción".
-                    # Voy a comentar la lógica de egreso automático para permitir la reinscripción explicita.
 
                     Matricula.objects.create(
                         id_estudiante=m.id_estudiante,
@@ -1017,15 +999,16 @@ def academic_record(request):
                         fecha_matricula=date.today(), # Usar fecha actual
                         estado=nuevo_estado,
                         observaciones=(
-                            f"Promocionado/Reinscrito desde {origen_grado.nombre} "
+                            f"Reinscrito desde {origen_grado.nombre} "
                             f"{origen_seccion.letra} {origen_turno.nombre} ({origen_anio.anio_escolar})"
                         ),
                     )
 
-                messages.success(request, "Se realizó la promoción correctamente.")
+                if total_regulares > 0 or total_repetidos > 0:
+                    messages.success(request, "Se realizó la promoción correctamente.")
 
         except Exception as e:
-            messages.error(request, f"Error en la promoción: {str(e)}")
+            messages.error(request, f"Error en la reinscripción: {str(e)}")
 
         return redirect("academic")
 
