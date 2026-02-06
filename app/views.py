@@ -653,22 +653,6 @@ def students_view(request):
          # Para ver "Todos" real (incluyendo sin matricula en este año), NO debemos filtrar estudiantes por matricula.
          pass
          
-    # IMPORTANTE: Si NO filtramos estudiantes por matriculas (Active o Inactivo case 1), 
-    # entonces student_ids NO debe restringir.
-    
-    # Lógica original restringía siempre:
-    # student_ids = matriculas.values_list('id_estudiante_id', flat=True)
-    # estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
-    
-    # NUEVA LÓGICA DE VINCULACIÓN:
-    # Solo aplicamos el filtro inverso si NO es el caso de "Inactivo" con año filtro,
-    # y si NO es el caso de "Todos".
-    # Pero espera, si selecciono "Activo", ya filtré arriba.
-    # Si selecciono "Inactivo" (con año), ya filtré exclude arriba.
-    # Si selecciono "Todos", quiero VER TODOS (incluso sin matricula).
-    
-    # Entonces, ELIMINAMOS el filtro genérico de abajo y confiamos en los ifs.
-    # Pero debemos filtrar por otros criterios (grado, seccion) si aplican.
     
     if grado or seccion or turno:
         # Si hay filtros de atributo de matricula, entonces SÍ debemos restringir a quienes tengan esa matricula
@@ -893,13 +877,29 @@ def academic_record(request):
     # Eliminar año escolar
     if request.method == "POST" and request.POST.get("action") == "delete_year":
         anio_id = request.POST.get("anio_id")
+        password = request.POST.get("password")  # Obtener contraseña del modal
+
+        if not password:
+            messages.error(request, "Debes ingresar tu contraseña para confirmar la eliminación.")
+            return redirect("academic")
+
+        # Verificar contraseña
+        user = authenticate(username=request.user.username, password=password)
+        if user is None:
+            messages.error(request, "Contraseña incorrecta. No se pudo eliminar el año escolar.")
+            return redirect("academic")
+
         try:
             anio = AnioEscolar.objects.get(id_anio_escolar=anio_id)
             if anio.activo:
                  messages.error(request, "No puedes eliminar el año escolar activo.")
             else:
-                 anio.delete()
-                 messages.error(request, "Año escolar eliminado con éxito.")
+                 with transaction.atomic():
+                     # Eliminar matrículas asociadas primero para evitar error de FK
+                     Matricula.objects.filter(id_anio_escolar=anio).delete()
+                     # Eliminar el año escolar
+                     anio.delete()
+                 messages.success(request, "Año escolar eliminado con éxito.")
         except AnioEscolar.DoesNotExist:
             messages.error(request, "El año escolar no existe.")
         except Exception as e:

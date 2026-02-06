@@ -36,8 +36,6 @@
 {% endfor %}
 {% endif %}
 
-
-
 <!-- HEADER -->
 <div class="mb-4">
   <div class="row align-items-center mb-4">
@@ -110,7 +108,7 @@
               </option>
               {% endfor %}
             </select>
-            <button class="btn btn-outline-primary" type="submit">
+            <button class="btn btn-outline-primary" type="submit" title="Activar Año Escolar">
               <i class="bi bi-check-circle"></i>
             </button>
           </div>
@@ -124,15 +122,15 @@
           <div class="list-group-item d-flex justify-content-between align-items-center p-2">
             <span>{{ a.anio_escolar }}</span>
             <div>
-              <form method="post" class="d-inline">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="delete_year">
-                <input type="hidden" name="anio_id" value="{{ a.id_anio_escolar }}">
-                <button type="submit" class="btn btn-sm btn-outline-danger px-1 py-0 rounded"
-                  onclick="return confirm('¿Eliminar este año escolar?')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </form>
+              <!-- Botón que abre el modal -->
+              <button type="button" title="Eliminar Año Escolar"
+                      class="btn btn-sm btn-outline-danger px-1 py-0 rounded btn-delete-year"
+                      data-bs-toggle="modal"
+                      data-bs-target="#deleteYearModal"
+                      data-anio-id="{{ a.id_anio_escolar }}"
+                      data-anio-label="{{ a.anio_escolar }}">
+                <i class="bi bi-trash"></i>
+              </button>
             </div>
           </div>
           {% endif %}
@@ -297,6 +295,69 @@
 
 </div>
 
+<!-- MODAL ELIMINAR AÑO ESCOLAR -->
+<div class="modal fade" id="deleteYearModal" tabindex="-1" aria-labelledby="deleteYearModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-0">
+        <div class="d-flex align-items-center">
+          <div>
+            <h5 class="modal-title mb-0" id="deleteYearModalLabel">Eliminar año escolar</h5>
+            <small class="text-muted">Esta acción es permanente y no se puede deshacer.</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <form method="post" id="deleteYearForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_year">
+        <input type="hidden" name="anio_id" id="modal_anio_id">
+
+        <div class="modal-body pt-0">
+          <div class="alert alert-warning small d-flex align-items-start">
+            <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+            <div>
+              <strong>Confirma que quieres eliminar este año escolar.</strong><br>
+              Se eliminarán todos los registros asociados a este año escolar.
+            </div>
+          </div>
+
+          <p class="small mb-2">
+            Año escolar seleccionado:
+            <span class="fw-semibold" id="modal_anio_label"></span>
+          </p>
+
+          <div class="mb-3">
+            <label for="password_confirm" class="form-label small fw-semibold">
+              Escribe tu contraseña para confirmar
+            </label>
+            <input type="password"
+                   class="form-control form-control-sm"
+                   id="password_confirm"
+                   name="password"
+                   placeholder="Contraseña de usuario"
+                   required>
+            <small class="text-muted">
+              Por seguridad, se requiere tu contraseña para realizar esta acción.
+            </small>
+          </div>
+        </div>
+
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-danger btn-sm">
+            <i class="bi bi-trash me-1"></i>
+            Eliminar definitivamente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <style>
   .alert-container {
     position: sticky;
@@ -334,22 +395,14 @@
         const cedula = this.value.trim();
         if (!cedula) return;
 
-        // Mostrar algún indicador de carga si se desea (opcional)
-        // ...
-
         fetch(`/api/student_last_enrollment/${cedula}/`)
           .then(response => response.json())
           .then(data => {
             if (data.found) {
-              // Rellenar campos de ORIGEN
-
               // Año Escolar Origen
               const selectAnio = document.querySelector('select[name="origen_anio"]');
               if (selectAnio) {
-                // Intentar seleccionar si existe la opción
                 selectAnio.value = data.anio_id;
-                // Si el año de origen no está en la lista (e.g. muy viejo), no se seleccionará, 
-                // sería bueno manejar ese caso, pero por ahora asumimos que está en la lista histórica.
               }
 
               // Grado
@@ -364,13 +417,8 @@
               const selectTurno = document.getElementById('origen_turno');
               if (selectTurno) selectTurno.value = data.turno_id;
 
-              // Alerta visual de éxito (opcional)
-              // alert(`Datos encontrados de ${data.estudiante_nombre}`);
-
             } else {
-              // Limpiar o avisar
               alert(data.message || "Estudiante no encontrado o sin historial.");
-              // Limpiar selects origen?
               document.getElementById('origen_grado').value = "";
               document.getElementById('origen_seccion').value = "";
               document.getElementById('origen_turno').value = "";
@@ -380,6 +428,22 @@
       });
     }
 
+    // MANEJO MODAL ELIMINAR AÑO ESCOLAR
+    const deleteButtons = document.querySelectorAll('.btn-delete-year');
+    const modalAnioId = document.getElementById('modal_anio_id');
+    const modalAnioLabel = document.getElementById('modal_anio_label');
+    const passwordInput = document.getElementById('password_confirm');
+
+    deleteButtons.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const anioId = this.getAttribute('data-anio-id');
+        const anioLabel = this.getAttribute('data-anio-label');
+
+        if (modalAnioId) modalAnioId.value = anioId;
+        if (modalAnioLabel) modalAnioLabel.textContent = anioLabel;
+        if (passwordInput) passwordInput.value = '';
+      });
+    });
   });
 </script>
 {% endblock %}
