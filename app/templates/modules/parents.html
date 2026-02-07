@@ -183,7 +183,7 @@
                       <i class="bi bi-people-fill me-2"></i>Estudiantes asociados
                     </h6>
                     {% if p.num_estudiantes > 0 %}
-                    {% for matricula in p.matricula_set.all %}
+                    {% for matricula in p.matriculas_visibles %}
                     {% with estudiante=matricula.id_estudiante %}
                     <div class="border-start border-primary ps-3 mb-3 pb-2">
                       <div class="row g-2">

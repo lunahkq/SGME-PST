@@ -824,8 +824,29 @@ def parents_list(request):
     for t in turnos_list:
         t.selected = (t.nombre == turno) # Ahora comparamos con nombre completo
 
+    # Pre-procesar para evitar duplicados en la vista (mostrar solo la matrícula más reciente de cada estudiante)
+    # y convertir a lista para poder iterar en el template con los atributos extra
+    parents_list = list(parents)
+    for p in parents_list:
+        # Obtenemos todas las matrículas del representante, ordenadas por fecha de inicio del año escolar (descendiente)
+        matriculas = p.matricula_set.all().select_related(
+            'id_estudiante', 'id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar'
+        ).order_by('-id_anio_escolar__fecha_inicio')
+        
+        unique_students = {}
+        processed_students = []
+        
+        for m in matriculas:
+            est_id = m.id_estudiante.id_estudiante
+            if est_id not in unique_students:
+                unique_students[est_id] = True
+                processed_students.append(m)
+        
+        # Asignamos la lista filtrada al objeto (esto es temporal para la vista)
+        p.matriculas_visibles = processed_students
+
     context = {
-        'parents': parents,
+        'parents': parents_list,
         'q': q,
         'grados': grados_list,
         'secciones': secciones_list,
@@ -997,7 +1018,7 @@ def academic_record(request):
                          m.observaciones = f"{obs_actual} | Marcado como Egresado el {date.today()}"
                          m.save()
                          total_promovidos += 1
-                         messages.success(request, f"El estudiante {m.id_estudiante.nombres} {m.id_estudiante.apellidos} ha sido egresado correctamente.")
+                         messages.success(request, "Estudiante marcado como egresado correctamente")
                          continue
                     
                     # REGLA SOLICITADA:
