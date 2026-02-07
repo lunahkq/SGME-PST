@@ -601,18 +601,17 @@ def students_view(request):
     if anio_filtro:
         # 1. Estudiantes con matrícula en el año actual (filtro)
         ids_anio_actual = Matricula.objects.filter(id_anio_escolar=anio_filtro).values_list('id_estudiante', flat=True)
-        
-        # 2. Estudiantes con matrícula en el año anterior
-        # Buscamos el año anterior por fecha de fin <= fecha inicio del actual
-        # Ojo: Asumimos orden lógico por fecha.
-        anio_anterior = AnioEscolar.objects.filter(fecha_fin__lte=anio_filtro.fecha_inicio).order_by('-fecha_fin').exclude(id_anio_escolar=anio_filtro.id_anio_escolar).first()
-        
-        ids_anio_anterior = []
-        if anio_anterior:
-            ids_anio_anterior = Matricula.objects.filter(id_anio_escolar=anio_anterior).values_list('id_estudiante', flat=True)
-            
-        # Unimos los IDs: Estudiantes del año actual + Estudiantes del año anterior (candidatos a Sin Matrícula)
-        ids_visibles = list(ids_anio_actual) + list(ids_anio_anterior) 
+        ids_visibles = list(ids_anio_actual)
+
+        # 2. Solo si el año filtro es ACTIVO, buscamos estudiantes del año anterior (candidatos a Sin Matrícula)
+        if anio_filtro.activo:
+             # Buscamos el año anterior por fecha de fin <= fecha inicio del actual
+             anio_anterior = AnioEscolar.objects.filter(fecha_fin__lte=anio_filtro.fecha_inicio).order_by('-fecha_fin').exclude(id_anio_escolar=anio_filtro.id_anio_escolar).first()
+             
+             if anio_anterior:
+                 ids_anio_anterior = Matricula.objects.filter(id_anio_escolar=anio_anterior).values_list('id_estudiante', flat=True)
+                 # Añadimos los del año anterior a la lista de visibles
+                 ids_visibles.extend(list(ids_anio_anterior))
         
         # Filtramos la query base de estudiantes
         estudiantes = estudiantes.filter(id_estudiante__in=ids_visibles)
@@ -861,7 +860,7 @@ def academic_record(request):
     Vista principal del módulo de Matrícula
     - Crear nuevo año escolar
     - Activar año escolar
-    - Promoción / repetición / egreso
+    - Reinscripción / repetición / egreso
     - Contador de estudiantes matriculados
     """
 
@@ -1030,7 +1029,7 @@ def academic_record(request):
                     )
 
                 if total_regulares > 0 or total_repetidos > 0:
-                    messages.success(request, "Se realizó la promoción correctamente.")
+                    messages.success(request, "Se realizó la reinscripción correctamente.")
 
         except Exception as e:
             messages.error(request, f"Error en la reinscripción: {str(e)}")
