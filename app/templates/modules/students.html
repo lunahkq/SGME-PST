@@ -110,10 +110,10 @@
           <i class="bi bi-arrow-counterclockwise"></i>
           Reset
         </a>
-        <a href="#" class="btn btn-success flex-fill" onclick="alert('Reporte PDF próximamente disponible')"
+        <button type="button" class="btn btn-success flex-fill" data-bs-toggle="modal" data-bs-target="#modalReporte"
           title="Reporte PDF o Excel">
           <i class="bi bi-file-earmark-arrow-down-fill"></i> Generar Reporte
-        </a>
+        </button>
       </div>
     </div>
   </form>
@@ -419,10 +419,9 @@
                         <select name="grado" class="form-select" required>
                           <option value="">Seleccione grado</option>
                           {% for grado in grados %}
-                            <option value="{{ grado.nombre }}" 
-                                    {% if s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
-                              {{ grado.nombre }}
-                            </option>
+                          <option value="{{ grado.nombre }}" {% if s.matricula_activa.id_grado.nombre == grado.nombre %}selected{% endif %}>
+                            {{ grado.nombre }}
+                          </option>
                           {% endfor %}
                         </select>
                       </div>
@@ -442,7 +441,8 @@
                         <select name="turno" class="form-select" required>
                           <option value="">Seleccione turno</option>
                           {% for turno in turnos %}
-                          <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>{{ turno.nombre }}
+                          <option value="{{ turno.nombre }}" {% if s.matricula_activa and s.matricula_activa.id_turno.nombre == turno.nombre %}selected{% endif %}>
+                            {{ turno.nombre }}
                           </option>
                           {% endfor %}
                         </select>
@@ -804,6 +804,79 @@
     </div>
   </div>
 </div>
+</div>
+
+<!-- Modal Generar Reporte -->
+<div class="modal fade" id="modalReporte" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>Generar Reporte
+        </h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formReporte" method="get" action="{% url 'generar_reporte' %}" target="_blank">
+          <!-- Inputs ocultos para filtros (se llenan con JS) -->
+          <input type="hidden" name="q" id="rep_q">
+          <input type="hidden" name="anio" id="rep_anio">
+          <input type="hidden" name="grado" id="rep_grado">
+          <input type="hidden" name="seccion" id="rep_seccion">
+          <input type="hidden" name="turno" id="rep_turno">
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Formato de salida</label>
+            <div class="d-flex gap-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="formato" id="pdfOption" value="pdf" checked>
+                <label class="form-check-label" for="pdfOption">
+                  <i class="bi bi-file-pdf text-danger"></i> Documento PDF
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="formato" id="excelOption" value="excel">
+                <label class="form-check-label" for="excelOption">
+                  <i class="bi bi-file-excel text-success"></i> Hoja de Cálculo Excel
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">Opciones de inclusión</label>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="incluir_retirados" value="true" id="checkRetirados">
+              <label class="form-check-label" for="checkRetirados">
+                Incluir estudiantes <strong>Retirados</strong>
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="incluir_egresados" value="true" id="checkEgresados">
+              <label class="form-check-label" for="checkEgresados">
+                Incluir estudiantes <strong>Egresados/Promovidos</strong>
+              </label>
+            </div>
+          </div>
+
+          <div class="alert alert-info py-2">
+            <small><i class="bi bi-info-circle me-1"></i> Se aplicarán los filtros activos en la pantalla principal
+              (Año, Grado, Sección, etc).</small>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+            <button class="btn btn-success" type="submit">
+              <i class="bi bi-download me-1"></i>Descargar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -848,6 +921,17 @@
       inputId.value = estId;
       texto.textContent =
         `¿Está seguro que quiere retirar a ${estNombre} del año escolar actual?`;
+    });
+  }
+  // Copiar filtros al formulario de reporte
+  const formReporte = document.getElementById('formReporte');
+  if (formReporte) {
+    formReporte.addEventListener('submit', function () {
+      document.getElementById('rep_q').value = document.querySelector('input[name="q"]').value || '';
+      document.getElementById('rep_anio').value = document.querySelector('select[name="anio"]').value || '';
+      document.getElementById('rep_grado').value = document.querySelector('select[name="grado"]').value || '';
+      document.getElementById('rep_seccion').value = document.querySelector('select[name="seccion"]').value || '';
+      document.getElementById('rep_turno').value = document.querySelector('select[name="turno"]').value || '';
     });
   }
 </script>

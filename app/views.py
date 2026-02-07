@@ -15,6 +15,15 @@ from django.db.models import Q, Count, Value, IntegerField
 from django.db.models.functions import TruncYear
 from django.contrib.auth import authenticate
 from datetime import date
+from django.http import HttpResponse
+import openpyxl
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from io import BytesIO
 
 from django.utils import timezone
 
@@ -1184,3 +1193,265 @@ def check_student_last_enrollment(request, cedula):
         }
     
     return JsonResponse(data)
+
+
+# GENERACIÓN DE REPORTES
+@login_required
+def generar_reporte(request):
+    # 1. RECIBIR FILTROS (Misma lógica que students_view)
+    q = request.GET.get("q", "")
+    
+    # Año escolar
+    anio_activo = AnioEscolar.objects.filter(activo=True).first()
+    selected_anio_id = request.GET.get("anio")
+    anio_filtro = None
+
+    if selected_anio_id is None:
+        anio_filtro = anio_activo
+    elif selected_anio_id == "":
+        anio_filtro = None
+    else:
+        try:
+            anio_filtro = AnioEscolar.objects.get(id_anio_escolar=selected_anio_id)
+        except AnioEscolar.DoesNotExist:
+            anio_filtro = anio_activo
+    
+    # 2. LÓGICA DE FILTRADO BASE (Solo Matriculados)
+    if anio_filtro:
+        matriculas = Matricula.objects.filter(id_anio_escolar=anio_filtro)
+    else:
+        matriculas = Matricula.objects.all()
+
+    # Filtros adicionales
+    grado = request.GET.get("grado")
+    seccion = request.GET.get("seccion")
+    turno = request.GET.get("turno")
+    
+    if grado:
+        matriculas = matriculas.filter(id_grado__nombre=grado)
+    if seccion:
+        matriculas = matriculas.filter(id_seccion__letra=seccion)
+    if turno:
+        matriculas = matriculas.filter(id_turno__nombre=turno)
+    
+    # Filtro de búsqueda textual (q) sobre el Estudiante relacionado
+    if q:
+        matriculas = matriculas.filter(
+            Q(id_estudiante__nombres__icontains=q) |
+            Q(id_estudiante__apellidos__icontains=q) |
+            Q(id_estudiante__cedula__icontains=q)
+        )
+
+    # 3. OPCIONES DEL REPORTE (Modal)
+    incluir_retirados = request.GET.get("incluir_retirados") == "true"
+    incluir_egresados = request.GET.get("incluir_egresados") == "true"
+    formato = request.GET.get("formato", "pdf")
+
+    # 4. APLICAR FILTROS DE ESTADO PARA EL REPORTE
+    estados_incluidos = ["Nuevo", "Regular", "Repetido"] # Siempre incluidos (Equivalente a Activo)
+    
+    if incluir_retirados:
+        estados_incluidos.append("Retirado")
+    
+    if incluir_egresados:
+        estados_incluidos.append("Promovido")
+    
+    matriculas = matriculas.filter(estado__in=estados_incluidos)
+
+    # Ordenamiento
+    if grado:
+        # Grado específico seleccionado
+        matriculas = matriculas.order_by(
+            "id_estudiante__apellidos", 
+            "id_estudiante__nombres", 
+            "id_grado__orden", 
+            "id_seccion__letra", 
+            "id_turno__nombre"
+        )
+    else:
+        # Todos los grados
+        matriculas = matriculas.order_by(
+            "id_grado__orden", 
+            "id_estudiante__apellidos", 
+            "id_estudiante__nombres", 
+            "id_seccion__letra", 
+            "id_turno__nombre"
+        )
+
+    # Prepara datos para el reporte
+    registros = []
+    for m in matriculas:
+        est = m.id_estudiante
+        rep = m.id_representante
+        
+        reg = {
+            "apellidos": est.apellidos,
+            "nombres": est.nombres,
+            "cedula": est.cedula or "N/A",
+            "sexo": est.sexo,
+            "nacimiento": est.fecha_nacimiento.strftime("%d/%m/%Y") if est.fecha_nacimiento else "",
+            "grado": m.id_grado.nombre,
+            "seccion": m.id_seccion.letra,
+            "turno": m.id_turno.nombre,
+            "estado": m.estado,
+            "fecha_mat": m.fecha_matricula.strftime("%d/%m/%Y") if m.fecha_matricula else "",
+            "lugar_nac": est.lugar_nacimiento or "",
+            "t_camisa": est.talla_camisa or "",
+            "t_pantalon": est.talla_pantalon or "",
+            "t_zapato": est.talla_zapato or "",
+            "rep_nombres": rep.nombres,
+            "rep_apellidos": rep.apellidos,
+            "rep_cedula": rep.cedula,
+            "rep_telefono": rep.telefono,
+            "rep_correo": rep.correo or "",
+            "rep_direccion": rep.direccion or "",
+            "observaciones": m.observaciones or ""
+        }
+        registros.append(reg)
+
+    # Generación de textos para el encabezado
+    filtros_texto = []
+    if anio_filtro: filtros_texto.append(f"Año: {anio_filtro.anio_escolar}")
+    if grado: filtros_texto.append(f"Grado: {grado}")
+    if seccion: filtros_texto.append(f"Sección: {seccion}")
+    if turno: filtros_texto.append(f"Turno: {turno}")
+    if q: filtros_texto.append(f"Búsqueda: '{q}'")
+    
+    filtros_str = " - ".join(filtros_texto) if filtros_texto else "Todos los registros"
+    fecha_hoy = date.today().strftime("%d/%m/%Y")
+    titulo_reporte = f"Fecha: {fecha_hoy} - {filtros_str}"
+
+    if formato == "excel":
+        return generar_excel(registros, titulo_reporte)
+    else:
+        return generar_pdf(registros, titulo_reporte)
+
+def generar_excel(registros, titulo_reporte):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Estudiantes"
+    
+    # Encabezado Institucional
+    ws.merge_cells('A1:L1')
+    ws['A1'] = "REPUBLICA BOLIVARIANA DE VENEZUELA"
+    ws.merge_cells('A2:L2')
+    ws['A2'] = "MINISTERIO DEL PODER POPULAR PARA LA EDUCACION"
+    ws.merge_cells('A3:L3')
+    ws['A3'] = 'E.B.E "POLICARPO FARRERA"'
+    
+    for row in range(1, 4):
+        cell = ws[f'A{row}']
+        cell.alignment = openpyxl.styles.Alignment(horizontal='center')
+        cell.font = openpyxl.styles.Font(bold=True)
+        
+    # Título del Reporte
+    ws.merge_cells('A5:L5')
+    ws['A5'] = titulo_reporte
+    ws['A5'].alignment = openpyxl.styles.Alignment(horizontal='center')
+    ws['A5'].font = openpyxl.styles.Font(bold=True, size=12)
+
+    headers = [
+        "Apellidos", "Nombres", "Cédula", "Sexo", "F. Nacimiento", 
+        "Grado", "Sección", "Turno", "Estado", "F. Matrícula", 
+        "Lugar Nac.", "T. Camisa", "T. Pantalón", "T. Zapato", 
+        "Rep. Nombres", "Rep. Apellidos", "Rep. Cédula", "Rep. Teléfono", "Rep. Correo", "Rep. Dirección", 
+        "Observaciones"
+    ]
+    
+    row_num = 7
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=row_num, column=col_num, value=header)
+        cell.font = openpyxl.styles.Font(bold=True)
+        cell.fill = openpyxl.styles.PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
+        cell.border = openpyxl.styles.Border(bottom=openpyxl.styles.Side(style='thin'))
+
+    for reg in registros:
+        row_num += 1
+        row = [
+            reg["apellidos"], reg["nombres"], reg["cedula"], reg["sexo"], reg["nacimiento"],
+            reg["grado"], reg["seccion"], reg["turno"], reg["estado"], reg["fecha_mat"],
+            reg["lugar_nac"], reg["t_camisa"], reg["t_pantalon"], reg["t_zapato"],
+            reg["rep_nombres"], reg["rep_apellidos"], reg["rep_cedula"], reg["rep_telefono"], reg["rep_correo"], reg["rep_direccion"],
+            reg["observaciones"]
+        ]
+        for col_num, value in enumerate(row, 1):
+            ws.cell(row=row_num, column=col_num, value=value)
+
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(cell.value)
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        ws.column_dimensions[column].width = adjusted_width
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=reporte_estudiantes.xlsx'
+    wb.save(response)
+    return response
+
+def generar_pdf(registros, titulo_reporte):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    header_style = ParagraphStyle('Header', parent=styles['Normal'], alignment=1, fontSize=10, leading=12)
+    elements.append(Paragraph("REPUBLICA BOLIVARIANA DE VENEZUELA", header_style))
+    elements.append(Paragraph("MINISTERIO DEL PODER POPULAR PARA LA EDUCACION", header_style))
+    elements.append(Paragraph('E.B.E "POLICARPO FARRERA"', header_style))
+    elements.append(Spacer(1, 10))
+    
+    title_style = ParagraphStyle('Title', parent=styles['Normal'], alignment=1, fontSize=10, spaceAfter=10)
+    elements.append(Paragraph(titulo_reporte, title_style))
+    elements.append(Spacer(1, 10))
+
+    data_full = [["Apellidos", "Nombres", "Grado", "Sección", "Turno", "Estado", "Rep. Nombre", "Rep. Tlf"]]
+    for reg in registros:
+        data_full.append([
+            reg['apellidos'],
+            reg['nombres'],
+            reg['grado'],
+            reg['seccion'],
+            reg['turno'],
+            reg['estado'],
+            f"{reg['rep_nombres']} {reg['rep_apellidos']}",
+            reg['rep_telefono']
+        ])
+
+    table = Table(data_full, colWidths=[100, 100, 70, 40, 50, 60, 120, 70])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(table)
+
+    def header_footer(canvas, doc):
+        canvas.saveState()
+        logo_path = str(settings.BASE_DIR / 'static/images/logo.png')
+        try:
+             # Ajuste posición logo (esquina superior derecha en landscape)
+            canvas.drawImage(logo_path, 700, 530, width=50, height=50, mask='auto', preserveAspectRatio=True)
+        except:
+            pass
+        canvas.restoreState()
+
+    doc.build(elements, onFirstPage=header_footer, onLaterPages=header_footer)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename=reporte_estudiantes.pdf'
+    response.write(buffer.getvalue())
+    return response
