@@ -1377,17 +1377,30 @@ def generar_excel(registros, titulo_reporte):
         for col_num, value in enumerate(row, 1):
             ws.cell(row=row_num, column=col_num, value=value)
 
-    for col in ws.columns:
+    
+    # Ajustar ancho de columnas
+    from openpyxl.utils import get_column_letter
+
+    for col_num, _ in enumerate(headers, 1):
+        column_letter = get_column_letter(col_num)
         max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(cell.value)
-            except:
-                pass
+        try:
+             # Iteramos solo sobre las celdas de esa columna
+             for cell in ws[column_letter]:
+                try:
+                    if cell.value:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                except:
+                    pass
+        except:
+             pass
+             
         adjusted_width = (max_length + 2)
-        ws.column_dimensions[column].width = adjusted_width
+        # Limite razonable
+        if adjusted_width > 50:
+             adjusted_width = 50
+        ws.column_dimensions[column_letter].width = adjusted_width
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=reporte_estudiantes.xlsx'
