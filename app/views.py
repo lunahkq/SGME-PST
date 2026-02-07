@@ -16,6 +16,8 @@ from django.db.models.functions import TruncYear
 from django.contrib.auth import authenticate
 from datetime import date
 
+from django.utils import timezone
+
 # Commit para ver si se arregla la cosa
 
 # Importando modelos de la base de datos
@@ -491,6 +493,7 @@ def students_view(request):
                             talla_camisa=talla_camisa,
                             talla_pantalon=talla_pantalon,
                             talla_zapato=talla_zapato,
+                            fecha_registro=timezone.now(),
                         )
 
                     # 5. Datos de matrícula
@@ -1031,6 +1034,10 @@ def academic_record(request):
                     else:
                         nuevo_estado = "Regular"
                         total_regulares += 1
+                    
+                    # Actualizar fecha de registro (reinscripción)
+                    m.id_estudiante.fecha_registro = timezone.now()
+                    m.id_estudiante.save()
 
 
                     Matricula.objects.create(
