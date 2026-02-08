@@ -1314,9 +1314,9 @@ def generar_reporte(request):
     nombre_anio = anio_filtro.anio_escolar if anio_filtro else "Todos"
     
     # Textos condicionales
-    txt_grado = f"Grado {grado}" if grado else "Grado Todos"
-    txt_seccion = f"Sección {seccion}" if seccion else "Sección Todas"
-    txt_turno = f"Turno {turno}" if turno else "Turno Todos"
+    txt_grado = grado if grado else "Todos los Grados"
+    txt_seccion = f"Sección {seccion}" if seccion else "Todas las Secciones"
+    txt_turno = f"Turno {turno}" if turno else "Todos los Turnos"
 
     context_filtros = {
         "fecha": fecha_hoy,
@@ -1333,8 +1333,12 @@ def generar_reporte(request):
     if formato == "excel":
         return generar_excel(registros, context_filtros)
     else:
-        titulo_reporte = f"{context_filtros['titulo_pdf']} - {txt_grado} - {txt_seccion} - {txt_turno}"
-        return generar_pdf(registros, titulo_reporte)
+        # 8. NOMBRE DEL ARCHIVO PDF
+        safe_anio = context_filtros['anio'].replace("/", "-")
+        filename = f"Reporte del {context_filtros['fecha'].replace('/', '-')} del año escolar {safe_anio} del {context_filtros['txt_grado']} - {context_filtros['txt_seccion']} - {context_filtros['txt_turno']}.pdf"
+        filename = filename.replace(":", "")
+        
+        return generar_pdf(registros, context_filtros, filename)
 
 def generar_excel(registros, context_filtros):
     wb = openpyxl.Workbook()
@@ -1368,7 +1372,7 @@ def generar_excel(registros, context_filtros):
 
     # 4. ENCABEZADOS DE TABLA
     headers = [
-        "Apellidos", "Nombres", "Cédula o Carnet", "Sexo", "F. Nacimiento", 
+        "Apellidos", "Nombres", "Cédula Escolar", "Sexo", "F. Nacimiento", 
         "Grado", "Sección", "Turno", "Estado", "Fecha Inscripción", 
         "Lugar Nac.", "T. Camisa", "T. Pantalón", "T. Zapato", 
         "Nombres Rep.", "Apellidos Rep.", "Cédula Rep.", "Teléfono", "Correo", "Dirección", 
@@ -1481,64 +1485,99 @@ def generar_excel(registros, context_filtros):
     wb.save(response)
     return response
 
-def generar_pdf(registros, titulo_reporte):
+def generar_pdf(registros, context_filtros, filename):
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
+    # Margenes ajustados para dar espacio al encabezado
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=30, leftMargin=30, topMargin=130, bottomMargin=30)
     elements = []
     styles = getSampleStyleSheet()
 
-    header_style = ParagraphStyle('Header', parent=styles['Normal'], alignment=1, fontSize=10, leading=12)
-    elements.append(Paragraph("REPUBLICA BOLIVARIANA DE VENEZUELA", header_style))
-    elements.append(Paragraph("MINISTERIO DEL PODER POPULAR PARA LA EDUCACION", header_style))
-    elements.append(Paragraph('E.B.E "POLICARPO FARRERA"', header_style))
-    elements.append(Spacer(1, 10))
+    # --- TABLA DE DATOS ---
+    # Encabezados de la tabla
+    headers = [
+        "Apellidos", "Nombres", "Cédula\nEscolar", "Fecha de\nNacimiento",
+        "Rep.\nApellidos", "Rep.\nNombres", "Teléfono", "Correo Electrónico"
+    ]
     
-    title_style = ParagraphStyle('Title', parent=styles['Normal'], alignment=1, fontSize=10, spaceAfter=10)
-    elements.append(Paragraph(titulo_reporte, title_style))
-    elements.append(Spacer(1, 10))
-
-    data_full = [["Apellidos", "Nombres", "Grado", "Sección", "Turno", "Estado", "Rep. Nombre", "Rep. Tlf"]]
+    data = [headers]
+    
     for reg in registros:
-        data_full.append([
-            reg['apellidos'],
-            reg['nombres'],
-            reg['grado'],
-            reg['seccion'],
-            reg['turno'],
-            reg['estado'],
-            f"{reg['rep_nombres']} {reg['rep_apellidos']}",
-            reg['rep_telefono']
-        ])
+        row = [
+            Paragraph(reg['apellidos'], styles['Normal']),
+            Paragraph(reg['nombres'], styles['Normal']),
+            reg['cedula'],
+            reg['nacimiento'],
+            Paragraph(reg['rep_apellidos'], styles['Normal']),
+            Paragraph(reg['rep_nombres'], styles['Normal']),
+            reg['rep_telefono'],
+            Paragraph(reg['rep_correo'], styles['Normal'])
+        ]
+        data.append(row)
 
-    table = Table(data_full, colWidths=[100, 100, 70, 40, 50, 60, 120, 70])
+    # Anchos de columna (ajustados para landscape letter ~792pt de ancho total - margenes)
+    # Total disponible aprox: 792 - 60 = 732
+    col_widths = [90, 90, 70, 65, 85, 85, 75, 172]
+    
+    table = Table(data, colWidths=col_widths, repeatRows=1)
+    
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.white),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 7),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        # Alineación izquierda para nombres y apellidos puede verse mejor
+        ('ALIGN', (0, 1), (1, -1), 'LEFT'),  
+        ('ALIGN', (4, 1), (5, -1), 'LEFT'),
+        ('ALIGN', (7, 1), (7, -1), 'LEFT'),
     ]))
     
     elements.append(table)
 
+    # --- FUNCIÓN DE ENCABEZADO ---
     def header_footer(canvas, doc):
         canvas.saveState()
-        logo_path = str(settings.BASE_DIR / 'static/images/logo.png')
+        
+        # 1. LOGO (Esquina superior izquierda)
+        # Coordenadas aprox: x=30 (margen izq), y=530 (cerca del top, letter landscape height es 612)
+        logo_path = str(settings.BASE_DIR / 'app/static/images/logo.png')
         try:
-             # Ajuste posición logo (esquina superior derecha en landscape)
-            canvas.drawImage(logo_path, 700, 530, width=50, height=50, mask='auto', preserveAspectRatio=True)
-        except:
+            # drawImage(image, x, y, width=None, height=None, mask=None, preserveAspectRatio=False, anchor='sw')
+            canvas.drawImage(logo_path, 40, 500, width=80, height=80, mask='auto', preserveAspectRatio=True)
+        except Exception as e:
+            print(f"Error cargando logo: {e}")
             pass
+
+        # 2. TEXTO INSTITUCIONAL (Centrado)
+        # El centro de la página landscape es 792 / 2 = 396
+        center_x = 396
+        start_y = 570
+        
+        canvas.setFont("Helvetica-Bold", 11)
+        canvas.drawCentredString(center_x, start_y, "REPUBLICA BOLIVARIANA DE VENEZUELA")
+        canvas.drawCentredString(center_x, start_y - 14, "MINISTERIO DEL PODER POPULAR PARA LA EDUCACION")
+        canvas.drawCentredString(center_x, start_y - 28, 'E.B.E "POLICARPO FARRERA"')
+        
+        # 3. DATOS DEL REPORTE
+        canvas.setFont("Helvetica-Bold", 10)
+        # Fecha: dd/mm/aaaa - Año: aaaa - aaaa 
+        fecha_anio_str = f"Fecha: {context_filtros['fecha']} - Año: {context_filtros['anio']}"
+        canvas.drawCentredString(center_x, start_y - 55, fecha_anio_str)
+        
+        # Grado - Sección - Turno
+        filtros_str = f"{context_filtros['txt_grado']} - {context_filtros['txt_seccion']} - {context_filtros['txt_turno']}"
+        canvas.drawCentredString(center_x, start_y - 70, filtros_str)
+        
         canvas.restoreState()
 
+    # Construir PDF
     doc.build(elements, onFirstPage=header_footer, onLaterPages=header_footer)
     
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename=reporte_estudiantes.pdf'
-    response.write(buffer.getvalue())
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response

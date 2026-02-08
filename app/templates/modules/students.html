@@ -127,7 +127,7 @@
         <tr>
           <th>Nombres</th>
           <th>Apellidos</th>
-          <th>Cédula o Carnet</th>
+          <th>Cédula Escolar</th>
           <th>Grado</th>
           <th>Sección</th>
           <th>Turno</th>
@@ -237,7 +237,7 @@
                         <span class="fw-semibold">{{ s.apellidos }}</span>
                       </div>
                       <div class="col-md-6">
-                        <small class="text-muted d-block">Cédula / Carnet</small>
+                        <small class="text-muted d-block">Cédula Escolar</small>
                         <span>{{ s.cedula|default:"Sin cédula" }}</span>
                       </div>
                       <div class="col-md-6">
@@ -385,7 +385,7 @@
                         <input type="text" class="form-control" name="apellidos" value="{{ s.apellidos }}" required>
                       </div>
                       <div class="col-md-4">
-                        <label class="form-label">Cédula o Carnet</label>
+                        <label class="form-label">Cédula Escolar</label>
                         <input type="text" class="form-control" name="cedula" value="{{ s.cedula }}">
                       </div>
                       <div class="col-md-4">
@@ -611,7 +611,7 @@
                 <input type="text" class="form-control" name="apellidos" required>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Cédula o Carnet</label>
+                <label class="form-label">Cédula Escolar</label>
                 <input type="text" class="form-control" name="cedula">
               </div>
               <div class="col-md-4">
