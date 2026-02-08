@@ -171,7 +171,7 @@
                         <span>{{ p.correo|default:"-" }}</span>
                       </div>
                       <div class="col-12">
-                        <small class="text-muted d-block">Dirección</small>
+                        <small class="text-muted d-block">Dirección </small>
                         <span>{{ p.direccion|default:"No especificada" }}</span>
                       </div>
                     </div>
@@ -261,7 +261,7 @@
                   </div>
                   <div class="mb-2">
                     <label class="form-label">Dirección</label>
-                    <textarea name="direccion" rows="2" class="form-control">{{ p.direccion }}</textarea>
+                    <textarea name="direccion" rows="2" class="form-control" placeholder="Ingrese la dirección aquí">{{ p.direccion }}</textarea>
                   </div>
                 </div>
                 <div class="modal-footer">

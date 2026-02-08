@@ -112,7 +112,7 @@
         </a>
         <button type="button" class="btn btn-success flex-fill" data-bs-toggle="modal" data-bs-target="#modalReporte"
           title="Reporte PDF o Excel">
-          <i class="bi bi-file-earmark-arrow-down-fill"></i> Generar Reporte
+          <i class="bi bi-file-earmark-fill"></i> Generar Reporte
         </button>
       </div>
     </div>
@@ -386,7 +386,7 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Cédula Escolar</label>
-                        <input type="text" class="form-control" name="cedula" value="{{ s.cedula }}">
+                        <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413" value="{{ s.cedula }}">
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Sexo <span class="text-danger">*</span></label>
@@ -402,7 +402,7 @@
                       </div>
                       <div class="col-md-12">
                         <label class="form-label">Lugar de Nacimiento</label>
-                        <input type="text" class="form-control" name="lugar_nacimiento"
+                        <input type="text" class="form-control" name="lugar_nacimiento" placeholder="Ingrese el lugar de nacimiento aquí"
                           value="{{ s.lugar_nacimiento }}">
                       </div>
                     </div>
@@ -508,11 +508,11 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" name="rep_correo" value="{{ rep.correo|default:'' }}">
+                        <input type="email" class="form-control" name="rep_correo" placeholder="Ej: JuanPerez@gmail.com" value="{{ rep.correo|default:'' }}">
                       </div>
                       <div class="col-md-12">
                         <label class="form-label">Dirección</label>
-                        <textarea class="form-control" name="rep_direccion"
+                        <textarea class="form-control" name="rep_direccion" placeholder="Ingrese la dirección aquí"
                           rows="2">{{ rep.direccion|default:'' }}</textarea>
                       </div>
                       {% endwith %}
@@ -550,7 +550,7 @@
                   <!-- Observaciones -->
                   <div class="mb-3">
                     <label class="form-label">Observaciones</label>
-                    <textarea name="observaciones" class="form-control"
+                    <textarea name="observaciones" class="form-control" placeholder="Escriba sus observaciones aquí"
                       rows="3">{% if s.matricula_activa %}{{ s.matricula_activa.observaciones }}{% endif %}</textarea>
                   </div>
 
@@ -604,15 +604,15 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="nombres" required>
+                <input type="text" class="form-control" name="nombres" placeholder="Ingrese los Nombres aquí" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="apellidos" required>
+                <input type="text" class="form-control" name="apellidos" placeholder="Ingrese los Apellidos aquí" required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Cédula Escolar</label>
-                <input type="text" class="form-control" name="cedula">
+                <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413">
               </div>
               <div class="col-md-4">
                 <label class="form-label">Sexo <span class="text-danger">*</span></label>
@@ -628,7 +628,7 @@
               </div>
               <div class="col-md-12">
                 <label class="form-label">Lugar de Nacimiento</label>
-                <input type="text" class="form-control" name="lugar_nacimiento">
+                <input type="text" class="form-control" name="lugar_nacimiento" placeholder="Ingrese el lugar de nacimiento aquí">
               </div>
             </div>
           </div>
@@ -697,27 +697,27 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="rep_nombres" required>
+                <input type="text" class="form-control" name="rep_nombres" placeholder="Ingrese los Nombres aquí" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="rep_apellidos" required>
+                <input type="text" class="form-control" name="rep_apellidos" placeholder="Ingrese los Apellidos aquí" required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Cédula <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="rep_cedula" required>
+                <input type="text" class="form-control" name="rep_cedula" placeholder="Ej: V12345301" required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="rep_telefono" required>
+                <input type="text" class="form-control" name="rep_telefono" placeholder="Ej: 412-383-7642" required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" name="rep_correo">
+                <input type="email" class="form-control" name="rep_correo" placeholder="Ej: JuanPerez@gmail.com">
               </div>
               <div class="col-md-12">
                 <label class="form-label">Dirección</label>
-                <textarea class="form-control" name="rep_direccion" rows="2"></textarea>
+                <textarea class="form-control" name="rep_direccion" placeholder="Ingrese la dirección aquí" rows="2"></textarea>
               </div>
             </div>
           </div>
@@ -725,7 +725,7 @@
           <!-- Observaciones -->
           <div class="mb-3">
             <label class="form-label">Observaciones</label>
-            <textarea name="observaciones" class="form-control" rows="3"></textarea>
+            <textarea name="observaciones" class="form-control" rows="3" placeholder="Escriba sus observaciones aquí"></textarea>
           </div>
 
           <div class="modal-footer">
@@ -812,7 +812,7 @@
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
         <h5 class="modal-title">
-          <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>Generar Reporte
+          <i class="bi bi-file-earmark-fill me-2"></i>Generar Reporte
         </h5>
         <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
@@ -843,6 +843,10 @@
             </div>
           </div>
 
+          <div class="alert alert-warning py-2">
+            <small><i class="bi bi-info-circle-fill me-1"></i> Los reportes en PDF son menos detallados que los de Excel</small>
+          </div>
+
           <hr>
 
           <div class="mb-3">
@@ -862,7 +866,7 @@
           </div>
 
           <div class="alert alert-info py-2">
-            <small><i class="bi bi-info-circle me-1"></i> Se aplicarán los filtros activos en la pantalla principal
+            <small><i class="bi bi-filter-left me-1"></i> Se aplicarán los filtros activos en la pantalla principal
               (Año, Grado, Sección, etc).</small>
           </div>
 

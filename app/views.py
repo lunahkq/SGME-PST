@@ -1258,25 +1258,14 @@ def generar_reporte(request):
     
     matriculas = matriculas.filter(estado__in=estados_incluidos)
 
-    # Ordenamiento
-    if grado:
-        # Grado específico seleccionado
-        matriculas = matriculas.order_by(
-            "id_estudiante__apellidos", 
-            "id_estudiante__nombres", 
-            "id_grado__orden", 
-            "id_seccion__letra", 
-            "id_turno__nombre"
-        )
-    else:
-        # Todos los grados
-        matriculas = matriculas.order_by(
-            "id_grado__orden", 
-            "id_estudiante__apellidos", 
-            "id_estudiante__nombres", 
-            "id_seccion__letra", 
-            "id_turno__nombre"
-        )
+    # Ordenamiento Jerárquico: Grado -> Sección -> Turno -> Apellidos -> Nombres
+    matriculas = matriculas.order_by(
+        "id_grado__orden", 
+        "id_seccion__letra", 
+        "id_turno__nombre",
+        "id_estudiante__apellidos", 
+        "id_estudiante__nombres"
+    )
 
     # Prepara datos para el reporte
     registros = []
