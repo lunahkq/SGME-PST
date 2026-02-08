@@ -1492,35 +1492,78 @@ def generar_pdf(registros, context_filtros, filename):
     elements = []
     styles = getSampleStyleSheet()
 
-    # --- TABLA DE DATOS ---
-    # Encabezados de la tabla
-    headers = [
-        "Apellidos", "Nombres", "Cédula\nEscolar", "Fecha de\nNacimiento",
-        "Rep.\nApellidos", "Rep.\nNombres", "Teléfono", "Correo Electrónico"
-    ]
+    # --- DEFINICIÓN DE COLUMNAS DINÁMICAS ---
+    # Columnas Base (Inicio)
+    headers = ["Apellidos", "Nombres", "Cédula\nEscolar"]
+    col_widths = [90, 90, 70]
     
+    # 1. Determinar qué columnas extras mostrar (si el filtro es "Todos")
+    show_grado = context_filtros.get('grado') == 'Todos'
+    show_seccion = context_filtros.get('seccion') == 'Todos' or context_filtros.get('seccion') == 'Todas'
+    show_turno = context_filtros.get('turno') == 'Todos'
+    
+    # Insertar columnas condicionales
+    if show_grado:
+        headers.append("Grado")
+        col_widths.append(55)
+    
+    if show_seccion:
+        headers.append("Sección")
+        col_widths.append(40)
+        
+    if show_turno:
+        headers.append("Turno")
+        col_widths.append(45)
+        
+    # Columnas Base (Resto)
+    headers.extend(["Fecha de\nNacimiento", "Rep.\nApellidos", "Rep.\nNombres", "Teléfono", "Correo Electrónico"])
+    
+    # Anchos fijos para el resto
+    base_rest_widths = [65, 85, 85, 75] 
+    # El ancho del correo se calculará para llenar el espacio, pero definimos uno mínimo
+    
+    col_widths.extend(base_rest_widths)
+    
+    # Calcular espacio restante para Correo
+    total_width_available = 792 - 60 # Page width - margins
+    used_width = sum(col_widths)
+    email_width = total_width_available - used_width
+    if email_width < 80: email_width = 80 # Mínimo razonable
+    
+    col_widths.append(email_width)
+
+    # --- CONSTRUCCIÓN DE LA TABLA ---
     data = [headers]
     
     for reg in registros:
         row = [
             Paragraph(reg['apellidos'], styles['Normal']),
             Paragraph(reg['nombres'], styles['Normal']),
-            reg['cedula'],
+            reg['cedula']
+        ]
+        
+        # Insertar datos condicionales en el mismo orden
+        if show_grado:
+            row.append(reg['grado'])
+        if show_seccion:
+            row.append(reg['seccion'])
+        if show_turno:
+            row.append(reg['turno'])
+            
+        row.extend([
             reg['nacimiento'],
             Paragraph(reg['rep_apellidos'], styles['Normal']),
             Paragraph(reg['rep_nombres'], styles['Normal']),
             reg['rep_telefono'],
             Paragraph(reg['rep_correo'], styles['Normal'])
-        ]
+        ])
+        
         data.append(row)
-
-    # Anchos de columna (ajustados para landscape letter ~792pt de ancho total - margenes)
-    # Total disponible aprox: 792 - 60 = 732
-    col_widths = [90, 90, 70, 65, 85, 85, 75, 172]
     
     table = Table(data, colWidths=col_widths, repeatRows=1)
     
-    table.setStyle(TableStyle([
+    # Estilos de tabla dinámicos (ajustar alineación según índices)
+    table_style = [
         ('BACKGROUND', (0, 0), (-1, 0), colors.white),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -1530,11 +1573,30 @@ def generar_pdf(registros, context_filtros, filename):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
         ('FONTSIZE', (0, 1), (-1, -1), 8),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        # Alineación izquierda para nombres y apellidos puede verse mejor
+        # Alineaciones fijas (Apellidos, Nombres siempre son 0, 1)
         ('ALIGN', (0, 1), (1, -1), 'LEFT'),  
-        ('ALIGN', (4, 1), (5, -1), 'LEFT'),
-        ('ALIGN', (7, 1), (7, -1), 'LEFT'),
-    ]))
+    ]
+    
+    # Calcular índices para alineación izquierda de Rep. Nombres/Apellidos y Correo
+    # Indices actuales:
+    # 0: Apellidos
+    # 1: Nombres
+    # 2: Cedula
+    # ... dinámicos ...
+    # N: Nacimiento
+    # N+1: Rep Apellidos
+    # N+2: Rep Nombres
+    # N+3: Telefono
+    # N+4: Correo
+    
+    dynamic_count = sum([show_grado, show_seccion, show_turno])
+    idx_rep_apellidos = 3 + dynamic_count + 1 # +1 por Nacimiento
+    idx_correo = idx_rep_apellidos + 3
+    
+    table_style.append(('ALIGN', (idx_rep_apellidos, 1), (idx_rep_apellidos + 1, -1), 'LEFT')) # Rep Apellidos y Nombres
+    table_style.append(('ALIGN', (idx_correo, 1), (idx_correo, -1), 'LEFT')) # Correo
+    
+    table.setStyle(TableStyle(table_style))
     
     elements.append(table)
 
