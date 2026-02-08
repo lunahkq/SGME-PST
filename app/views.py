@@ -1294,7 +1294,7 @@ def generar_reporte(request):
             "seccion": m.id_seccion.letra,
             "turno": m.id_turno.nombre,
             "estado": m.estado,
-            "fecha_mat": m.fecha_matricula.strftime("%d/%m/%Y") if m.fecha_matricula else "",
+            "fecha_mat": m.id_estudiante.fecha_registro.strftime("%d/%m/%Y") if m.id_estudiante.fecha_registro else (m.fecha_matricula.strftime("%d/%m/%Y") if m.fecha_matricula else ""),
             "lugar_nac": est.lugar_nacimiento or "",
             "t_camisa": est.talla_camisa or "",
             "t_pantalon": est.talla_pantalon or "",
@@ -1309,29 +1309,39 @@ def generar_reporte(request):
         }
         registros.append(reg)
 
-    # Generación de textos para el encabezado
-    filtros_texto = []
-    if anio_filtro: filtros_texto.append(f"Año: {anio_filtro.anio_escolar}")
-    if grado: filtros_texto.append(f"Grado: {grado}")
-    if seccion: filtros_texto.append(f"Sección: {seccion}")
-    if turno: filtros_texto.append(f"Turno: {turno}")
-    if q: filtros_texto.append(f"Búsqueda: '{q}'")
-    
-    filtros_str = " - ".join(filtros_texto) if filtros_texto else "Todos los registros"
+    # Contexto para encabezados y nombre de archivo
     fecha_hoy = date.today().strftime("%d/%m/%Y")
-    titulo_reporte = f"Fecha: {fecha_hoy} - {filtros_str}"
+    nombre_anio = anio_filtro.anio_escolar if anio_filtro else "Todos"
+    
+    # Textos condicionales
+    txt_grado = f"Grado {grado}" if grado else "Grado Todos"
+    txt_seccion = f"Sección {seccion}" if seccion else "Sección Todas"
+    txt_turno = f"Turno {turno}" if turno else "Turno Todos"
+
+    context_filtros = {
+        "fecha": fecha_hoy,
+        "anio": nombre_anio,
+        "grado": grado if grado else "Todos",
+        "seccion": seccion if seccion else "Todas",
+        "turno": turno if turno else "Todos",
+        "txt_grado": txt_grado,
+        "txt_seccion": txt_seccion,
+        "txt_turno": txt_turno,
+        "titulo_pdf": f"Fecha: {fecha_hoy} - Año: {nombre_anio}" 
+    }
 
     if formato == "excel":
-        return generar_excel(registros, titulo_reporte)
+        return generar_excel(registros, context_filtros)
     else:
+        titulo_reporte = f"{context_filtros['titulo_pdf']} - {txt_grado} - {txt_seccion} - {txt_turno}"
         return generar_pdf(registros, titulo_reporte)
 
-def generar_excel(registros, titulo_reporte):
+def generar_excel(registros, context_filtros):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Reporte de Estudiantes"
     
-    # Encabezado Institucional
+    # 1. ENCABEZADO INSTITUCIONAL
     ws.merge_cells('A1:L1')
     ws['A1'] = "REPUBLICA BOLIVARIANA DE VENEZUELA"
     ws.merge_cells('A2:L2')
@@ -1344,17 +1354,24 @@ def generar_excel(registros, titulo_reporte):
         cell.alignment = openpyxl.styles.Alignment(horizontal='center')
         cell.font = openpyxl.styles.Font(bold=True)
         
-    # Título del Reporte
-    ws.merge_cells('A5:L5')
-    ws['A5'] = titulo_reporte
-    ws['A5'].alignment = openpyxl.styles.Alignment(horizontal='center')
-    ws['A5'].font = openpyxl.styles.Font(bold=True, size=12)
+    # 2. INFORMACIÓN DEL REPORTE
+    ws.merge_cells('A4:L4')
+    ws['A4'] = f"Fecha de Reporte: {context_filtros['fecha']} - Año Escolar: {context_filtros['anio']}"
+    ws['A4'].alignment = openpyxl.styles.Alignment(horizontal='center')
+    ws['A4'].font = openpyxl.styles.Font(bold=True, size=11)
 
+    # 3. INFORMACIÓN DE FILTROS
+    ws.merge_cells('A5:L5')
+    ws['A5'] = f"{context_filtros['txt_grado']} - {context_filtros['txt_seccion']} - {context_filtros['txt_turno']}"
+    ws['A5'].alignment = openpyxl.styles.Alignment(horizontal='center')
+    ws['A5'].font = openpyxl.styles.Font(bold=True, size=11)
+
+    # 4. ENCABEZADOS DE TABLA
     headers = [
-        "Apellidos", "Nombres", "Cédula", "Sexo", "F. Nacimiento", 
-        "Grado", "Sección", "Turno", "Estado", "F. Matrícula", 
+        "Apellidos", "Nombres", "Cédula o Carnet", "Sexo", "F. Nacimiento", 
+        "Grado", "Sección", "Turno", "Estado", "Fecha Inscripción", 
         "Lugar Nac.", "T. Camisa", "T. Pantalón", "T. Zapato", 
-        "Rep. Nombres", "Rep. Apellidos", "Rep. Cédula", "Rep. Teléfono", "Rep. Correo", "Rep. Dirección", 
+        "Nombres Rep.", "Apellidos Rep.", "Cédula Rep.", "Teléfono", "Correo", "Dirección", 
         "Observaciones"
     ]
     
@@ -1364,7 +1381,9 @@ def generar_excel(registros, titulo_reporte):
         cell.font = openpyxl.styles.Font(bold=True)
         cell.fill = openpyxl.styles.PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
         cell.border = openpyxl.styles.Border(bottom=openpyxl.styles.Side(style='thin'))
+        cell.alignment = openpyxl.styles.Alignment(horizontal='center')
 
+    # 5. DATOS
     for reg in registros:
         row_num += 1
         row = [
@@ -1376,19 +1395,70 @@ def generar_excel(registros, titulo_reporte):
         ]
         for col_num, value in enumerate(row, 1):
             ws.cell(row=row_num, column=col_num, value=value)
-
+            
+    # 6. ESTADÍSTICAS
+    row_num += 3
     
-    # Ajustar ancho de columnas
+    title_font = openpyxl.styles.Font(bold=True)
+    
+    total_sexo = {}
+    total_grado = {}
+    total_seccion = {}
+    total_turno = {}
+    
+    for reg in registros:
+        s = reg["sexo"]
+        total_sexo[s] = total_sexo.get(s, 0) + 1
+        g = reg["grado"]
+        total_grado[g] = total_grado.get(g, 0) + 1
+        sec = reg["seccion"]
+        total_seccion[sec] = total_seccion.get(sec, 0) + 1
+        t = reg["turno"]
+        total_turno[t] = total_turno.get(t, 0) + 1
+
+    # Bloque 1: Por Grado
+    start_row = row_num
+    ws.cell(row=start_row, column=1, value="Totales por Grado").font = title_font
+    current_row = start_row + 1
+    for grado, count in sorted(total_grado.items()):
+        ws.cell(row=current_row, column=1, value=grado)
+        ws.cell(row=current_row, column=2, value=count)
+        current_row += 1
+        
+    # Bloque 2: Por Sección
+    ws.cell(row=start_row, column=4, value="Totales por Sección").font = title_font
+    current_row = start_row + 1
+    for seccion, count in sorted(total_seccion.items()):
+        ws.cell(row=current_row, column=4, value=seccion)
+        ws.cell(row=current_row, column=5, value=count)
+        current_row += 1
+
+    # Bloque 3: Por Turno
+    ws.cell(row=start_row, column=7, value="Totales por Turno").font = title_font
+    current_row = start_row + 1
+    for turno, count in sorted(total_turno.items()):
+        ws.cell(row=current_row, column=7, value=turno)
+        ws.cell(row=current_row, column=8, value=count)
+        current_row += 1
+
+    # Bloque 4: Por Sexo
+    ws.cell(row=start_row, column=10, value="Totales por Sexo").font = title_font
+    current_row = start_row + 1
+    for sexo, count in sorted(total_sexo.items()):
+        ws.cell(row=current_row, column=10, value=sexo)
+        ws.cell(row=current_row, column=11, value=count)
+        current_row += 1
+
+    # 7. AJUSTAR ANCHO COLUMN
     from openpyxl.utils import get_column_letter
 
     for col_num, _ in enumerate(headers, 1):
         column_letter = get_column_letter(col_num)
         max_length = 0
         try:
-             # Iteramos solo sobre las celdas de esa columna
              for cell in ws[column_letter]:
                 try:
-                    if cell.value:
+                    if cell.value and cell.row < row_num:
                         if len(str(cell.value)) > max_length:
                             max_length = len(str(cell.value))
                 except:
@@ -1397,13 +1467,17 @@ def generar_excel(registros, titulo_reporte):
              pass
              
         adjusted_width = (max_length + 2)
-        # Limite razonable
-        if adjusted_width > 50:
-             adjusted_width = 50
+        if adjusted_width > 40: adjusted_width = 40
+        if adjusted_width < 10: adjusted_width = 10
         ws.column_dimensions[column_letter].width = adjusted_width
 
+    # 8. NOMBRE DEL ARCHIVO
+    safe_anio = context_filtros['anio'].replace("/", "-")
+    filename = f"Reporte del {context_filtros['fecha'].replace('/', '-')} del año escolar {safe_anio} del {context_filtros['txt_grado']} - {context_filtros['txt_seccion']} - {context_filtros['txt_turno']}.xlsx"
+    filename = filename.replace(":", "") 
+    
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=reporte_estudiantes.xlsx'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     wb.save(response)
     return response
 
