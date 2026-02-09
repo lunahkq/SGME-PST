@@ -3,6 +3,11 @@
 
 {% block content %}
 
-<h1>En construcción!</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="mb-0">¿Necesitas ayuda, {{ request.user.first_name|default:request.user.username }}?</h2>
+    <small class="text-muted">Encuentra respuestas rápidas, guías visuales y el Manual de Usuario para aprovechar al máximo el sistema.</small>
+</div>
 
 {% endblock %}
