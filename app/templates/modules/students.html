@@ -2,16 +2,19 @@
 {% block title %}Estudiantes{% endblock %}
 
 {% block content %}
+
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
     <h4 class="mb-0">Gestión de Estudiantes</h4>
-    <small class="text-muted">Registra, edita, filtra y genera reportes sobre los estudiantes.</div></small>
+    <small class="text-muted">Registra, edita, filtra y genera reportes sobre los estudiantes.</small>
   </div>
   <div>
-    {% if hay_anio_activo %}
+    {% if hay_anio_activo and can_edit %}
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalEst">
       <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
     </button>
+    {% elif hay_anio_activo and not can_edit %}
+    <!-- Docentes no pueden crear -->
     {% else %}
     <button class="btn btn-secondary" disabled title="No hay año escolar activo">
       <i class="bi bi-person-plus-fill me-2"></i>Nuevo Estudiante
@@ -196,6 +199,7 @@
             </button>
 
             <!-- Editar -->
+            {% if can_edit %}
             <button class="btn btn-sm btn-outline-primary me-1" type="button" title="Editar" data-bs-toggle="modal"
               data-bs-target="#modalEditEst{{ s.id_estudiante }}">
               <i class="bi bi-pencil"></i>
@@ -207,6 +211,7 @@
               data-est-nombre="{{ s.nombres }} {{ s.apellidos }}">
               <i class="bi bi-person-dash"></i>
             </button>
+            {% endif %}
           </td>
         </tr>
 
@@ -386,7 +391,8 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Cédula Escolar</label>
-                        <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413" value="{{ s.cedula }}">
+                        <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413"
+                          value="{{ s.cedula }}">
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Sexo <span class="text-danger">*</span></label>
@@ -402,8 +408,8 @@
                       </div>
                       <div class="col-md-12">
                         <label class="form-label">Lugar de Nacimiento</label>
-                        <input type="text" class="form-control" name="lugar_nacimiento" placeholder="Ingrese el lugar de nacimiento aquí"
-                          value="{{ s.lugar_nacimiento }}">
+                        <input type="text" class="form-control" name="lugar_nacimiento"
+                          placeholder="Ingrese el lugar de nacimiento aquí" value="{{ s.lugar_nacimiento }}">
                       </div>
                     </div>
                   </div>
@@ -508,7 +514,8 @@
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-control" name="rep_correo" placeholder="Ej: JuanPerez@gmail.com" value="{{ rep.correo|default:'' }}">
+                        <input type="email" class="form-control" name="rep_correo" placeholder="Ej: JuanPerez@gmail.com"
+                          value="{{ rep.correo|default:'' }}">
                       </div>
                       <div class="col-md-12">
                         <label class="form-label">Dirección</label>
@@ -608,7 +615,8 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="apellidos" placeholder="Ingrese los Apellidos aquí" required>
+                <input type="text" class="form-control" name="apellidos" placeholder="Ingrese los Apellidos aquí"
+                  required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Cédula Escolar</label>
@@ -628,7 +636,8 @@
               </div>
               <div class="col-md-12">
                 <label class="form-label">Lugar de Nacimiento</label>
-                <input type="text" class="form-control" name="lugar_nacimiento" placeholder="Ingrese el lugar de nacimiento aquí">
+                <input type="text" class="form-control" name="lugar_nacimiento"
+                  placeholder="Ingrese el lugar de nacimiento aquí">
               </div>
             </div>
           </div>
@@ -697,11 +706,13 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Nombres <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="rep_nombres" placeholder="Ingrese los Nombres aquí" required>
+                <input type="text" class="form-control" name="rep_nombres" placeholder="Ingrese los Nombres aquí"
+                  required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Apellidos <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="rep_apellidos" placeholder="Ingrese los Apellidos aquí" required>
+                <input type="text" class="form-control" name="rep_apellidos" placeholder="Ingrese los Apellidos aquí"
+                  required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Cédula <span class="text-danger">*</span></label>
@@ -717,7 +728,8 @@
               </div>
               <div class="col-md-12">
                 <label class="form-label">Dirección</label>
-                <textarea class="form-control" name="rep_direccion" placeholder="Ingrese la dirección aquí" rows="2"></textarea>
+                <textarea class="form-control" name="rep_direccion" placeholder="Ingrese la dirección aquí"
+                  rows="2"></textarea>
               </div>
             </div>
           </div>
@@ -725,7 +737,8 @@
           <!-- Observaciones -->
           <div class="mb-3">
             <label class="form-label">Observaciones</label>
-            <textarea name="observaciones" class="form-control" rows="3" placeholder="Escriba sus observaciones aquí"></textarea>
+            <textarea name="observaciones" class="form-control" rows="3"
+              placeholder="Escriba sus observaciones aquí"></textarea>
           </div>
 
           <div class="modal-footer">
@@ -844,7 +857,8 @@
           </div>
 
           <div class="alert alert-warning py-2">
-            <small><i class="bi bi-info-circle-fill me-1"></i> Los reportes en PDF son menos detallados que los de Excel</small>
+            <small><i class="bi bi-info-circle-fill me-1"></i> Los reportes en PDF son menos detallados que los de
+              Excel</small>
           </div>
 
           <hr>

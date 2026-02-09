@@ -11,26 +11,28 @@
 </div>
 
 {% if messages %}
+<div class="mb-4">
   {% for message in messages %}
-    {% if "estudiante" not in message.tags %}
-      {% if message.tags == "success" %}
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% elif message.tags == "error" %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% else %}
-        <div class="alert alert-secondary alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endif %}
-    {% endif %}
+  {% if "estudiante" not in message.tags %}
+  {% if message.tags == "success" %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% elif message.tags == "error" %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% else %}
+  <div class="alert alert-secondary alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endif %}
+  {% endif %}
   {% endfor %}
+</div>
 {% endif %}
 
 
@@ -78,10 +80,11 @@
           <label class="form-label">Rol inicial</label>
           <select name="role" class="form-select" required>
             {% if es_super_admin %}
-              <option value="Administrador">Administrador</option>
+            <option value="Administrador">Administrador</option>
             {% endif %}
             <option value="Directivo">Directivo</option>
             <option value="Docente">Docente</option>
+            <option value="Desactivado" class="text-danger">Desactivado</option>
           </select>
         </div>
 
@@ -108,17 +111,17 @@
             </tr>
           </thead>
           <tbody>
-          {% for u in usuarios %}
+            {% for u in usuarios %}
             <tr>
               <td>{{ u.username }}</td>
               <td>{{ u.email }}</td>
               <td>
                 {% with first_group=u.groups.all.0 %}
-                  {% if first_group %}
-                    {{ first_group.name }}
-                  {% else %}
-                    Sin rol
-                  {% endif %}
+                {% if first_group %}
+                {{ first_group.name }}
+                {% else %}
+                Sin rol
+                {% endif %}
                 {% endwith %}
               </td>
               <td class="text-end">
@@ -130,10 +133,9 @@
                   <select name="role" class="form-select form-select-sm d-inline-block w-auto">
                     <option value="">Sin rol</option>
                     {% for g in grupos %}
-                      <option value="{{ g.name }}"
-                        {% if u.groups.all.0 and u.groups.all.0.name == g.name %}selected{% endif %}>
-                        {{ g.name }}
-                      </option>
+                    <option value="{{ g.name }}" {% if u.groups.all.0 and u.groups.all.0.name == g.name %}selected{% endif %}>
+                      {{ g.name }}
+                    </option>
                     {% endfor %}
                   </select>
                   <button type="submit" class="btn btn-sm btn-outline-primary ms-1">
@@ -141,25 +143,20 @@
                   </button>
                 </form>
 
-                <!-- Formulario para eliminar -->
-                <form method="post" class="d-inline ms-1"
-                      onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="delete">
-                  <input type="hidden" name="user_id" value="{{ u.id }}">
-                  <button type="submit" class="btn btn-sm btn-outline-danger">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </form>
+                <!-- Botón eliminar (abre modal) -->
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                  onclick="confirmDelete('{{ u.id }}', '{{ u.username }}')">
+                  <i class="bi bi-trash"></i>
+                </button>
               </td>
             </tr>
-          {% empty %}
+            {% empty %}
             <tr>
               <td colspan="4" class="text-center text-muted">
                 No hay usuarios registrados.
               </td>
             </tr>
-          {% endfor %}
+            {% endfor %}
           </tbody>
         </table>
       </div>
@@ -168,3 +165,37 @@
   </div>
 </div>
 {% endblock %}
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro que deseas eliminar al usuario <strong id="deleteUserName"></strong>?</p>
+        <p class="text-muted small">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="post" id="deleteUserForm">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="user_id" id="deleteUserId">
+          <button type="submit" class="btn btn-danger">Eliminar Usuario</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(userId, userName) {
+    document.getElementById('deleteUserId').value = userId;
+    document.getElementById('deleteUserName').textContent = userName;
+    var myModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+    myModal.show();
+  }
+</script>
