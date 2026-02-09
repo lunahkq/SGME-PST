@@ -142,20 +142,10 @@
                     Guardar
                   </button>
                 </form>
-
-                <!-- Botón eliminar (abre modal) -->
-                <button type="button" class="btn btn-sm btn-outline-danger"
-                  onclick="confirmDelete('{{ u.id }}', '{{ u.username }}')">
-                  <i class="bi bi-trash"></i>
-                </button>
               </td>
             </tr>
             {% empty %}
-            <tr>
-              <td colspan="4" class="text-center text-muted">
-                No hay usuarios registrados.
-              </td>
-            </tr>
+
             {% endfor %}
           </tbody>
         </table>
@@ -165,37 +155,3 @@
   </div>
 </div>
 {% endblock %}
-
-<!-- Modal de Confirmación de Eliminación -->
-<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>¿Estás seguro que deseas eliminar al usuario <strong id="deleteUserName"></strong>?</p>
-        <p class="text-muted small">Esta acción no se puede deshacer.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="post" id="deleteUserForm">
-          {% csrf_token %}
-          <input type="hidden" name="action" value="delete">
-          <input type="hidden" name="user_id" id="deleteUserId">
-          <button type="submit" class="btn btn-danger">Eliminar Usuario</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  function confirmDelete(userId, userName) {
-    document.getElementById('deleteUserId').value = userId;
-    document.getElementById('deleteUserName').textContent = userName;
-    var myModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
-    myModal.show();
-  }
-</script>
