@@ -3,11 +3,114 @@
 
 {% block content %}
 
-
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h2 class="mb-0">¿Necesitas ayuda, {{ request.user.first_name|default:request.user.username }}?</h2>
-    <small class="text-muted">Encuentra respuestas rápidas, guías visuales y el Manual de Usuario para aprovechar al máximo el sistema.</small>
+    <small class="text-muted">Encuentra respuestas rápidas para aprovechar al máximo el sistema.</small>
+  </div>
+</div>
+
+<!-- Preguntas frecuentes - Estilo consistente con la app -->
+<div class="card-soft p-4 mb-3">
+  <div class="d-flex align-items-center mb-3">
+    <i class="bi bi-question-circle text-primary me-2"></i>
+    <h5 class="mb-0">Preguntas frecuentes</h5>
+  </div>
+
+  <div class="accordion" id="faqAccordion">
+
+    <!-- Pregunta 1 -->
+    <div class="accordion-item border-0">
+      <h2 class="accordion-header" id="faqHeading1">
+        <button class="accordion-button collapsed fw-semibold" type="button"
+                data-bs-toggle="collapse" data-bs-target="#faqCollapse1">
+          ¿Quién puede registrar estudiantes?
+        </button>
+      </h2>
+      <div id="faqCollapse1" class="accordion-collapse collapse"
+           aria-labelledby="faqHeading1" data-bs-parent="#faqAccordion">
+        <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
+          Solo los usuarios con <strong>rol directivo</strong> pueden registrar nuevos estudiantes en el sistema.
+        </div>
+      </div>
+    </div>
+
+    <!-- Pregunta 2 -->
+    <div class="accordion-item border-0">
+      <h2 class="accordion-header" id="faqHeading2">
+        <button class="accordion-button collapsed fw-semibold" type="button"
+                data-bs-toggle="collapse" data-bs-target="#faqCollapse2">
+          ¿Un representante puede tener varios estudiantes?
+        </button>
+      </h2>
+      <div id="faqCollapse2" class="accordion-collapse collapse"
+           aria-labelledby="faqHeading2" data-bs-parent="#faqAccordion">
+        <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
+          Sí, el sistema permite una relación <strong>uno a muchos</strong> entre representante y estudiantes.
+        </div>
+      </div>
+    </div>
+
+    <!-- Pregunta 3 -->
+    <div class="accordion-item border-0">
+      <h2 class="accordion-header" id="faqHeading3">
+        <button class="accordion-button collapsed fw-semibold" type="button"
+                data-bs-toggle="collapse" data-bs-target="#faqCollapse3">
+          ¿Los docentes pueden editar información?
+        </button>
+      </h2>
+      <div id="faqCollapse3" class="accordion-collapse collapse"
+           aria-labelledby="faqHeading3" data-bs-parent="#faqAccordion">
+        <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
+          No, los docentes solo tienen acceso de <strong>consulta</strong> a la información del sistema.
+        </div>
+      </div>
+    </div>
+
+    <!-- Pregunta 4 -->
+    <div class="accordion-item border-0">
+      <h2 class="accordion-header" id="faqHeading4">
+        <button class="accordion-button collapsed fw-semibold" type="button"
+                data-bs-toggle="collapse" data-bs-target="#faqCollapse4">
+          ¿Qué hacer si olvido mi contraseña?
+        </button>
+      </h2>
+      <div id="faqCollapse4" class="accordion-collapse collapse"
+           aria-labelledby="faqHeading4" data-bs-parent="#faqAccordion">
+        <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
+          Contactar al <strong>administrador del sistema</strong> o usar la opción de <strong>recuperación de clave</strong>.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Consejos rápidos - Estilo consistente -->
+<div class="card-soft p-4">
+  <h5 class="mb-3">
+    <i class="bi bi-lightbulb text-warning me-2"></i>Consejos rápidos
+  </h5>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="p-3 border-start border-primary border-3">
+        <i class="bi bi-search text-primary me-2"></i>
+        <strong>Busca</strong> de cada módulo correctamente para encontrar registros rápidamente.
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 border-start border-success border-3">
+        <i class="bi bi-person-check text-success me-2"></i>
+        <strong>Verifica tu rol</strong> si no ves alguna opción en el menú.
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 border-start border-danger border-3">
+        <i class="bi bi-box-arrow-right text-danger me-2"></i>
+        <strong>Cierra sesión</strong> al finalizar tu trabajo.
+      </div>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
