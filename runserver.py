@@ -53,10 +53,16 @@ with open(log_file, "a", encoding="utf-8") as f:
     if system == "Windows":
         creationflags = subprocess.CREATE_NO_WINDOW
 
-    subprocess.Popen(
+    process = subprocess.Popen(
         [str(python_exec), "manage.py", "runserver", "0.0.0.0:8000", "--noreload"],
         stdout=f,
         stderr=f,
         creationflags=creationflags
     )
+    
+    # Wait for the subprocess to finish so the file handle 'f' remains open
+    try:
+        process.wait()
+    except KeyboardInterrupt:
+        process.terminate()
 
