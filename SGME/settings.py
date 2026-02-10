@@ -29,7 +29,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-y%8@1rurrwj!o8+vfuzt5amc(qmh-=9hg4b-cqk$#a-sik&+tm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -54,13 +55,16 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     # APP DEL SISTEMA GESTIÓN DE MATRÍCULA
-    'app'
+    'app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'app.middleware.SessionExpiryMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -157,6 +161,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATICFILES_DIRS = [
         BASE_DIR / "app" / "static",
 ]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # Default primary key field type

@@ -4,3 +4,149 @@ Watching for file changes with StatReloader
 [29/Jan/2026 22:29:42] "GET / HTTP/1.1" 200 4662
 === Lanzando servidor (Linux) ===
 Watching for file changes with StatReloader
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+Traceback (most recent call last):
+  File "/home/luna/SGME APP/manage.py", line 22, in <module>
+    main()
+  File "/home/luna/SGME APP/manage.py", line 18, in main
+    execute_from_command_line(sys.argv)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 442, in execute_from_command_line
+    utility.execute()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/management/__init__.py", line 416, in execute
+    django.setup()
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/__init__.py", line 24, in setup
+    apps.populate(settings.INSTALLED_APPS)
+  File "/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/apps/registry.py", line 93, in populate
+    raise ImproperlyConfigured(
+django.core.exceptions.ImproperlyConfigured: Application labels aren't unique, duplicates: staticfiles
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/handlers/base.py:61: UserWarning: No directory at: /home/luna/SGME APP/staticfiles/
+  mw_instance = middleware(adapted_handler)
+[10/Feb/2026 17:57:36] "GET / HTTP/1.1" 200 4672
+[10/Feb/2026 17:57:36] "GET /favicon.ico HTTP/1.1" 404 179
+[10/Feb/2026 17:58:05] "POST / HTTP/1.1" 302 0
+[10/Feb/2026 17:58:05] "GET /?expired=1 HTTP/1.1" 302 0
+[10/Feb/2026 17:58:05] "GET /home/ HTTP/1.1" 200 10517
+[10/Feb/2026 17:58:08] "GET /students/ HTTP/1.1" 200 65056
+[10/Feb/2026 17:58:09] "GET /home/ HTTP/1.1" 200 10517
+[10/Feb/2026 17:58:10] "GET /logout/ HTTP/1.1" 302 0
+[10/Feb/2026 17:58:10] "GET / HTTP/1.1" 200 4672
+[10/Feb/2026 17:58:16] "GET / HTTP/1.1" 200 4672
+[10/Feb/2026 17:58:17] "GET / HTTP/1.1" 200 4672
+[10/Feb/2026 17:58:20] "POST / HTTP/1.1" 302 0
+[10/Feb/2026 17:58:20] "GET /?expired=1 HTTP/1.1" 302 0
+[10/Feb/2026 17:58:20] "GET /home/ HTTP/1.1" 200 10517
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+=== Lanzando servidor (Linux) ===
+Python: /home/luna/SGME APP/venv/bin/python
+/home/luna/SGME APP/venv/lib/python3.10/site-packages/django/core/handlers/base.py:61: UserWarning: No directory at: /home/luna/SGME APP/staticfiles/
+  mw_instance = middleware(adapted_handler)
+[10/Feb/2026 17:58:48] "GET /home/ HTTP/1.1" 200 10517
+[10/Feb/2026 17:58:52] "GET /academic/ HTTP/1.1" 200 26714
+[10/Feb/2026 17:58:54] "GET /help/ HTTP/1.1" 200 10691
+[10/Feb/2026 17:58:55] "GET /users_control/ HTTP/1.1" 200 13878
+[10/Feb/2026 17:58:55] "GET /profile/ HTTP/1.1" 200 7701
+[10/Feb/2026 17:58:56] "GET /academic/ HTTP/1.1" 200 26714
+[10/Feb/2026 17:58:57] "GET /logout/ HTTP/1.1" 302 0
+[10/Feb/2026 17:58:57] "GET / HTTP/1.1" 200 4672

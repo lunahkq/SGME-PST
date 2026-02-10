@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 cd "$(dirname "$0")"
 
-./venv/bin/python runserver.py >> runserver_silent.log 2>&1 &
+# Ejecuta runserver.py con el python del entorno virtual
+# runserver.py se encarga de la logica de background y logs
+./venv/bin/python runserver.py
 
