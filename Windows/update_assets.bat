@@ -1,5 +1,5 @@
 @echo off
-cd /d %~dp0
+cd /d "%~dp0.."
 
 :: Intenta detectar venv o .venv
 if exist "venv\Scripts\python.exe" (

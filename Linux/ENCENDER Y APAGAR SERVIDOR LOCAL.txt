@@ -1,0 +1,28 @@
+INICIAR SERVIDOR LOCAL:
+
+MÉTODO 1:
+
+Click derecho en runserver.sh - Ejecutar como programa
+
+
+MÉTODO 2:
+
+CLick derecho en un espacio en blanco de la carpeta - Abrir una terminal
+Copiar el siguiente comando: ./runserver.sh
+
+En caso de falla, copiar: chmod +x runserver.sh
+Y luego repetir ./runserver.sh
+
+Cerrar la terminal y abrir el navegador en localhost:8000
+
+
+DETENER EL SERVIDOR LOCAL:
+
+MÉTODO 1:
+
+Click derecho en stopserver.sh - Ejecutar como programa
+
+MÉTODO 2:
+
+CLick derecho en un espacio en blanco de la carpeta - Abrir una terminal
+Copiar el siguiente comando: ./stopserver.sh

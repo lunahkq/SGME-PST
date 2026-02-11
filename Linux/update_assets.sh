@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Obtener el directorio donde se encuentra el script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+# Obtener el directorio donde se encuentra el script y subir un nivel
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)"
 cd "$SCRIPT_DIR"
 
 # Intentar detectar el entorno virtual
