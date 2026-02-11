@@ -38,9 +38,10 @@ ALLOWED_HOSTS = ['*']
 SESSION_COOKIE_AGE = 600  # 10 minutos 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Logout al cerrar navegador
 SESSION_SAVE_EVERY_REQUEST = True  # Reinicia timer en cada página visitada
-SESSION_COOKIE_SECURE = True  # Solo HTTPS en producción
+SESSION_COOKIE_SECURE = False  # Solo HTTPS en producción (Desactivado para LAN)
 SESSION_COOKIE_HTTPONLY = True  # Protege contra XSS
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+CSRF_COOKIE_SECURE = False  # Permitir CSRF en HTTP (LAN)
 
 
 LOGIN_URL = '/'  # ← TU login en raíz '', NO /accounts/login/
@@ -66,7 +67,7 @@ MIDDLEWARE = [
 
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'app.middleware.SessionExpiryMiddleware',
+    # 'app.middleware.SessionExpiryMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

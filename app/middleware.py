@@ -12,7 +12,8 @@ class SessionExpiryMiddleware:
         
         # Solo para requests autenticados que fallan
         if (request.user.is_authenticated and 
-            'sessionid' not in request.COOKIES):
+            'sessionid' not in request.COOKIES and
+            request.path != reverse('login')):
             # Sesión expiró → login limpio
             return redirect(reverse('login') + '?expired=1')
         
