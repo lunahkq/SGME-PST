@@ -1,4 +1,5 @@
 {% extends "layout/navbar.html" %}
+{% load static %}
 {% block title %}Ayuda{% endblock %}
 
 {% block content %}
@@ -22,15 +23,16 @@
     <!-- Pregunta 1 -->
     <div class="accordion-item border-0">
       <h2 class="accordion-header" id="faqHeading1">
-        <button class="accordion-button collapsed fw-semibold" type="button"
-                data-bs-toggle="collapse" data-bs-target="#faqCollapse1">
+        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse1">
           ¿Quién puede registrar estudiantes?
         </button>
       </h2>
-      <div id="faqCollapse1" class="accordion-collapse collapse"
-           aria-labelledby="faqHeading1" data-bs-parent="#faqAccordion">
+      <div id="faqCollapse1" class="accordion-collapse collapse" aria-labelledby="faqHeading1"
+        data-bs-parent="#faqAccordion">
         <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
-          Solo los usuarios con <strong>rol directivo y administrador</strong> pueden registrar nuevos estudiantes en el sistema.
+          Solo los usuarios con <strong>rol directivo y administrador</strong> pueden registrar nuevos estudiantes en el
+          sistema.
         </div>
       </div>
     </div>
@@ -38,13 +40,13 @@
     <!-- Pregunta 2 -->
     <div class="accordion-item border-0">
       <h2 class="accordion-header" id="faqHeading2">
-        <button class="accordion-button collapsed fw-semibold" type="button"
-                data-bs-toggle="collapse" data-bs-target="#faqCollapse2">
+        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse2">
           ¿Un representante puede tener varios estudiantes?
         </button>
       </h2>
-      <div id="faqCollapse2" class="accordion-collapse collapse"
-           aria-labelledby="faqHeading2" data-bs-parent="#faqAccordion">
+      <div id="faqCollapse2" class="accordion-collapse collapse" aria-labelledby="faqHeading2"
+        data-bs-parent="#faqAccordion">
         <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
           Sí, el sistema permite una relación <strong>uno a muchos</strong> entre representante y estudiantes.
         </div>
@@ -54,13 +56,13 @@
     <!-- Pregunta 3 -->
     <div class="accordion-item border-0">
       <h2 class="accordion-header" id="faqHeading3">
-        <button class="accordion-button collapsed fw-semibold" type="button"
-                data-bs-toggle="collapse" data-bs-target="#faqCollapse3">
+        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse3">
           ¿Los docentes pueden editar información?
         </button>
       </h2>
-      <div id="faqCollapse3" class="accordion-collapse collapse"
-           aria-labelledby="faqHeading3" data-bs-parent="#faqAccordion">
+      <div id="faqCollapse3" class="accordion-collapse collapse" aria-labelledby="faqHeading3"
+        data-bs-parent="#faqAccordion">
         <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
           No, los docentes solo tienen acceso de <strong>consulta</strong> a la información del sistema.
         </div>
@@ -70,15 +72,16 @@
     <!-- Pregunta 4 -->
     <div class="accordion-item border-0">
       <h2 class="accordion-header" id="faqHeading4">
-        <button class="accordion-button collapsed fw-semibold" type="button"
-                data-bs-toggle="collapse" data-bs-target="#faqCollapse4">
+        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse"
+          data-bs-target="#faqCollapse4">
           ¿Qué hacer si olvido mi contraseña?
         </button>
       </h2>
-      <div id="faqCollapse4" class="accordion-collapse collapse"
-           aria-labelledby="faqHeading4" data-bs-parent="#faqAccordion">
+      <div id="faqCollapse4" class="accordion-collapse collapse" aria-labelledby="faqHeading4"
+        data-bs-parent="#faqAccordion">
         <div class="accordion-body py-3" style="background-color: #e8f3ff; border-left: 3px solid #0d6efd;">
-          Contactar al <strong>administrador del sistema</strong> o usar la opción de <strong>recuperación de clave</strong>.
+          Contactar al <strong>administrador del sistema</strong> o usar la opción de <strong>recuperación de
+            clave</strong>.
         </div>
       </div>
     </div>
@@ -111,6 +114,26 @@
       </div>
     </div>
   </div>
+</div>
+
+
+<div class="card-soft p-4">
+  <h5 class="mb-3">
+    <i class="bi bi-lightbulb text-warning me-2"></i>Manual De usuario
+  </h5>
+  <div class="d-flex align-items-center justify-content-between">
+    <div class="p-3 border-start border-primary border-3 flex-grow-1">
+      <i class="bi bi-search text-primary me-2"></i>
+      <strong>Descarga el manual de usuario</strong> para obtener más información sobre como funciona y se mantiene el
+      sistema.
+    </div>
+    <a href="{% static 'docs/MANUAL_DE_USUARIO_SGME.pdf' %}" class="btn btn-success ms-3" target="_blank"
+      title="Descargar Manual de Usuario">
+      <i class="bi bi-file-earmark-pdf-fill me-2"></i>Descargar Manual de Usuario
+    </a>
+  </div>
+</div>
+
 </div>
 
 {% endblock %}

@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-y%8@1rurrwj!o8+vfuzt5amc(qmh-=9hg4b-cqk$#a-sik&+tm
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['*']
 
@@ -154,7 +154,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
