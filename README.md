@@ -1,9 +1,9 @@
 # Sistema de Gestión de Matrícula Escolar (SGME)
-Aplicación web elaborada por equipo Tecno Capibara - PNFII  
-Universidad Nacional de las Telecomunicaciones e Informática
+Aplicación web elaborada por equipo Tecno Capibara 
 
 ## Descripción General
 El **SGME** es una aplicación web integral para la administración de matrículas de instituciones educativas. Permite gestionar estudiantes, representantes, usuarios, años escolares y generar reportes detallados.  
+  
 El sistema está diseñado con una arquitectura robusta utilizando Django como framework principal; listo para ser implementado en una red local (LAN).
 
 ## Tecnologías Utilizadas
@@ -130,7 +130,7 @@ SGME-PST/
 
 # Instalación y Ejecución
 
-## Requisitos
+### Requisitos
 
 - Python 3.10
 - PostgreSQL
