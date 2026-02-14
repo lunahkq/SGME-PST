@@ -466,8 +466,8 @@ def students_view(request):
                     talla_pantalon = request.POST.get("talla_pantalon") or ""
                     talla_zapato = request.POST.get("talla_zapato") or ""
 
-                    if not nombres or not apellidos or not fecha_nacimiento:
-                        messages.error(request, "Nombres, apellidos y fecha de nacimiento son obligatorios.")
+                    if not nombres or not apellidos or not fecha_nacimiento or not cedula:
+                        messages.error(request, "Nombres, apellidos, cédula escolar y fecha de nacimiento son obligatorios.")
                         return redirect("students")
 
                     sexo = "F" if sexo_in == "Femenino" else "M"

@@ -390,9 +390,9 @@
                         <input type="text" class="form-control" name="apellidos" value="{{ s.apellidos }}" required>
                       </div>
                       <div class="col-md-4">
-                        <label class="form-label">Cédula Escolar</label>
+                        <label class="form-label">Cédula Escolar <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413"
-                          value="{{ s.cedula }}">
+                          value="{{ s.cedula }}" required>
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Sexo <span class="text-danger">*</span></label>
@@ -619,8 +619,8 @@
                   required>
               </div>
               <div class="col-md-4">
-                <label class="form-label">Cédula Escolar</label>
-                <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413">
+                <label class="form-label">Cédula Escolar <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="cedula" placeholder="Ej: V31718413" required>
               </div>
               <div class="col-md-4">
                 <label class="form-label">Sexo <span class="text-danger">*</span></label>
