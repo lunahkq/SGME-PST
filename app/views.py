@@ -10,7 +10,7 @@ from django.contrib.auth import login, logout
 from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import Q, Count, Value, IntegerField
 from django.db.models.functions import TruncYear
 from django.contrib.auth import authenticate
@@ -592,6 +592,14 @@ def students_view(request):
                         messages.success(request, f"Estudiante {nombres} {apellidos} registrado y matriculado correctamente.")
 
                     return redirect("students")
+
+            except IntegrityError as e:
+                if 'estudiante_cedula_key' in str(e):
+                    cedula_val = request.POST.get('cedula', '')
+                    messages.error(request, f"Error al registrar/actualizar datos del estudiante: Ya existe un estudiante registrado con la cédula {cedula_val}.")
+                else:
+                    messages.error(request, f"Error al registrar/actualizar el estudiante: {str(e)}")
+                return redirect("students")
 
             except Exception as e:
                 messages.error(request, f"Error al registrar/actualizar el estudiante: {str(e)}")
