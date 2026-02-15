@@ -643,24 +643,13 @@ def students_view(request):
         estudiantes = estudiantes.filter(sexo=sexo)
 
     # Lógica de Visibilidad de Estudiantes:
-    # Solo mostrar estudiantes que tengan matrícula en el año filtro
-    # O que hayan tenido matrícula en el año INMEDIATAMENTE ANTERIOR (para mostrarse como Sin Matrícula)
+    # Solo mostrar estudiantes que tengan matrícula en el año filtrado
     
     if anio_filtro:
-        # 1. Estudiantes con matrícula en el año actual (filtro)
+        #  Estudiantes con matrícula en el año actual (filtro)
         ids_anio_actual = Matricula.objects.filter(id_anio_escolar=anio_filtro).values_list('id_estudiante', flat=True)
         ids_visibles = list(ids_anio_actual)
-
-        # 2. Solo si el año filtro es ACTIVO, buscamos estudiantes del año anterior (candidatos a Sin Matrícula)
-        if anio_filtro.activo:
-             # Buscamos el año anterior por fecha de fin <= fecha inicio del actual
-             anio_anterior = AnioEscolar.objects.filter(fecha_fin__lte=anio_filtro.fecha_inicio).order_by('-fecha_fin').exclude(id_anio_escolar=anio_filtro.id_anio_escolar).first()
-             
-             if anio_anterior:
-                 ids_anio_anterior = Matricula.objects.filter(id_anio_escolar=anio_anterior).values_list('id_estudiante', flat=True)
-                 # Añadimos los del año anterior a la lista de visibles
-                 ids_visibles.extend(list(ids_anio_anterior))
-        
+ 
         # Filtramos la query base de estudiantes
         estudiantes = estudiantes.filter(id_estudiante__in=ids_visibles)
 
@@ -697,7 +686,7 @@ def students_view(request):
         estudiantes = estudiantes.filter(id_estudiante__in=student_ids)
 
     elif selected_estado == "Inactivo":
-        # "Inactivo" agrupa: Inactivo, Retirado, Egresado Y los que "Sin Matrícula" en el año filtro
+        # "Inactivo" agrupa: Retirados y Egresado en el año filtrado
         if anio_filtro:
             # 1. Identificar estudiantes con matrícula ACTIVA en este año
             active_ids = Matricula.objects.filter(
@@ -711,7 +700,6 @@ def students_view(request):
             
             # Nota: Al excluir a los activos, nos quedan:
             # - Estudiantes con matricula en este año pero estado "Retirado", "Egresado", "Inactivo"
-            # - Estudiantes del año anterior que NO tienen matrícula en este año (Sin Matrícula)
         else:
             # Si no hay año filtro, mostramos los inactivos históricos explícitos
             matriculas = matriculas.filter(estado__in=["Inactivo", "Retirado", "Egresado"])
@@ -720,15 +708,11 @@ def students_view(request):
 
     # Si selected_estado == "" (Todos), no filtramos nada, pero:
     elif selected_estado == "":
-         # Si estamos viendo TODOS, y hay año filtro, la logica actual de estudiantes toma 
-         # student_ids from matriculas. Esto OCULTA a los "Sin matrícula". 
-         # Para ver "Todos" real (incluyendo sin matricula en este año), NO debemos filtrar estudiantes por matricula.
          pass
          
     
     if grado or seccion or turno:
         # Si hay filtros de atributo de matricula, entonces SÍ debemos restringir a quienes tengan esa matricula
-        # IMPORTANTE: Esto ocultará a los "Sin matrícula" si filtras por Grado (lógico, no tienen grado en este año).
         student_ids_attr = matriculas.values_list('id_estudiante_id', flat=True)
         estudiantes = estudiantes.filter(id_estudiante__in=student_ids_attr)
 
