@@ -123,7 +123,7 @@
             <span>{{ a.anio_escolar }}</span>
             <div>
               <!-- Botón que abre el modal -->
-              <button type="button" title="Eliminar Año Escolar"
+              <button type="button" title="Desactivar Año Escolar"
                       class="btn btn-sm btn-outline-danger px-1 py-0 rounded btn-delete-year"
                       data-bs-toggle="modal"
                       data-bs-target="#deleteYearModal"
@@ -295,15 +295,16 @@
 
 </div>
 
-<!-- MODAL ELIMINAR AÑO ESCOLAR -->
+<!-- MODAL DESACTIVAR AÑO ESCOLAR -->
 <div class="modal fade" id="deleteYearModal" tabindex="-1" aria-labelledby="deleteYearModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow">
       <div class="modal-header border-0">
         <div class="d-flex align-items-center">
           <div>
-            <h5 class="modal-title mb-0" id="deleteYearModalLabel">Eliminar año escolar</h5>
-            <small class="text-muted">Esta acción es permanente y no se puede deshacer.</small>
+            <h5 class="modal-title mb-0" id="deleteYearModalLabel">Desactivar Año Escolar</h5>
+            <small class="text-muted">Esta acción ocultará el año escolar de la interfaz, 
+             pero los datos de matrícula quedarán protegidos.</small>
           </div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -318,8 +319,8 @@
           <div class="alert alert-warning small d-flex align-items-start">
             <i class="bi bi-info-circle-fill me-2 mt-1"></i>
             <div>
-              <strong>Confirma que quieres eliminar este año escolar.</strong><br>
-              Se eliminarán todos los registros asociados a este año escolar.
+              <strong>Antes de Desactivar: Genera un Reporte en Excel</strong><br>
+              Así tendrás como consultar todos los datos de matrícula del año escolar desactivado fácilmente.
             </div>
           </div>
 
@@ -350,7 +351,7 @@
           </button>
           <button type="submit" class="btn btn-danger btn-sm">
             <i class="bi bi-trash me-1"></i>
-            Eliminar definitivamente
+            Desactivar definitivamente
           </button>
         </div>
       </form>
@@ -428,7 +429,7 @@
       });
     }
 
-    // MANEJO MODAL ELIMINAR AÑO ESCOLAR
+    // MANEJO MODAL OCULTAR AÑO ESCOLAR
     const deleteButtons = document.querySelectorAll('.btn-delete-year');
     const modalAnioId = document.getElementById('modal_anio_id');
     const modalAnioLabel = document.getElementById('modal_anio_label');

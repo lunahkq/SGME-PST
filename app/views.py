@@ -610,7 +610,7 @@ def students_view(request):
     grados = Grado.objects.all().order_by("orden")
     secciones = Seccion.objects.all()
     turnos = Turno.objects.all()
-    anios = AnioEscolar.objects.all().order_by('-anio_escolar')  # Orden descendente (más reciente primero)
+    anios = AnioEscolar.objects.exclude(anio_escolar__startswith="OCULTO:").order_by('-anio_escolar')  # Orden descendente (más reciente primero)
 
     # Búsqueda por nombre/apellido/cedula
     q = request.GET.get("q", "")
@@ -958,36 +958,40 @@ def academic_record(request):
             messages.error(request, "El año escolar seleccionado no existe.")
         return redirect("academic")
 
-    # Eliminar año escolar
+    # Desactivar año escolar
     if request.method == "POST" and request.POST.get("action") == "delete_year":
         anio_id = request.POST.get("anio_id")
         password = request.POST.get("password")  # Obtener contraseña del modal
 
         if not password:
-            messages.error(request, "Debes ingresar tu contraseña para confirmar la eliminación.")
+            messages.error(request, "Debes ingresar tu contraseña para confirmar la desactivación.")
             return redirect("academic")
 
         # Verificar contraseña
         user = authenticate(username=request.user.username, password=password)
         if user is None:
-            messages.error(request, "Contraseña incorrecta. No se pudo eliminar el año escolar.")
+            messages.error(request, "Contraseña incorrecta. No se pudo desactivar el año escolar.")
             return redirect("academic")
 
         try:
             anio = AnioEscolar.objects.get(id_anio_escolar=anio_id)
             if anio.activo:
-                 messages.error(request, "No puedes eliminar el año escolar activo.")
+                 messages.error(request, "No puedes desactivar el año escolar activo.")
             else:
                  with transaction.atomic():
-                     # Eliminar matrículas asociadas primero para evitar error de FK
-                     Matricula.objects.filter(id_anio_escolar=anio).delete()
-                     # Eliminar el año escolar
-                     anio.delete()
-                 messages.success(request, "Año escolar eliminado con éxito.")
+                     # Soft Delete: Renombrar con prefijo "OCULTO:" y desactivar
+                     original_name = anio.anio_escolar
+                     # Truncar si es necesario para que quepa el prefijo (max 20 chars)
+                     new_name = f"OCULTO:{original_name}"[:20]
+                     anio.anio_escolar = new_name
+                     anio.activo = False
+                     anio.save()
+                     # No eliminamos matrículas ni anio, solo ocultamos
+                 messages.success(request, "Año escolar ocultado con éxito.")
         except AnioEscolar.DoesNotExist:
             messages.error(request, "El año escolar no existe.")
         except Exception as e:
-            messages.error(request, f"Error al eliminar: {str(e)}")
+            messages.error(request, f"Error al desactivar: {str(e)}")
         return redirect("academic")
 
     # Reinscripción / repetición / egreso
@@ -1101,7 +1105,7 @@ def academic_record(request):
         return redirect("academic")
 
     # GET: datos para mostrar formulario
-    anios = AnioEscolar.objects.all().order_by("-fecha_inicio")
+    anios = AnioEscolar.objects.exclude(anio_escolar__startswith="OCULTO:").order_by("-fecha_inicio")
     anio_activo = AnioEscolar.objects.filter(activo=True).first()
     
     # Listas para los dropdowns dinámicos
@@ -1191,7 +1195,7 @@ def check_student_last_enrollment(request, cedula):
         # Buscamos su última matrícula (ordenada por fecha de matrícula o año descendente)
         # Asumiendo que id_matricula es auto-incremental, el último id será el más reciente.
         # O mejor, usamos el año escolar más reciente.
-        ultima_matricula = Matricula.objects.filter(id_estudiante=estudiante).order_by('-id_anio_escolar__fecha_inicio').first()
+        ultima_matricula = Matricula.objects.filter(id_estudiante=estudiante).exclude(id_anio_escolar__anio_escolar__startswith="OCULTO:").order_by('-id_anio_escolar__fecha_inicio').first()
 
         if ultima_matricula:
             data = {
