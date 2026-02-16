@@ -379,6 +379,8 @@ def users_control(request):
                 messages.error(request, "Rol no válido.")
             elif not es_super_admin and role == "Administrador":
                 messages.error(request, "Solo un Administrador puede asignar el rol Administrador.")
+            elif request.user.id == user.id and role == "Desactivado":
+                messages.error(request, "No puedes desactivar tu propio usuario")
             else:
                 # Limpiamos grupos relevantes y añadimos el nuevo
                 custom_groups = ["Administrador", "Directivo", "Docente", "Desactivado"]
