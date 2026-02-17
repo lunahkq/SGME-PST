@@ -651,17 +651,25 @@ def students_view(request):
     # Solo mostrar estudiantes que tengan matrícula en el año filtrado
     
     if anio_filtro:
-        #  Estudiantes con matrícula en el año actual (filtro)
-        ids_anio_actual = Matricula.objects.filter(id_anio_escolar=anio_filtro).values_list('id_estudiante', flat=True)
-        ids_visibles = list(ids_anio_actual)
- 
-        # Filtramos la query base de estudiantes
-        estudiantes = estudiantes.filter(id_estudiante__in=ids_visibles)
-
+        # Estudiantes con matrícula en el año actual (filtro)
+        # Y ordenados por Grado (orden) > Sección > Turno > Apellidos
+        estudiantes = Estudiante.objects.filter(
+            matricula__id_anio_escolar=anio_filtro
+        ).order_by(
+            'matricula__id_grado__orden',
+            'matricula__id_seccion__letra',
+            'matricula__id_turno__nombre',
+            'apellidos', 
+            'nombres'
+        ).distinct()
+    
     # Filtrar matrículas por el año seleccionado (o el activo por defecto)
     if anio_filtro:
         matriculas = Matricula.objects.filter(id_anio_escolar=anio_filtro).select_related('id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar', 'id_representante')
     else:
+        # Si no hay año filtro, ordenamos por apellido por defecto
+        # (Aunque students_view ya tenía order_by('apellidos', 'nombres') al inicio, 
+        #  el if anio_filtro arriba lo sobrescribe solo para ese caso)
         matriculas = Matricula.objects.all().select_related('id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar', 'id_representante')
 
     # Filtros adicionales
