@@ -24,6 +24,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from io import BytesIO
+from django.db.models import Prefetch
+
 
 from django.utils import timezone
 
@@ -657,9 +659,9 @@ def students_view(request):
 
     # Filtrar matrículas por el año seleccionado (o el activo por defecto)
     if anio_filtro:
-        matriculas = Matricula.objects.filter(id_anio_escolar=anio_filtro)
+        matriculas = Matricula.objects.filter(id_anio_escolar=anio_filtro).select_related('id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar', 'id_representante')
     else:
-        matriculas = Matricula.objects.all()
+        matriculas = Matricula.objects.all().select_related('id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar', 'id_representante')
 
     # Filtros adicionales
     grado = request.GET.get("grado")
@@ -766,7 +768,6 @@ def students_view(request):
 
 
 # MÓDULO DE REPRESENTANTES
-from django.contrib import messages  # ← AGREGAR ESTA LÍNEA AL INICIO
 
 def parents_list(request):
     q = request.GET.get('q', '')
@@ -861,12 +862,21 @@ def parents_list(request):
 
     # Pre-procesar para evitar duplicados en la vista (mostrar solo la matrícula más reciente de cada estudiante)
     # y convertir a lista para poder iterar en el template con los atributos extra
+    
+    # Optimización: Prefetch de matrículas para evitar N+1 queries
+    parents = parents.prefetch_related(
+        Prefetch(
+            'matricula_set',
+            queryset=Matricula.objects.select_related(
+                'id_estudiante', 'id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar'
+            ).order_by('-id_anio_escolar__fecha_inicio')
+        )
+    )
+
     parents_list = list(parents)
     for p in parents_list:
-        # Obtenemos todas las matrículas del representante, ordenadas por fecha de inicio del año escolar (descendiente)
-        matriculas = p.matricula_set.all().select_related(
-            'id_estudiante', 'id_grado', 'id_seccion', 'id_turno', 'id_anio_escolar'
-        ).order_by('-id_anio_escolar__fecha_inicio')
+        # Obtenemos todas las matrículas del representante (ya cacheadas por prefetch_related)
+        matriculas = p.matricula_set.all()
         
         unique_students = {}
         processed_students = []
