@@ -585,6 +585,49 @@
       </tbody>
     </table>
   </div>
+  
+  <!-- Paginación -->
+  {% if estudiantes.has_other_pages %}
+  <nav aria-label="Navegación de páginas" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if estudiantes.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ estudiantes.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_anio_id %}&anio={{ selected_anio_id }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" aria-label="Anterior">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&laquo;</span>
+      </li>
+      {% endif %}
+
+      {% for i in estudiantes.paginator.page_range %}
+        {% if estudiantes.number == i %}
+        <li class="page-item active" aria-current="page">
+          <span class="page-link">{{ i }}</span>
+        </li>
+        {% elif i > estudiantes.number|add:'-3' and i < estudiantes.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}{% if selected_anio_id %}&anio={{ selected_anio_id }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">{{ i }}</a>
+        </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if estudiantes.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ estudiantes.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_anio_id %}&anio={{ selected_anio_id }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.sexo %}&sexo={{ request.GET.sexo }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" aria-label="Siguiente">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&raquo;</span>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
 
 <!-- Modal registro (crear estudiante) -->

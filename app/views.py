@@ -24,7 +24,8 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from io import BytesIO
-from django.db.models import Prefetch
+from django.db.models import Prefetch, prefetch_related_objects
+from django.core.paginator import Paginator
 
 
 from django.utils import timezone
@@ -720,8 +721,18 @@ def students_view(request):
         student_ids_attr = matriculas.values_list('id_estudiante_id', flat=True)
         estudiantes = estudiantes.filter(id_estudiante__in=student_ids_attr)
 
-    matricula_map = {m.id_estudiante_id: m for m in matriculas}
-    for est in estudiantes:
+    
+    # Paginación
+    paginator = Paginator(estudiantes, 20)  # 20 estudiantes por página
+    page_number = request.GET.get('page')
+    estudiantes_page = paginator.get_page(page_number)
+
+    # Optimización: Solo buscar matrículas para los estudiantes de la página actual
+    page_student_ids = [s.id_estudiante for s in estudiantes_page]
+    matriculas_page = matriculas.filter(id_estudiante__in=page_student_ids)
+
+    matricula_map = {m.id_estudiante_id: m for m in matriculas_page}
+    for est in estudiantes_page:
         est.matricula_activa = matricula_map.get(est.id_estudiante)
 
     grados_list = list(grados)
@@ -751,7 +762,7 @@ def students_view(request):
     }
 
     contexto = {
-        "estudiantes": estudiantes,
+        "estudiantes": estudiantes_page,
         "grados": grados_list,
         "secciones": secciones_list,
         "turnos": turnos_list,
@@ -860,11 +871,23 @@ def parents_list(request):
     for t in turnos_list:
         t.selected = (t.nombre == turno) # Ahora comparamos con nombre completo
 
+    # Paginación
+    parents = parents.order_by('apellidos', 'nombres')
+    paginator = Paginator(parents, 20)
+    page_number = request.GET.get('page')
+    parents_page = paginator.get_page(page_number)
+
     # Pre-procesar para evitar duplicados en la vista (mostrar solo la matrícula más reciente de cada estudiante)
     # y convertir a lista para poder iterar en el template con los atributos extra
     
-    # Optimización: Prefetch de matrículas para evitar N+1 queries
-    parents = parents.prefetch_related(
+    # Optimización: Prefetch de matrículas para evitar N+1 queries (Solo para la página actual)
+    
+    # 1. Obtener objetos de la página
+    parents_list = list(parents_page.object_list)
+    
+    # 2. Hacer prefetch manual sobre esta lista
+    prefetch_related_objects(
+        parents_list,
         Prefetch(
             'matricula_set',
             queryset=Matricula.objects.select_related(
@@ -873,7 +896,6 @@ def parents_list(request):
         )
     )
 
-    parents_list = list(parents)
     for p in parents_list:
         # Obtenemos todas las matrículas del representante (ya cacheadas por prefetch_related)
         matriculas = p.matricula_set.all()
@@ -891,7 +913,8 @@ def parents_list(request):
         p.matriculas_visibles = processed_students
 
     context = {
-        'parents': parents_list,
+        'parents': parents_page, # Pasamos el objeto Page para la navegación
+        'parents_list': parents_list, # Pasamos la lista procesada para el loop
         'q': q,
         'grados': grados_list,
         'secciones': secciones_list,

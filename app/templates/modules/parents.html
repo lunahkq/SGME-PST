@@ -287,6 +287,54 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Paginación -->
+  {% if parents.has_other_pages %}
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if parents.has_previous %}
+      <li class="page-item">
+        <a class="page-link"
+          href="?page={{ parents.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}"
+          aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link">&laquo;</span>
+      </li>
+      {% endif %}
+
+      {% for i in parents.paginator.page_range %}
+      {% if parents.number == i %}
+      <li class="page-item active" aria-current="page">
+        <span class="page-link">{{ i }}</span>
+      </li>
+      {% elif i > parents.number|add:'-3' and i < parents.number|add:'3' %} <li class="page-item">
+        <a class="page-link"
+          href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">{{
+          i }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if parents.has_next %}
+        <li class="page-item">
+          <a class="page-link"
+            href="?page={{ parents.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}"
+            aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">&raquo;</span>
+        </li>
+        {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
 
 {% endblock %}
