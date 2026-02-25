@@ -653,7 +653,7 @@ def students_view(request):
     if anio_filtro:
         # Estudiantes con matrícula en el año actual (filtro)
         # Y ordenados por Grado (orden) > Sección > Turno > Apellidos
-        estudiantes = Estudiante.objects.filter(
+        estudiantes = estudiantes.filter(
             matricula__id_anio_escolar=anio_filtro
         ).order_by(
             'matricula__id_grado__orden',
