@@ -325,7 +325,7 @@ def users_control(request):
             messages.error(request, "Ya existe un usuario con ese correo.")
         elif role not in ["Administrador", "Directivo", "Docente", "Desactivado"]:
             messages.error(request, "Debes seleccionar un rol válido.")
-        elif not es_super_admin and role == "Administrador":
+        elif not (es_super_admin or request.user.groups.filter(name="Administrador").exists()) and role == "Administrador":
             messages.error(request, "Solo un Administrador puede crear otros Administradores.")
         else:
             user = User.objects.create_user(
@@ -379,9 +379,13 @@ def users_control(request):
             user = User.objects.get(id=user_id)
 
             if role not in ["Administrador", "Directivo", "Docente", "Desactivado"]:
-                messages.error(request, "Rol no válido.")
-            elif not es_super_admin and role == "Administrador":
+                messages.error(request, "Rol no válido. Asigne otro")
+            elif not (es_super_admin or request.user.groups.filter(name="Administrador").exists()) and role == "Administrador":
                 messages.error(request, "Solo un Administrador puede asignar el rol Administrador.")
+            elif user.is_superuser and not es_super_admin:
+                messages.error(request, "No tienes permiso para modificar a un Administrador.")
+            elif user.groups.filter(name="Administrador").exists() and not (es_super_admin or request.user.groups.filter(name="Administrador").exists()):
+                messages.error(request, "No tienes permiso para modificar a un Administrador.")
             elif request.user.id == user.id and role == "Desactivado":
                 messages.error(request, "No puedes desactivar tu propio usuario")
             else:
