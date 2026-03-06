@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   {% load static %}
   <meta charset="utf-8">
@@ -12,188 +13,392 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
-    :root{
-        --brand-blue: #356ec2;
-        --action-green: #2fa44f;
-        --card-bg: #ffffff;
+    :root {
+      --brand-blue: #356ec2;
+      --action-green: #2fa44f;
+      --card-bg: #ffffff;
+      --bg-color: #f4f6fb;
+      --sidebar-bg: linear-gradient(180deg, rgba(53, 110, 194, 0.08), rgba(53, 110, 194, 0.02));
+      --sidebar-border: rgba(0, 0, 0, 0.04);
+      --text-color: #123;
+      --muted-text: #6c757d;
+      --toggle-wrapper-bg: rgba(0, 0, 0, 0.04);
+      --toggle-track: #ccc;
     }
-    body { background: #f4f6fb; margin: 0; }
+
+    [data-bs-theme="dark"] {
+      --brand-blue: #7baaf7;
+      --action-green: #4ade80;
+      /* Tonos un poco más claros para contraste */
+      --bg-color: #121418;
+      --card-bg: #1e2229;
+      --sidebar-bg: linear-gradient(180deg, #1b1f27, #16181e);
+      --sidebar-border: rgba(255, 255, 255, 0.08);
+
+      /* Textos casi blancos para mayor legibilidad */
+      --text-color: #f8fafc;
+      --muted-text: #94a3b8;
+      --toggle-wrapper-bg: #2d333b;
+      --toggle-track: #6366f1;
+
+      /* Nativas de Bootstrap 5 Overrides */
+      --bs-body-bg: var(--bg-color);
+      --bs-body-color: var(--text-color);
+      --bs-secondary-bg: var(--card-bg);
+      --bs-tertiary-bg: #272c35;
+
+      /* Modal overrides */
+      --bs-modal-bg: var(--card-bg);
+      --bs-modal-header-border-color: rgba(255, 255, 255, 0.1);
+      --bs-modal-footer-border-color: rgba(255, 255, 255, 0.1);
+
+      /* Accordion overrides */
+      --bs-accordion-bg: var(--card-bg);
+      --bs-accordion-color: var(--text-color);
+      --bs-accordion-active-bg: #262b35;
+      --bs-accordion-active-color: #f8fafc;
+      --bs-accordion-border-color: rgba(255, 255, 255, 0.1);
+      --bs-accordion-btn-bg: var(--card-bg);
+      --bs-accordion-btn-color: var(--text-color);
+      --bs-accordion-btn-focus-box-shadow: 0 0 0 0.25rem rgba(123, 170, 247, 0.25);
+    }
+
+    [data-bs-theme="dark"] .bg-light {
+      background-color: #272c35 !important;
+      color: var(--text-color) !important;
+    }
+
+    [data-bs-theme="dark"] .modal-header.bg-light,
+    [data-bs-theme="dark"] .modal-footer.bg-light {
+      background-color: #1a1d24 !important;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-bs-theme="dark"] .table {
+      --bs-table-bg: var(--card-bg);
+      --bs-table-color: var(--text-color);
+      --bs-table-border-color: rgba(255, 255, 255, 0.1);
+      --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
+      --bs-table-hover-bg: #272c35;
+    }
+
+    [data-bs-theme="dark"] .table-light,
+    [data-bs-theme="dark"] .table-light th,
+    [data-bs-theme="dark"] .table-light td {
+      background-color: #272c35 !important;
+      color: #f8fafc !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
 
     .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 240px;
-        background: linear-gradient(180deg, rgba(53,110,194,0.08), rgba(53,110,194,0.02));
-        min-height: 100vh;
-        padding: 1rem;
-        border-right: 1px solid rgba(0,0,0,0.04);
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow-x: hidden;
-        white-space: nowrap;
-        z-index: 1030;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 240px;
+      background: var(--sidebar-bg);
+      min-height: 100vh;
+      padding: 1rem;
+      border-right: 1px solid var(--sidebar-border);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
+      overflow-x: hidden;
+      white-space: nowrap;
+      z-index: 1030;
     }
 
     /* Estado inicial sin animacion para evitar flash */
     .sidebar-collapsed,
     .sidebar[data-collapsed="true"] {
-        width: 72px !important;
-        transition: none;
+      width: 72px !important;
+      transition: none;
     }
 
     /* Animacion solo despues de cargar */
     .sidebar[data-loaded="true"].sidebar-collapsed {
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .sidebar-collapsed .brand-block,
-    .sidebar-collapsed .small-muted,
+    .sidebar-collapsed .small-muted.sidebar-user-role,
     .sidebar-collapsed .nav-link span.link-text,
-    .sidebar-collapsed .mt-auto {
-        display: none;
+    .sidebar-collapsed .dark-mode-text,
+    .sidebar-collapsed .form-switch {
+      display: none !important;
     }
 
-    .nav-link { color: #123; }
-    .card-soft { border-radius: 12px; box-shadow: 0 6px 18px rgba(12,32,80,0.06); background: var(--card-bg); }
-    .rounded-btn { border-radius: 12px; }
-    .brand-block .brand {
-        color: var(--brand-blue);
-        font-weight:700;
-        line-height: 1.1;
+    .sidebar-collapsed .dark-mode-container {
+      padding: 0.5rem;
+      text-align: center;
+      justify-content: center !important;
+      cursor: pointer;
     }
-    .small-muted { color: #6c757d; font-size: .9rem; }
-    .btn-action { background: var(--action-green); color: white; }
+
+    .sidebar-collapsed .dark-mode-container i {
+      margin-right: 0 !important;
+    }
+
+    .nav-link {
+      color: var(--text-color);
+    }
+
+    .nav-link:hover {
+      color: var(--brand-blue);
+      background: rgba(128, 128, 128, 0.1);
+      border-radius: 8px;
+    }
+
+    .card-soft {
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      background: var(--card-bg);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    [data-bs-theme="dark"] .card-soft {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .rounded-btn {
+      border-radius: 12px;
+    }
+
+    .brand-block .brand {
+      color: var(--brand-blue);
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .small-muted {
+      color: var(--muted-text);
+      font-size: .9rem;
+    }
+
+    .btn-action {
+      background: var(--action-green);
+      color: white;
+    }
 
     .main-content {
-        margin-left: 240px;
-        padding: 1.5rem 1rem;
-        min-height: 100vh;
-        background: #f4f6fb;
-        transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-left: 240px;
+      padding: 1.5rem 1rem;
+      min-height: 100vh;
+      background: var(--bg-color);
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
     }
-    
-    .sidebar-collapsed + .main-content {
-        margin-left: 72px;
+
+    .sidebar-collapsed+.main-content {
+      margin-left: 72px;
+    }
+
+    /* Target specific styles for dark mode button that don't match bootstrap's default */
+    .dark-mode-container {
+      background-color: var(--toggle-wrapper-bg);
+      border-radius: 10px;
+      padding: 0.5rem 0.75rem;
+      transition: background-color 0.3s ease;
+      margin-bottom: 1rem;
+      user-select: none;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    [data-bs-theme="dark"] .dark-mode-container {
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .dark-mode-container .form-check-input:checked {
+      background-color: var(--toggle-track);
+      border-color: var(--toggle-track);
     }
   </style>
 
+  <!-- Aplicar tema antes de renderizar (evita FOUC) -->
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+  </script>
   {% block head %}{% endblock %}
 </head>
+
 <body>
 
-<!-- CSRF token necesario para futuros AJAX -->
-{% csrf_token %}
+  <!-- CSRF token necesario para futuros AJAX -->
+  {% csrf_token %}
 
-<nav id="sidebar" class="sidebar d-flex flex-column {% if request.session.sidebar_collapsed %}sidebar-collapsed{% endif %}" data-collapsed="{% if request.session.sidebar_collapsed %}true{% else %}false{% endif %}">
-  <div class="mb-4" style="padding-left: 0.5rem;">
-    <button id="sidebarToggle" class="btn btn-outline-secondary mb-3">
-      <i class="bi bi-list"></i>
-    </button>
+  <nav id="sidebar"
+    class="sidebar d-flex flex-column {% if request.session.sidebar_collapsed %}sidebar-collapsed{% endif %}"
+    data-collapsed="{% if request.session.sidebar_collapsed %}true{% else %}false{% endif %}">
+    <div class="mb-4" style="padding-left: 0.5rem;">
+      <button id="sidebarToggle" class="btn btn-outline-secondary mb-3">
+        <i class="bi bi-list"></i>
+      </button>
 
-    <div class="brand-block">
-      <div class="brand">E.B.E.</div>
-      <div class="brand">POLICARPO</div>
-      <div class="brand">FARRERA</div>
-      <div class="small-muted">Sistema de Gestión <br> de Matrícula</div>
+      <div class="brand-block">
+        <div class="brand">E.B.E.</div>
+        <div class="brand">POLICARPO</div>
+        <div class="brand">FARRERA</div>
+        <div class="small-muted">Sistema de Gestión <br> de Matrícula</div>
+      </div>
     </div>
-  </div>
 
-  <ul class="nav flex-column">
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'home' %}">
-        <i class="bi bi-house-fill me-2"></i>
-        <span class="link-text">Inicio</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'students' %}">
-        <i class="bi bi-people-fill me-2"></i>
-        <span class="link-text">Estudiantes</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'parents' %}">
-        <i class="bi bi-person-vcard-fill me-2"></i>
-        <span class="link-text">Representantes</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'academic' %}">
-        <i class="bi bi-archive-fill me-2"></i>
-        <span class="link-text">Matrícula</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'profile_user' %}">
-        <i class="bi bi-person-lines-fill me-2"></i>
-        <span class="link-text">Perfil</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'users_control' %}">
-        <i class="bi bi-gear-fill me-2"></i>
-        <span class="link-text">Usuarios</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 d-flex align-items-center" href="{% url 'help' %}">
-        <i class="bi bi-question-circle-fill me-2"></i>
-        <span class="link-text">Ayuda</span>
-      </a>
-    </li>
-    <li class="nav-item mb-1">
-      <a class="nav-link py-2 text-danger d-flex align-items-center" href="{% url 'logout' %}">
-        <i class="bi bi-box-arrow-right me-2"></i>
-        <span class="link-text">Cerrar sesión</span>
-      </a>
-    </li>
-  </ul>
+    <ul class="nav flex-column">
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'home' %}">
+          <i class="bi bi-house-fill me-2"></i>
+          <span class="link-text">Inicio</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'students' %}">
+          <i class="bi bi-people-fill me-2"></i>
+          <span class="link-text">Estudiantes</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'parents' %}">
+          <i class="bi bi-person-vcard-fill me-2"></i>
+          <span class="link-text">Representantes</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'academic' %}">
+          <i class="bi bi-archive-fill me-2"></i>
+          <span class="link-text">Matrícula</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'profile_user' %}">
+          <i class="bi bi-person-lines-fill me-2"></i>
+          <span class="link-text">Perfil</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'users_control' %}">
+          <i class="bi bi-gear-fill me-2"></i>
+          <span class="link-text">Usuarios</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 d-flex align-items-center" href="{% url 'help' %}">
+          <i class="bi bi-question-circle-fill me-2"></i>
+          <span class="link-text">Ayuda</span>
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link py-2 text-danger d-flex align-items-center" href="{% url 'logout' %}">
+          <i class="bi bi-box-arrow-right me-2"></i>
+          <span class="link-text">Cerrar sesión</span>
+        </a>
+      </li>
+    </ul>
 
-  <div class="mt-auto small-muted">
-    {% if request.user.is_authenticated %}
-      {% with first_group=request.user.groups.all.0 %}
+    <div class="mt-auto">
+      <!-- Dark Mode Toggle -->
+      <div class="dark-mode-container d-flex align-items-center justify-content-between" id="darkModeContainer">
+        <div class="d-flex align-items-center" style="cursor: pointer;">
+          <i class="bi bi-moon fs-5 me-2" id="darkModeIcon"></i>
+          <span class="dark-mode-text link-text">Modo oscuro</span>
+        </div>
+        <div class="form-check form-switch m-0" style="cursor: pointer;">
+          <input class="form-check-input" type="checkbox" role="switch" id="darkModeSwitch" style="cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- Info del rol del usuario -->
+      <div class="small-muted sidebar-user-role">
+        {% if request.user.is_authenticated %}
+        {% with first_group=request.user.groups.all.0 %}
         {% if first_group %}
-          Rol: <strong>{{ first_group.name }}</strong>
+        Rol: <strong>{{ first_group.name }}</strong>
         {% else %}
-          Rol: <strong>Sin rol</strong>
+        Rol: <strong>Sin rol</strong>
         {% endif %}
-      {% endwith %}
-    {% endif %}
-  </div>
-</nav>
+        {% endwith %}
+        {% endif %}
+      </div>
+    </div>
+  </nav>
 
-<main id="mainContent" class="main-content">
-  <div class="container-fluid">
-    {% block content %}{% endblock %}
-  </div>
-</main>
+  <main id="mainContent" class="main-content">
+    <div class="container-fluid">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
 
-<!-- JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebarToggle');
-    
-    // Marcar como cargado para habilitar animaciones
-    sidebar.setAttribute('data-loaded', 'true');
-    
-    // Cargar estado desde localStorage (por si session no esta sincronizada)
-    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-    if (isCollapsed && !sidebar.classList.contains('sidebar-collapsed')) {
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('sidebarToggle');
+
+      // Marcar como cargado para habilitar animaciones
+      sidebar.setAttribute('data-loaded', 'true');
+
+      // Cargar estado desde localStorage (por si session no esta sincronizada)
+      const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      if (isCollapsed && !sidebar.classList.contains('sidebar-collapsed')) {
         sidebar.classList.add('sidebar-collapsed');
-    }
-    
-    toggleBtn.addEventListener('click', function() {
+      }
+
+      toggleBtn.addEventListener('click', function () {
         const willCollapse = !sidebar.classList.contains('sidebar-collapsed');
         sidebar.classList.toggle('sidebar-collapsed');
         localStorage.setItem('sidebarCollapsed', willCollapse);
-    });
-});
-</script>
+      });
 
-{% block scripts %}{% endblock %}
+      // Dark Mode Logic
+      const darkModeSwitch = document.getElementById('darkModeSwitch');
+      const darkModeContainer = document.getElementById('darkModeContainer');
+      const currentTheme = localStorage.getItem('theme') || 'light';
+
+      if (currentTheme === 'dark') {
+        darkModeSwitch.checked = true;
+      } else {
+        darkModeSwitch.checked = false;
+      }
+
+      function toggleTheme() {
+        if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+          document.documentElement.setAttribute('data-bs-theme', 'light');
+          localStorage.setItem('theme', 'light');
+          darkModeSwitch.checked = false;
+        } else {
+          document.documentElement.setAttribute('data-bs-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+          darkModeSwitch.checked = true;
+        }
+      }
+
+      darkModeSwitch.addEventListener('change', toggleTheme);
+
+      darkModeContainer.addEventListener('click', function (e) {
+        if (e.target !== darkModeSwitch) {
+          toggleTheme();
+        }
+      });
+
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'theme') {
+          document.documentElement.setAttribute('data-bs-theme', e.newValue);
+          if (e.newValue === 'dark') {
+            darkModeSwitch.checked = true;
+          } else {
+            darkModeSwitch.checked = false;
+          }
+        }
+      });
+    });
+  </script>
+
+  {% block scripts %}{% endblock %}
 </body>
+
 </html>
