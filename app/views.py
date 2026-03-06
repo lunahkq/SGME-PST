@@ -325,8 +325,10 @@ def users_control(request):
             messages.error(request, "Ya existe un usuario con ese correo.")
         elif role not in ["Administrador", "Directivo", "Docente", "Desactivado"]:
             messages.error(request, "Debes seleccionar un rol válido.")
-        elif not (es_super_admin or request.user.groups.filter(name="Administrador").exists()) and role == "Administrador":
-            messages.error(request, "Solo un Administrador puede crear otros Administradores.")
+        elif role == "Directivo" and not (es_super_admin or request.user.groups.filter(name="Directivo").exists()):
+            messages.error(request, "Solo un Directivo puede crear usuarios Directivos.")
+        elif role == "Administrador" and not (es_super_admin or request.user.groups.filter(name="Administrador").exists() or request.user.groups.filter(name="Directivo").exists()):
+            messages.error(request, "Solo un Administrador o Directivo puede crear Administradores.")
         else:
             user = User.objects.create_user(
                 username=username,
@@ -353,18 +355,17 @@ def users_control(request):
             messages.error(request, "El usuario no existe.")
             return redirect("users_control")
 
+        es_req_admin = request.user.groups.filter(name="Administrador").exists()
+        es_req_directivo = request.user.groups.filter(name="Directivo").exists()
+        
         if request.user.id == user.id:
             messages.error(request, "No puedes eliminar tu propio usuario.")
-        
-        # Validar permisos de eliminación: Solo Superuser o Administrador
-        elif not (es_super_admin or request.user.groups.filter(name="Administrador").exists()):
-            messages.error(request, "No tienes permiso para eliminar usuarios. Solo Administradores.")
-            
-        # Un directivo/admin no puede borrar superiores (aunque aquí admin borra admin si quiere, pero mantenemos lógica de jerarquía si se desea)
-        # La regla solicitada es: "Los administradores son los unicos que podrán eliminar usuarios"
-        elif not es_super_admin and user.is_superuser:
-             messages.error(request, "No puedes eliminar a un Superusuario.")
-             
+        elif user.is_superuser and not es_super_admin:
+             messages.error(request, "No puedes eliminar a un superusuario")
+        elif user.groups.filter(name="Directivo").exists() and not (es_super_admin or es_req_directivo):
+            messages.error(request, "No tienes permiso para eliminar usuarios directivos.")
+        elif not (es_super_admin or es_req_admin or es_req_directivo):
+            messages.error(request, "No tienes permiso para eliminar usuarios.")
         else:
             user.delete()
             messages.success(request, "Usuario eliminado correctamente.")
@@ -378,14 +379,22 @@ def users_control(request):
         try:
             user = User.objects.get(id=user_id)
 
+            es_req_admin = request.user.groups.filter(name="Administrador").exists()
+            es_req_directivo = request.user.groups.filter(name="Directivo").exists()
+            es_target_directivo = user.groups.filter(name="Directivo").exists()
+
             if role not in ["Administrador", "Directivo", "Docente", "Desactivado"]:
                 messages.error(request, "Rol no válido. Asigne otro")
-            elif not (es_super_admin or request.user.groups.filter(name="Administrador").exists()) and role == "Administrador":
-                messages.error(request, "Solo un Administrador puede asignar el rol Administrador.")
-            elif user.is_superuser and not es_super_admin:
-                messages.error(request, "No tienes permiso para modificar a un Administrador.")
-            elif user.groups.filter(name="Administrador").exists() and not (es_super_admin or request.user.groups.filter(name="Administrador").exists()):
-                messages.error(request, "No tienes permiso para modificar a un Administrador.")
+            elif role == "Directivo" and not (es_super_admin or es_req_directivo):
+                messages.error(request, "Solo un Directivo puede crear usuarios Directivos.")
+            elif es_target_directivo and role == "Desactivado" and not (es_super_admin or es_req_directivo):
+                messages.error(request, "No puedes desactivar un usuario Directivo")
+            elif es_target_directivo and role != "Desactivado" and not (es_super_admin or es_req_directivo):
+                messages.error(request, "No puedes modificar a un usuario Directivo")
+            elif user.is_superuser and role == "Desactivado" and not es_super_admin:
+                messages.error(request, "No puedes desactivar a un Superusuario")
+            elif user.is_superuser and role != "Desactivado" and not es_super_admin:
+                messages.error(request, "No tienes permiso para modificar a un Superusuario.")
             elif request.user.id == user.id and role == "Desactivado":
                 messages.error(request, "No puedes desactivar tu propio usuario")
             else:
@@ -396,6 +405,10 @@ def users_control(request):
                 
                 grupo, _ = Group.objects.get_or_create(name=role)
                 user.groups.add(grupo)
+                
+                user.is_superuser = False
+                user.is_staff = False
+                user.save()
                 
                 if role == "Desactivado":
                     messages.warning(request, f"Usuario {user.username} ha sido DESACTIVADO.")
@@ -413,6 +426,7 @@ def users_control(request):
         "usuarios": usuarios,
         "grupos": grupos,
         "es_super_admin": es_super_admin,
+        "puede_crear_admin": es_super_admin or request.user.groups.filter(name="Administrador").exists() or request.user.groups.filter(name="Directivo").exists(),
     }
     return render(request, "authentication/users_control.html", contexto)
 

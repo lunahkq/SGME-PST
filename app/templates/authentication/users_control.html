@@ -79,7 +79,7 @@
         <div class="mb-3">
           <label class="form-label">Rol inicial</label>
           <select name="role" class="form-select" required>
-            {% if es_super_admin %}
+            {% if puede_crear_admin %}
             <option value="Administrador">Administrador</option>
             {% endif %}
             <option value="Directivo">Directivo</option>
