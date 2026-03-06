@@ -758,8 +758,23 @@ def students_view(request):
     matriculas_page = matriculas.filter(id_estudiante__in=page_student_ids)
 
     matricula_map = {m.id_estudiante_id: m for m in matriculas_page}
+    
+    # Pre-cargar historiales de matrícula (años anteriores no activos)
+    todas_matriculas = Matricula.objects.filter(
+        id_estudiante__in=page_student_ids
+    ).select_related('id_anio_escolar', 'id_grado', 'id_seccion', 'id_turno'
+    ).order_by('-id_anio_escolar__fecha_inicio')
+    
+    historial_map = {}
+    for mat in todas_matriculas:
+        if not mat.id_anio_escolar.activo:
+            if mat.id_estudiante_id not in historial_map:
+                historial_map[mat.id_estudiante_id] = []
+            historial_map[mat.id_estudiante_id].append(mat)
+            
     for est in estudiantes_page:
         est.matricula_activa = matricula_map.get(est.id_estudiante)
+        est.historial_matriculas = historial_map.get(est.id_estudiante, [])
 
     grados_list = list(grados)
     secciones_list = list(secciones)
