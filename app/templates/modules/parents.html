@@ -211,6 +211,22 @@
                           <small class="text-muted d-block">Turno</small>
                           <span>{% if matricula.turno == 'M' %}Mañana{% else %}Tarde{% endif %}</span>
                         </div>
+                        <div class="col-12 mt-1">
+                          <small class="text-muted d-block mb-1">Estado</small>
+                          {% if matricula.estado == "Nuevo" %}
+                          <span class="badge bg-info text-dark">Nuevo</span>
+                          {% elif matricula.estado == "Regular" %}
+                          <span class="badge bg-success">Regular</span>
+                          {% elif matricula.estado == "Repetido" %}
+                          <span class="badge bg-warning text-dark">Repetido</span>
+                          {% elif matricula.estado == "Retirado" %}
+                          <span class="badge bg-danger">Retirado</span>
+                          {% elif matricula.estado == "Inactivo" %}
+                          <span class="badge bg-secondary">Inactivo</span>
+                          {% else %}
+                          <span class="badge bg-primary">{{ matricula.estado }}</span>
+                          {% endif %}
+                        </div>
                       </div>
                     </div>
                     {% endwith %}
@@ -311,10 +327,11 @@
       <li class="page-item active" aria-current="page">
         <span class="page-link">{{ i }}</span>
       </li>
-        {% elif i > parents.number|add:'-3' and i < parents.number|add:'3' %} <li class="page-item">
-          <a class="page-link"
-            href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">{{i }}
-            </a>
+      {% elif i > parents.number|add:'-3' and i < parents.number|add:'3' %} <li class="page-item">
+        <a class="page-link"
+          href="?page={{ i }}{% if q %}&q={{ q }}{% endif %}{% if request.GET.grado %}&grado={{ request.GET.grado }}{% endif %}{% if request.GET.seccion %}&seccion={{ request.GET.seccion }}{% endif %}{% if request.GET.turno %}&turno={{ request.GET.turno }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">{{i
+          }}
+        </a>
         </li>
         {% endif %}
         {% endfor %}
