@@ -30,7 +30,6 @@ from django.core.paginator import Paginator
 
 from django.utils import timezone
 
-# Commit para ver si se arregla la cosa
 
 # Importando modelos de la base de datos
 from .models import AnioEscolar
@@ -41,10 +40,7 @@ from .models import Representante
 from .models import Seccion
 from .models import Turno
 
-
-
 # Create your views here.
-
 
 # AUTENTICACIÓN INICIAL
 def login_request(request):
@@ -70,7 +66,7 @@ def login_request(request):
 
     return render(request, "authentication/login.html", {"form": form})
 
-# *** DASHBOARD CON GRÁFICOS - REEMPLAZA TU FUNCIÓN ANTIGUA ***
+# DASHBOARD CON GRÁFICOS
 @login_required
 def home_view(request):
     # CONTADORES PRINCIPALES (para las cards del template)
@@ -81,7 +77,7 @@ def home_view(request):
     # Obtener el Año Escolar Activo
     anio_activo = AnioEscolar.objects.filter(activo=True).first()
 
-    # 1. GRÁFICO: Estudiantes por Grado (solo año activo)
+    # 1. GRÁFICO: Estudiantes por Grado (solo año activos en el año actual)
     students_by_grade = (
         Estudiante.objects
         .filter(
@@ -122,7 +118,7 @@ def home_view(request):
     year_labels = [item['id_anio_escolar__anio_escolar'] for item in records_list]
     year_data = [item['total'] for item in records_list]
     
-    # CONTEXT EXACTO para tu template narbar.html
+    # CONTEXT 
     context = {
         # Cards principales
         'total_students': total_students,
@@ -138,7 +134,7 @@ def home_view(request):
         'year_data': year_data,
     }
     
-    return render(request, "modules/home.html", context)  # ← CAMBIÉ modules/home.html por narbar.html
+    return render(request, "modules/home.html", context)
 
 # RESTABLECIMIENTO DE CONTRASEÑA
 def forgot_password(request):
@@ -628,7 +624,7 @@ def students_view(request):
                 messages.error(request, f"Error al registrar/actualizar el estudiante: {str(e)}")
                 return redirect("students")
 
-    # GET - Listado y filtros (tu código original sin cambios)
+    # GET - Listado y filtros
     estudiantes = Estudiante.objects.all().order_by("apellidos", "nombres")
     grados = Grado.objects.all().order_by("orden")
     secciones = Seccion.objects.all()
@@ -710,7 +706,7 @@ def students_view(request):
 
     # Aplicar filtro de estado
     if selected_estado == "Activo":
-        # "Activo" agrupa: Nuevo, Regular, Repetido (y por seguridad "Activo")
+        # "Activo" agrupa: Nuevo, Regular, Repetido
         matriculas = matriculas.filter(estado__in=["Activo", "Nuevo", "Regular", "Repetido"])
         # Filtramos estudiantes que tengan esas matrículas
         student_ids = matriculas.values_list('id_estudiante_id', flat=True)
@@ -730,7 +726,7 @@ def students_view(request):
             estudiantes = estudiantes.exclude(id_estudiante__in=active_ids)
             
             # Nota: Al excluir a los activos, nos quedan:
-            # - Estudiantes con matricula en este año pero estado "Retirado", "Egresado", "Inactivo"
+            # - Estudiantes con matricula en este año pero estado "Retirado" o "Egresado"
         else:
             # Si no hay año filtro, mostramos los inactivos históricos explícitos
             matriculas = matriculas.filter(estado__in=["Inactivo", "Retirado", "Egresado"])
@@ -759,7 +755,7 @@ def students_view(request):
 
     matricula_map = {m.id_estudiante_id: m for m in matriculas_page}
     
-    # Pre-cargar historiales de matrícula (años anteriores no activos)
+    # Pre-cargar historiales de matrícula (años escolares anteriores no activos)
     todas_matriculas = Matricula.objects.filter(
         id_estudiante__in=page_student_ids
     ).select_related('id_anio_escolar', 'id_grado', 'id_seccion', 'id_turno'
@@ -938,7 +934,7 @@ def parents_list(request):
     )
 
     for p in parents_list:
-        # Obtenemos todas las matrículas del representante (ya cacheadas por prefetch_related)
+        # Obtenemos todas las matrículas del representante
         matriculas = p.matricula_set.all()
         
         unique_students = {}
@@ -950,7 +946,7 @@ def parents_list(request):
                 unique_students[est_id] = True
                 processed_students.append(m)
         
-        # Asignamos la lista filtrada al objeto (esto es temporal para la vista)
+        # Asignamos la lista filtrada al objeto 
         p.matriculas_visibles = processed_students
 
     context = {
@@ -983,7 +979,7 @@ def parent_edit(request, pk):
     parent.telefono = request.POST.get('telefono', parent.telefono)
     parent.save()
     
-    messages.success(request, "Se editó correctamente.")  # LINEA AGREGADA PARA AVISO DE MENSAJES
+    messages.success(request, "Se editó correctamente.") 
     
     return redirect('parents')
 
@@ -1062,7 +1058,7 @@ def academic_record(request):
                      anio.anio_escolar = new_name
                      anio.activo = False
                      anio.save()
-                     # No eliminamos matrículas ni anio, solo ocultamos
+                     # No eliminamos matrículas ni el año, solo ocultamos
                  messages.success(request, "Año escolar ocultado con éxito.")
         except AnioEscolar.DoesNotExist:
             messages.error(request, "El año escolar no existe.")
@@ -1209,7 +1205,7 @@ def academic_record(request):
     return render(request, "modules/academic_record.html", context)
 
 
-# VISTA DE REPORTE DE MATRÍCULA (EJEMPLO SIMPLE)
+# VISTA DE REPORTE DE MATRÍCULA
 @login_required
 @user_passes_test(es_admin_o_directivo, login_url="home")
 def reporte_matricula(request):
@@ -1628,7 +1624,7 @@ def generar_pdf(registros, context_filtros, filename):
     
     col_widths.append(email_width)
 
-    # --- CONSTRUCCIÓN DE LA TABLA ---
+    # CONSTRUCCIÓN DE LA TABLA
     data = [headers]
     
     for reg in registros:
@@ -1696,7 +1692,7 @@ def generar_pdf(registros, context_filtros, filename):
     
     elements.append(table)
 
-    # --- FUNCIÓN DE ENCABEZADO ---
+    # FUNCIÓN DE ENCABEZADO
     def header_footer(canvas, doc):
         canvas.saveState()
         

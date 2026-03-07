@@ -110,8 +110,7 @@
             {% endif %}
           </td>
           <td>
-            <!-- La lógica de estado ya la hicimos en el view, pero visualmente podemos inferir: 
-                  Si tiene estudiantes asociados (en la query actual que filtra por activo), está activo. -->
+            <!-- Si tiene estudiantes asociados (en la query actual que filtra por activo), está activo. -->
             {% if p.num_activos > 0 %}
             <span class="badge bg-success">Activo</span>
             {% else %}
@@ -132,7 +131,7 @@
           </td>
         </tr>
 
-        <!-- Modal información completa del representante informando -->
+        <!-- Modal información completa del representante -->
         <div class="modal fade" id="infoParentModal{{ p.id_representante }}" tabindex="-1">
           <div class="modal-dialog modal-xl">
             <div class="modal-content">

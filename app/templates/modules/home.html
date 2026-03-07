@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block content %}
-<!-- TU DISEÑO EXACTO -->
+<!-- Mensaje Personalizado al Inicio -->
 <div class="mb-4">
   <h2 class="fw-semibold">
     Bienvenid@, {{ request.user.first_name|default:request.user.username }} 
@@ -123,9 +123,9 @@ document.addEventListener('DOMContentLoaded', function() {
         data: window.genderData,
         backgroundColor: window.genderLabels.map((label, index) => {
           if (label.toUpperCase().includes('F') || label.toUpperCase().includes('FEMENINO')) {
-            return 'rgba(255, 182, 193, 0.85)';  // 💕 ROSADO para Femenino (F)
+            return 'rgba(255, 182, 193, 0.85)';  // ROSADO para Femenino (F)
           } else {
-            return 'rgba(100, 149, 237, 0.9)';   // 💙 AZUL para Masculino (M)
+            return 'rgba(100, 149, 237, 0.9)';   // AZUL para Masculino (M)
           }
         }),
         borderWidth: 2,
