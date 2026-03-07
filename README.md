@@ -234,7 +234,7 @@ grupo_admin, _ = Group.objects.get_or_create(name="Directivo")
 user.groups.add(grupo_admin)
 ```
 
-> Esto para aparecer en el sistema con rol "administrativo" apenas accedas. En el panel de usuarios también te puedes asignar ese rol o el que tu prefieras.
+> Esto para aparecer en el sistema con rol "Directivo" apenas accedas. En el panel de usuarios también te puedes asignar ese rol o el que tu prefieras.
 
 ## Iniciar el Servidor Local
 
