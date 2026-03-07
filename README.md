@@ -230,7 +230,7 @@ python manage.py shell
 from django.contrib.auth.models import User, Group
 
 user = User.objects.get(username="TU_NOMBRE_DE_USUARIO")
-grupo_admin, _ = Group.objects.get_or_create(name="Administrador")
+grupo_admin, _ = Group.objects.get_or_create(name="Directivo")
 user.groups.add(grupo_admin)
 ```
 
